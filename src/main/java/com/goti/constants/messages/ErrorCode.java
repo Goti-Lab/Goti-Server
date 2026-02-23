@@ -18,6 +18,7 @@ public enum ErrorCode {
 	MISSING_PARAMETER(HttpStatus.BAD_REQUEST, "{0} 파라미터 필요"),
 	INVALID_FORMAT(HttpStatus.BAD_REQUEST, "{0} 형식 오류"),
 	INVALID_PROVIDER_TYPE(HttpStatus.BAD_REQUEST, "{0} 은(는) 지원하지 않는 소셜 서비스입니다."),
+	INVALID_STATE(HttpStatus.BAD_REQUEST, "유효하지 않은 state입니다."),
 
 	AUTH_INVALID_ACCESS_PATH(HttpStatus.UNAUTHORIZED, "올바르지 않은 접근 경로입니다."),
 	AUTH_PERMISSION_DENIED(HttpStatus.FORBIDDEN, "접근 권한이 없습니다."),
