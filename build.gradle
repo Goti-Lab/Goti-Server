@@ -1,57 +1,50 @@
 plugins {
-	id 'java'
-	id 'org.springframework.boot' version '3.5.10'
-	id 'io.spring.dependency-management' version '1.1.7'
+    id 'java'
+    id 'org.springframework.boot' version '3.5.10'
+    id 'io.spring.dependency-management' version '1.1.7'
 }
 
-group = 'com.goti'
-version = '0.0.1-SNAPSHOT'
-description = 'KT-TECHUP_Integration_Goti_project'
+allprojects {
+    group = 'com.goti'
+    version = '0.0.1-SNAPSHOT'
+    description = 'KT-TECHUP_Integration_Goti_project'
 
-java {
-	toolchain {
-		languageVersion = JavaLanguageVersion.of(21)
-	}
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
+
+    repositories {
+        mavenCentral()
+    }
+
+    tasks.withType(JavaCompile) {
+        options.annotationProcessorPath = configurations.annotationProcessor
+    }
 }
 
-configurations {
-	compileOnly {
-		extendsFrom annotationProcessor
-	}
-}
+subprojects {
+    apply plugin: 'java'
+    apply plugin: 'io.spring.dependency-management'
+    apply plugin: 'org.springframework.boot'
 
-repositories {
-	mavenCentral()
-}
 
-dependencies {
-	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-	implementation 'org.springframework.boot:spring-boot-starter-security'
-	implementation 'org.springframework.boot:spring-boot-starter-web'
-	compileOnly 'org.projectlombok:lombok'
-	annotationProcessor 'org.projectlombok:lombok'
-	testImplementation 'org.springframework.boot:spring-boot-starter-test'
-	testImplementation 'org.springframework.security:spring-security-test'
-	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    dependencies {
+        compileOnly 'org.projectlombok:lombok'
+        annotationProcessor 'org.projectlombok:lombok'
+        
+        testImplementation 'org.springframework.boot:spring-boot-starter-test'
+        testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
-    /* postgresql */
-    implementation 'org.postgresql:postgresql'
-    runtimeOnly 'org.postgresql:postgresql'
+        /* Test Module Lombok */
+        testCompileOnly 'org.projectlombok:lombok'
+        testAnnotationProcessor 'org.projectlombok:lombok'
+    }
 
-    /* Jwt */
-    implementation 'io.jsonwebtoken:jjwt-api:0.13.0'
-    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.13.0'
-    runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.13.0'
+    tasks.named('test') {
+        useJUnitPlatform()
+    }
 
-    /* Test Module Lombok */
-    testCompileOnly 'org.projectlombok:lombok'
-    testAnnotationProcessor 'org.projectlombok:lombok'
-
-    /* Redis */
-    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
-    implementation 'org.redisson:redisson-spring-boot-starter:3.32.0'
-}
-
-tasks.named('test') {
-	useJUnitPlatform()
+    plugins.withId('org.springframework.boot') {
+        tasks.named('bootJar') { enabled = false }
+        tasks.named('jar') { enabled = true }
+    }
 }

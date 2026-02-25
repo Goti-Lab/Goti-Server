@@ -1,0 +1,18 @@
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+
+
+    implementation(project(":common"))
+    implementation(project(":core"))
+    implementation(project(":integration"))
+    implementation(project(":user"))
+    implementation(project(":stadium"))
+    implementation(project(":ticketing"))
+    implementation(project(":resale"))
+    implementation(project(":payment"))
+}
+
+// 메인 애플리케이션만 실행 가능한 JAR 생성
+tasks.named('bootJar') { enabled = true }
+
+tasks.named('jar') { enabled = false }

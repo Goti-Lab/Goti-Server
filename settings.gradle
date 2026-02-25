@@ -1,1 +1,11 @@
 rootProject.name = 'goti-backend'
+
+include 'core'
+include 'common'
+include 'integration'
+include 'user'
+include 'stadium'
+include 'ticketing'
+include 'payment'
+include 'resale'
+include 'api'
