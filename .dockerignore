@@ -1,0 +1,36 @@
+# Git
+.git
+.gitignore
+
+# Build output
+build/
+**/build/
+!gradle/wrapper/gradle-wrapper.jar
+
+# IDE
+.idea/
+.vscode/
+*.iml
+*.iws
+*.ipr
+out/
+
+# Docker
+docker/
+Dockerfile
+.dockerignore
+
+# CI/CD
+.github/
+
+# Env
+.env
+.env.*
+
+# Docs
+*.md
+LICENSE
+
+# OS
+.DS_Store
+Thumbs.db
