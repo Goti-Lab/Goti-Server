@@ -1,0 +1,131 @@
+package com.goti.domain.entity.resale;
+
+import static lombok.AccessLevel.*;
+
+import java.time.LocalDateTime;
+import java.util.UUID;
+
+import com.goti.constants.ResaleTransactionStatus;
+import com.goti.domain.base.CreationTimestampEntity;
+import com.goti.global.validation.Preconditions;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
+@Getter
+@Entity
+@Table(name = "resale_transactions")
+@NoArgsConstructor(access = PROTECTED)
+public class ResaleTransactionEntity extends CreationTimestampEntity {
+
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "listing_id", nullable = false)
+	private ResaleListingEntity listing;
+
+	@Column(nullable = false)
+	private UUID buyerId;
+
+	@Column(nullable = false)
+	private UUID sellerId;
+
+	@Column(nullable = false)
+	private Integer transactionPrice;
+
+	@Column(nullable = false)
+	private Integer buyerFee;
+
+	@Column(nullable = false)
+	private Integer sellerFee;
+
+	@Column(nullable = false)
+	private Integer buyerTotal;
+
+	@Column(nullable = false)
+	private Integer sellerTotal;
+
+	@Enumerated(EnumType.STRING)
+	@Column(nullable = false)
+	private ResaleTransactionStatus transactionStatus;
+
+	private LocalDateTime confirmedAt;
+
+	private ResaleTransactionEntity(
+		ResaleListingEntity listing,
+		UUID buyerId,
+		UUID sellerId,
+		Integer transactionPrice,
+		Integer buyerFee,
+		Integer sellerFee,
+		Integer buyerTotal,
+		Integer sellerTotal
+	) {
+		this.listing = listing;
+		this.buyerId = buyerId;
+		this.sellerId = sellerId;
+		this.transactionPrice = transactionPrice;
+		this.buyerFee = buyerFee;
+		this.sellerFee = sellerFee;
+		this.buyerTotal = buyerTotal;
+		this.sellerTotal = sellerTotal;
+		this.transactionStatus = ResaleTransactionStatus.PENDING;
+		this.confirmedAt = null;
+	}
+
+	public static ResaleTransactionEntity create(
+		ResaleListingEntity listing,
+		UUID buyerId,
+		UUID sellerId,
+		Integer transactionPrice,
+		Integer buyerFee,
+		Integer sellerFee,
+		Integer buyerTotal,
+		Integer sellerTotal
+	) {
+		validate(
+			buyerId, sellerId,
+			transactionPrice,
+			buyerFee, sellerFee,
+			buyerTotal, sellerTotal
+		);
+
+		return new ResaleTransactionEntity(
+			listing,
+			buyerId,
+			sellerId,
+			transactionPrice,
+			buyerFee,
+			sellerFee,
+			buyerTotal,
+			sellerTotal
+		);
+	}
+
+	private static void validate(
+		UUID buyerId,
+		UUID sellerId,
+		Integer transactionPrice,
+		Integer buyerFee,
+		Integer sellerFee,
+		Integer buyerTotal,
+		Integer sellerTotal
+	) {
+		Preconditions.domainValidate(buyerId != null, "구매자 ID는 비어 있을 수 없습니다.");
+		Preconditions.domainValidate(sellerId != null, "판매자 ID는 비어 있을 수 없습니다.");
+		Preconditions.domainValidate(!buyerId.equals(sellerId), "구매자와 판매자는 같을 수 없습니다.");
+		Preconditions.domainValidate(transactionPrice != null && transactionPrice >= 0, "거래 가격은 0 이상이어야 합니다.");
+		Preconditions.domainValidate(buyerFee != null && buyerFee >= 0, "구매자 수수료는 0 이상이어야 합니다.");
+		Preconditions.domainValidate(sellerFee != null && sellerFee >= 0, "판매자 수수료는 0 이상이어야 합니다.");
+		Preconditions.domainValidate(buyerTotal != null && buyerTotal >= 0, "구매자 총액은 0 이상이어야 합니다.");
+		Preconditions.domainValidate(sellerTotal != null && sellerTotal >= 0, "판매자 총액은 0 이상이어야 합니다.");
+		Preconditions.domainValidate(buyerTotal.equals(transactionPrice + buyerFee), "구매자 총액이 올바르지 않습니다.");
+		Preconditions.domainValidate(sellerTotal.equals(transactionPrice - sellerFee), "판매자 총액이 올바르지 않습니다.");
+	}
+}
