@@ -11,6 +11,9 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+    networks:
+      - default
+      - goti-monitoring
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- http://localhost:8080/actuator/health || exit 1"]
       interval: 15s
@@ -60,6 +63,12 @@ services:
         limits:
           memory: 256M
     restart: unless-stopped
+
+networks:
+  default:
+    driver: bridge
+  goti-monitoring:
+    external: true
 
 volumes:
   postgres-data:

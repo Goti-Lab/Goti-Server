@@ -18,6 +18,8 @@ env:
   ECR_REPOSITORY: goti-server
   EC2_TAG_KEY: Service
   EC2_TAG_VALUE: goti-server
+  S3_BUCKET: goti-dev-deploy-artifacts
+  S3_PREFIX: server
 
 jobs:
   deploy:
@@ -48,6 +50,11 @@ jobs:
           DOCKER_BUILDKIT=1 docker build -t ${{ steps.image.outputs.full_image }} .
           docker push ${{ steps.image.outputs.full_image }}
 
+      - name: Upload deploy artifacts to S3
+        run: |
+          aws s3 cp scripts/deploy.sh s3://${{ env.S3_BUCKET }}/${{ env.S3_PREFIX }}/scripts/deploy.sh
+          aws s3 cp docker/docker-compose.deploy.yml s3://${{ env.S3_BUCKET }}/${{ env.S3_PREFIX }}/docker/docker-compose.deploy.yml
+
       - name: Get EC2 instance ID
         id: ec2
         run: |
@@ -69,8 +76,10 @@ jobs:
             --instance-ids "${{ steps.ec2.outputs.instance_id }}" \
             --document-name "AWS-RunShellScript" \
             --parameters commands='[
-              "cd /opt/goti-server",
-              "sudo bash scripts/deploy.sh ${{ steps.ecr-login.outputs.registry }}/${{ env.ECR_REPOSITORY }} ${{ steps.image.outputs.tag }} ${{ env.AWS_REGION }}"
+              "sudo mkdir -p /opt/goti-server/scripts /opt/goti-server/docker",
+              "aws s3 sync s3://${{ env.S3_BUCKET }}/${{ env.S3_PREFIX }}/ /opt/goti-server/ --delete --region ${{ env.AWS_REGION }}",
+              "sudo chmod +x /opt/goti-server/scripts/deploy.sh",
+              "sudo bash /opt/goti-server/scripts/deploy.sh ${{ steps.ecr-login.outputs.registry }}/${{ env.ECR_REPOSITORY }} ${{ steps.image.outputs.tag }} ${{ env.AWS_REGION }}"
             ]' \
             --timeout-seconds 300 \
             --query "Command.CommandId" \
