@@ -45,6 +45,9 @@ bin/
 ### QClass ###
 /src/main/generated/**
 
+### Docker ###
+docker-compose.override.yml
+
 ### env ###
 .env
 .env.test
