@@ -46,13 +46,12 @@ RUN addgroup -S goti && adduser -S goti -G goti
 
 WORKDIR /app
 
-# 변경 빈도 낮은 순서대로 COPY (레이어 캐시 최적화)
-COPY --from=extract /app/dependencies/ ./
-COPY --from=extract /app/spring-boot-loader/ ./
-COPY --from=extract /app/snapshot-dependencies/ ./
-COPY --from=extract /app/application/ ./
+# 변경 빈도 낮은 순서대로 COPY (레이어 캐시 최적화, --chown으로 별도 레이어 방지)
+COPY --from=extract --chown=goti:goti /app/dependencies/ ./
+COPY --from=extract --chown=goti:goti /app/spring-boot-loader/ ./
+COPY --from=extract --chown=goti:goti /app/snapshot-dependencies/ ./
+COPY --from=extract --chown=goti:goti /app/application/ ./
 
-RUN chown -R goti:goti /app
 USER goti
 
 ENV JAVA_OPTS="-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0 -XX:+UseG1GC"

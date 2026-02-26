@@ -44,7 +44,8 @@ subprojects {
     }
 
     plugins.withId('org.springframework.boot') {
-        tasks.named('bootJar') { enabled = false }
-        tasks.named('jar') { enabled = true }
+        def msa = project.hasProperty('msa')
+        tasks.named('bootJar') { enabled = msa }
+        tasks.named('jar') { enabled = !msa }
     }
 }

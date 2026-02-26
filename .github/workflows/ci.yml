@@ -1,0 +1,75 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [develop]
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - '.github/ISSUE_TEMPLATE/**'
+      - '.github/pull_request_template.md'
+
+concurrency:
+  group: ci-${{ github.head_ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Build bootJar
+        run: ./gradlew :api:bootJar --no-daemon -x test
+
+      - name: Run tests for changed modules
+        run: |
+          MODULES="core common integration user stadium ticketing payment resale api"
+
+          CHANGED=$(git diff --name-only origin/develop...HEAD | grep -oP '^[^/]+' | sort -u)
+
+          TARGETS=""
+          for module in $MODULES; do
+            if echo "$CHANGED" | grep -qx "$module"; then
+              TARGETS="$TARGETS :${module}:test"
+            fi
+          done
+
+          if [ -z "$TARGETS" ]; then
+            echo "변경된 모듈 없음 — 테스트 스킵"
+          else
+            echo "테스트 대상:$TARGETS"
+            ./gradlew $TARGETS --no-daemon
+          fi
+
+  full-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Run all tests
+        run: ./gradlew test --no-daemon
+
+  docker-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Docker build verification
+        run: DOCKER_BUILDKIT=1 docker build -t goti-server:ci-test .
