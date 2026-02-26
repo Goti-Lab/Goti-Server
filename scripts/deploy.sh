@@ -7,7 +7,7 @@ IMAGE_TAG="${2:?IMAGE_TAG required}"
 AWS_REGION="${3:?AWS_REGION required}"
 
 DEPLOY_DIR="/opt/goti-server"
-COMPOSE_FILE="${DEPLOY_DIR}/docker/docker-compose.prod.yml"
+COMPOSE_FILE="${DEPLOY_DIR}/docker/docker-compose.deploy.yml"
 ENV_FILE="${DEPLOY_DIR}/docker/.env"
 SSM_PREFIX="/dev/server"
 
