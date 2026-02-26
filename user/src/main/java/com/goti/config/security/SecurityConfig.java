@@ -30,7 +30,8 @@ public class SecurityConfig {
 	private final JwtAccessDeniedHandler accessDeniedHandler;
 
 	public static final String[] PERMIT_PUBLIC_PATH = {
-		"/api/v1/auth/**"
+		"/api/v1/auth/**",
+		"/actuator/**"
 	};
 
 
