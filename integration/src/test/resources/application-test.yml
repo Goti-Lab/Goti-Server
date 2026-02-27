@@ -1,6 +1,7 @@
 spring:
   config:
     import:
+      - application-integration.yml
       - optional:file:.env.test[.properties]
   jpa:
     hibernate:
