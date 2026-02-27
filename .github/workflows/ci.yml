@@ -16,6 +16,32 @@ concurrency:
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:17.6
+        env:
+          POSTGRES_USER: ${{ secrets.DATASOURCE_USERNAME }}
+          POSTGRES_PASSWORD: ${{ secrets.DATASOURCE_PASSWORD }}
+          POSTGRES_DB: ${{ vars.DATABASE_NAME || 'goti_local' }}
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      redis:
+        image: redis:latest
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     steps:
       - uses: actions/checkout@v4
         with:
@@ -29,9 +55,43 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
 
       - name: Build bootJar
+        env:
+          DATASOURCE_URL: ${{ secrets.DATASOURCE_URL }}
+          DATASOURCE_USERNAME: ${{ secrets.DATASOURCE_USERNAME }}
+          DATASOURCE_PASSWORD: ${{ secrets.DATASOURCE_PASSWORD }}
+          REDIS_HOST: localhost:6379
+          JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
+          JWT_ACCESS_TIME: ${{ secrets.JWT_ACCESS_TIME }}
+          JWT_REFRESH_TIME: ${{ secrets.JWT_REFRESH_TIME }}
+          KAKAO_CLIENT: ${{ secrets.KAKAO_CLIENT }}
+          KAKAO_SECRET: ${{ secrets.KAKAO_SECRET }}
+          KAKAO_REDIRECT_URI: ${{ secrets.KAKAO_REDIRECT_URI }}
+          NAVER_CLIENT: ${{ secrets.NAVER_CLIENT }}
+          NAVER_SECRET: ${{ secrets.NAVER_SECRET }}
+          NAVER_REDIRECT_URI: ${{ secrets.NAVER_REDIRECT_URI }}
+          GOOGLE_CLIENT: ${{ secrets.GOOGLE_CLIENT }}
+          GOOGLE_SECRET: ${{ secrets.GOOGLE_SECRET }}
+          GOOGLE_REDIRECT_URI: ${{ secrets.GOOGLE_REDIRECT_URI }}
         run: ./gradlew :api:bootJar --no-daemon -x test
 
       - name: Run tests for changed modules
+        env:
+          DATASOURCE_URL: ${{ secrets.DATASOURCE_URL }}
+          DATASOURCE_USERNAME: ${{ secrets.DATASOURCE_USERNAME }}
+          DATASOURCE_PASSWORD: ${{ secrets.DATASOURCE_PASSWORD }}
+          REDIS_HOST: localhost:6379
+          JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
+          JWT_ACCESS_TIME: ${{ secrets.JWT_ACCESS_TIME }}
+          JWT_REFRESH_TIME: ${{ secrets.JWT_REFRESH_TIME }}
+          KAKAO_CLIENT: ${{ secrets.KAKAO_CLIENT }}
+          KAKAO_SECRET: ${{ secrets.KAKAO_SECRET }}
+          KAKAO_REDIRECT_URI: ${{ secrets.KAKAO_REDIRECT_URI }}
+          NAVER_CLIENT: ${{ secrets.NAVER_CLIENT }}
+          NAVER_SECRET: ${{ secrets.NAVER_SECRET }}
+          NAVER_REDIRECT_URI: ${{ secrets.NAVER_REDIRECT_URI }}
+          GOOGLE_CLIENT: ${{ secrets.GOOGLE_CLIENT }}
+          GOOGLE_SECRET: ${{ secrets.GOOGLE_SECRET }}
+          GOOGLE_REDIRECT_URI: ${{ secrets.GOOGLE_REDIRECT_URI }}
         run: |
           MODULES="core common integration user stadium ticketing payment resale api"
 
@@ -53,6 +113,32 @@ jobs:
 
   full-test:
     runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:17.6
+        env:
+          POSTGRES_USER: ${{ secrets.DATASOURCE_USERNAME }}
+          POSTGRES_PASSWORD: ${{ secrets.DATASOURCE_PASSWORD }}
+          POSTGRES_DB: ${{ vars.DATABASE_NAME || 'goti_local' }}
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      redis:
+        image: redis:latest
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     steps:
       - uses: actions/checkout@v4
 
@@ -64,6 +150,23 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
 
       - name: Run all tests
+        env:
+          DATASOURCE_URL: ${{ secrets.DATASOURCE_URL }}
+          DATASOURCE_USERNAME: ${{ secrets.DATASOURCE_USERNAME }}
+          DATASOURCE_PASSWORD: ${{ secrets.DATASOURCE_PASSWORD }}
+          REDIS_HOST: localhost:6379
+          JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
+          JWT_ACCESS_TIME: ${{ secrets.JWT_ACCESS_TIME }}
+          JWT_REFRESH_TIME: ${{ secrets.JWT_REFRESH_TIME }}
+          KAKAO_CLIENT: ${{ secrets.KAKAO_CLIENT }}
+          KAKAO_SECRET: ${{ secrets.KAKAO_SECRET }}
+          KAKAO_REDIRECT_URI: ${{ secrets.KAKAO_REDIRECT_URI }}
+          NAVER_CLIENT: ${{ secrets.NAVER_CLIENT }}
+          NAVER_SECRET: ${{ secrets.NAVER_SECRET }}
+          NAVER_REDIRECT_URI: ${{ secrets.NAVER_REDIRECT_URI }}
+          GOOGLE_CLIENT: ${{ secrets.GOOGLE_CLIENT }}
+          GOOGLE_SECRET: ${{ secrets.GOOGLE_SECRET }}
+          GOOGLE_REDIRECT_URI: ${{ secrets.GOOGLE_REDIRECT_URI }}
         run: ./gradlew test --no-daemon
 
   docker-build:
