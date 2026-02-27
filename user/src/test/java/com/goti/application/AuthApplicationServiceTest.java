@@ -30,7 +30,7 @@ import lombok.extern.slf4j.Slf4j;
 public class AuthApplicationServiceTest {
 
 	@Autowired
-    AuthApplicationService authApplicationService;
+	AuthApplicationService authApplicationService;
 
 	@Autowired
 	RedisCache redisCache;
