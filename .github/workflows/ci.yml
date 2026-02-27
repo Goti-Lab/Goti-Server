@@ -76,7 +76,7 @@ jobs:
 
       - name: Run tests for changed modules
         env:
-          DATASOURCE_URL: ${{ secrets.DATASOURCE_URL }}
+          DATASOURCE_URL: jdbc:postgresql://localhost:5432/${{ vars.DATABASE_NAME || 'goti_local' }}
           DATASOURCE_USERNAME: ${{ secrets.DATASOURCE_USERNAME }}
           DATASOURCE_PASSWORD: ${{ secrets.DATASOURCE_PASSWORD }}
           REDIS_HOST: localhost:6379
@@ -151,7 +151,7 @@ jobs:
 
       - name: Run all tests
         env:
-          DATASOURCE_URL: ${{ secrets.DATASOURCE_URL }}
+          DATASOURCE_URL: jdbc:postgresql://localhost:5432/${{ vars.DATABASE_NAME || 'goti_local' }}
           DATASOURCE_USERNAME: ${{ secrets.DATASOURCE_USERNAME }}
           DATASOURCE_PASSWORD: ${{ secrets.DATASOURCE_PASSWORD }}
           REDIS_HOST: localhost:6379
