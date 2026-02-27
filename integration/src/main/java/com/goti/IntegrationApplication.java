@@ -5,5 +5,5 @@ import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
 
 @ConfigurationPropertiesScan
 @SpringBootApplication
-public class GotiUserApplication {
+public class IntegrationApplication {
 }

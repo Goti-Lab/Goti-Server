@@ -3,6 +3,7 @@ package com.goti.application;
 import static org.assertj.core.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.*;
 
+import com.goti.GotiUserApplication;
 import com.goti.infra.constants.ProviderType;
 
 import com.goti.infra.constants.redis.RedisKey;
@@ -25,11 +26,11 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @ActiveProfiles("test")
-@SpringBootTest
+@SpringBootTest(classes = GotiUserApplication.class)
 public class AuthApplicationServiceTest {
 
 	@Autowired
-    AuthApplicationService authApplicationService;
+	AuthApplicationService authApplicationService;
 
 	@Autowired
 	RedisCache redisCache;
