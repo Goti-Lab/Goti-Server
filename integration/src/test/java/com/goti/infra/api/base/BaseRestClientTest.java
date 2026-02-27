@@ -1,5 +1,6 @@
 package com.goti.infra.api.base;
 
+import com.goti.IntegrationApplication;
 import com.goti.constants.messages.ErrorCode;
 import com.goti.exception.CustomException;
 
@@ -19,8 +20,8 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @Slf4j
-@ActiveProfiles({"test", "integration"})
-@SpringBootTest
+@ActiveProfiles("test")
+@SpringBootTest(classes = IntegrationApplication.class)
 public class BaseRestClientTest {
 
 	@Autowired
