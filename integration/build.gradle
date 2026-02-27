@@ -6,4 +6,5 @@ dependencies {
     implementation 'org.redisson:redisson-spring-boot-starter:3.32.0'
 
     implementation(project(":common"))
+    implementation(project(":core"))
 }
