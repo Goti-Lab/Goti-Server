@@ -19,7 +19,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @Slf4j
-@ActiveProfiles("test")
+@ActiveProfiles({"test", "integration"})
 @SpringBootTest
 public class BaseRestClientTest {
 
