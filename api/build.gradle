@@ -1,6 +1,10 @@
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
 
+    // OpenTelemetry (metrics + traces + logs 자동 설정)
+    implementation platform('io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom:2.25.0')
+    implementation 'io.opentelemetry.instrumentation:opentelemetry-spring-boot-starter'
 
     implementation(project(":common"))
     implementation(project(":core"))
