@@ -111,6 +111,13 @@ jobs:
             ./gradlew $TARGETS --no-daemon
           fi
 
+      - name: Upload test reports (build-and-test)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-reports-build-and-test
+          path: '**/build/reports/tests/'
+
   full-test:
     runs-on: ubuntu-latest
 
@@ -168,6 +175,13 @@ jobs:
           GOOGLE_SECRET: ${{ secrets.GOOGLE_SECRET }}
           GOOGLE_REDIRECT_URI: ${{ secrets.GOOGLE_REDIRECT_URI }}
         run: ./gradlew test --no-daemon
+
+      - name: Upload test reports (full-test)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-reports-full-test
+          path: '**/build/reports/tests/'
 
   docker-build:
     runs-on: ubuntu-latest
