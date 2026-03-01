@@ -6,15 +6,16 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import com.goti.constants.OAuthProvider;
+
 import org.springframework.stereotype.Component;
 
 import com.goti.constants.messages.ErrorCode;
 import com.goti.exception.CustomException;
-import com.goti.infra.constants.ProviderType;
 
 @Component
 public class SocialClientProvider {
-	private final Map<ProviderType, SocialApiClient> clients;
+	private final Map<OAuthProvider, SocialApiClient> clients;
 
 	public SocialClientProvider(List<SocialApiClient> clientList) {
 		this.clients = clientList.stream()
@@ -24,7 +25,7 @@ public class SocialClientProvider {
 			));
 	}
 
-	public SocialApiClient getClient(ProviderType providerType) {
+	public SocialApiClient getClient(OAuthProvider providerType) {
 		return Optional.ofNullable(clients.get(providerType))
 			.orElseThrow(
 				() -> new CustomException(

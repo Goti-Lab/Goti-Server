@@ -2,6 +2,11 @@ package com.goti.infra.api.client.google;
 
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
+import java.util.Map;
+
+import com.goti.constants.OAuthProvider;
+
+import com.goti.infra.api.dto.response.common.SocialUserInfoResponse;
 
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
@@ -12,7 +17,6 @@ import com.goti.infra.api.base.BaseRestClient;
 import com.goti.infra.api.client.SocialApiClient;
 import com.goti.infra.api.dto.request.google.GoogleTokenRequest;
 import com.goti.infra.api.dto.response.common.SocialAccessTokenResponse;
-import com.goti.infra.constants.ProviderType;
 
 @Component
 public class GoogleApiClient extends BaseRestClient implements SocialApiClient {
@@ -25,8 +29,8 @@ public class GoogleApiClient extends BaseRestClient implements SocialApiClient {
 	}
 
 	@Override
-	public ProviderType getProviderType() {
-		return ProviderType.GOOGLE;
+	public OAuthProvider getProviderType() {
+		return OAuthProvider.GOOGLE;
 	}
 
 	@Override
@@ -49,9 +53,14 @@ public class GoogleApiClient extends BaseRestClient implements SocialApiClient {
 		return response.accessToken();
 	}
 
-	// todo : getProviderId API 구현 2026.02.23 오후 내로 완료 예정
 	@Override
-	public String getProviderId(String accessToken) {
-		return "";
+	public SocialUserInfoResponse getSocialUserInfo(String accessToken) {
+		Map<String, Object> response = get(
+			properties.userInfoUrl(),
+			createBearerHeader(accessToken),
+			null,
+			Map.class
+		);
+		return SocialUserInfoResponse.fromGoogle(response);
 	}
 }

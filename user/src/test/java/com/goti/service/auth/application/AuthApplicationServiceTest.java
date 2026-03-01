@@ -1,13 +1,14 @@
-package com.goti.application;
+package com.goti.service.auth.application;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.*;
 
+import com.goti.constants.OAuthProvider;
 import com.goti.GotiUserApplication;
-import com.goti.infra.constants.ProviderType;
 
 import com.goti.infra.constants.redis.RedisKey;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -20,7 +21,6 @@ import com.goti.constants.messages.ErrorCode;
 import com.goti.exception.CustomException;
 import com.goti.infra.api.dto.response.common.SocialStateResponse;
 import com.goti.infra.cache.RedisCache;
-import com.goti.service.auth.application.AuthApplicationService;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -37,10 +37,50 @@ public class AuthApplicationServiceTest {
 
 	static final String KEY_SEPARATOR = ":";
 
+	// todo : socialUserInfo 에서 받은 providerId 로 socialProvider 데이터 유무체크
+	@Test
+	@Disabled("개별적으로 테스트 시에만 @Disabled 주석 해제 후 테스트")
+	@DisplayName("method : login()")
+	void 카카오_로그인_성공() {
+		// 브라우저에서 직접 호출하여 응답받은 code 직접 기입 후 테스트
+		String code = "";
+		authApplicationService.login(
+			OAuthProvider.KAKAO, code, null
+		);
+	}
+
+	// todo : socialUserInfo 에서 받은 providerId 로 socialProvider 데이터 유무체크
+	@Test
+	@DisplayName("method : login()")
+	@Disabled("개별적으로 테스트 시에만 @Disabled 주석 해제 후 테스트")
+	void 네이버_로그인_성공() {
+		// 브라우저에서 직접 호출하여 응답받은 code
+		// springServer (issueState API) 에서 받은 state 직접 기입 후 테스트
+		String code = "";
+		String state = "";
+		authApplicationService.login(
+			OAuthProvider.NAVER, code, state
+		);
+	}
+
+	// todo : socialUserInfo 에서 받은 providerId 로 socialProvider 데이터 유무체크
+	@Test
+	@DisplayName("method : login()")
+	@Disabled("개별적으로 테스트 시에만 @Disabled 주석 해제 후 테스트")
+	void 구글_로그인_성공() {
+		// 브라우저에서 직접 호출하여 응답받은 code
+		// springServer (issueState API) 에서 받은 state 직접 기입 후 테스트
+		String code = "";
+		String state = "";
+		authApplicationService.login(
+			OAuthProvider.GOOGLE, code, state
+		);
+	}
+
 	@Test
 	@DisplayName("method : issueState()")
 	void state_생성_성공() {
-		ProviderType provider = ProviderType.NAVER;
+		OAuthProvider provider = OAuthProvider.NAVER;
 		SocialStateResponse response = authApplicationService.issueState(provider);
 		assertNotNull(response);
 		String state = response.state();
@@ -54,7 +94,7 @@ public class AuthApplicationServiceTest {
 	@Test
 	@DisplayName("method : issueState()")
 	void state_생성_실패_kakao() {
-		ProviderType provider = ProviderType.KAKAO;
+		OAuthProvider provider = OAuthProvider.KAKAO;
 		assertThatThrownBy(
 			() -> authApplicationService.issueState(provider)
 		).isInstanceOf(CustomException.class)
@@ -65,7 +105,7 @@ public class AuthApplicationServiceTest {
 	@NullAndEmptySource
 	@DisplayName("method : login() (google, naver)")
 	void 엑세스토큰_생성_실패_state_필수_소셜로그_state_null_또는_공백(String code) {
-		ProviderType provider = ProviderType.NAVER; // (or GOOGLE)
+		OAuthProvider provider = OAuthProvider.NAVER; // (or GOOGLE)
 		assertThatThrownBy(
 			() -> authApplicationService.login(provider, code, null)
 		).isInstanceOf(CustomException.class)
@@ -75,7 +115,7 @@ public class AuthApplicationServiceTest {
 	@Test
 	@DisplayName("method : login() (google, naver)")
 	void 엑세스토큰_생성_실패_state_필수_소셜로그_redis_state_미존재() {
-		ProviderType provider = ProviderType.NAVER; // (or GOOGLE)
+		OAuthProvider provider = OAuthProvider.NAVER; // (or GOOGLE)
 		String code = "testCode";
 		String state = "NOT_EXISTS_STATE";
 		assertThatThrownBy(
