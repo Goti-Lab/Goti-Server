@@ -30,11 +30,8 @@ spring:
           dialect: org.hibernate.dialect.PostgreSQLDialect
   data:
     redis:
-      ssl:
-        enabled: true
-      cluster:
-        nodes: ${REDIS_HOST}
-        max-redirects: 3
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
   config:
     import:
       - optional:file:.env[.properties]
