@@ -1,9 +1,17 @@
+// OpenTelemetry BOM을 Spring Boot보다 먼저 선언하여 SDK 버전 오버라이드
+// Spring Boot 3.5.x는 OTel SDK 1.49.0을 관리하지만, instrumentation 2.25.0은 SDK 1.59.0 필요
+dependencyManagement {
+    imports {
+        mavenBom 'io.opentelemetry:opentelemetry-bom:1.59.0'
+        mavenBom 'io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom:2.25.0'
+    }
+}
+
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
 
     // OpenTelemetry (metrics + traces + logs 자동 설정)
-    implementation platform('io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom:2.25.0')
     implementation 'io.opentelemetry.instrumentation:opentelemetry-spring-boot-starter'
 
     implementation(project(":common"))
