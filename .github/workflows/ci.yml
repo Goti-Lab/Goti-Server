@@ -59,7 +59,8 @@ jobs:
           DATASOURCE_URL: jdbc:postgresql://localhost:5432/${{ vars.DATABASE_NAME || 'goti_local' }}
           DATASOURCE_USERNAME: ${{ secrets.DATASOURCE_USERNAME }}
           DATASOURCE_PASSWORD: ${{ secrets.DATASOURCE_PASSWORD }}
-          REDIS_HOST: localhost:6379
+          REDIS_HOST: localhost
+          REDIS_PORT: 6379
           JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
           JWT_ACCESS_TIME: ${{ secrets.JWT_ACCESS_TIME }}
           JWT_REFRESH_TIME: ${{ secrets.JWT_REFRESH_TIME }}
@@ -79,7 +80,8 @@ jobs:
           DATASOURCE_URL: jdbc:postgresql://localhost:5432/${{ vars.DATABASE_NAME || 'goti_local' }}
           DATASOURCE_USERNAME: ${{ secrets.DATASOURCE_USERNAME }}
           DATASOURCE_PASSWORD: ${{ secrets.DATASOURCE_PASSWORD }}
-          REDIS_HOST: localhost:6379
+          REDIS_HOST: localhost
+          REDIS_PORT: 6379
           JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
           JWT_ACCESS_TIME: ${{ secrets.JWT_ACCESS_TIME }}
           JWT_REFRESH_TIME: ${{ secrets.JWT_REFRESH_TIME }}
@@ -161,7 +163,8 @@ jobs:
           DATASOURCE_URL: jdbc:postgresql://localhost:5432/${{ vars.DATABASE_NAME || 'goti_local' }}
           DATASOURCE_USERNAME: ${{ secrets.DATASOURCE_USERNAME }}
           DATASOURCE_PASSWORD: ${{ secrets.DATASOURCE_PASSWORD }}
-          REDIS_HOST: localhost:6379
+          REDIS_HOST: localhost
+          REDIS_PORT: 6379
           JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
           JWT_ACCESS_TIME: ${{ secrets.JWT_ACCESS_TIME }}
           JWT_REFRESH_TIME: ${{ secrets.JWT_REFRESH_TIME }}
