@@ -56,10 +56,18 @@ AWS_ACCOUNT_ID=$(echo "${ECR_IMAGE}" | cut -d'.' -f1)
 
 echo "환경변수 ${ENV_FILE} 생성 완료"
 
+# --- 외부 네트워크 사전 생성 (모니터링 미배포 시 대비) ---
+docker network inspect goti-monitoring >/dev/null 2>&1 || docker network create goti-monitoring
+
 # --- 기존 컨테이너 중지 및 새로 시작 ---
 cd "${DEPLOY_DIR}"
-docker compose -f "${COMPOSE_FILE}" --env-file "${ENV_FILE}" down --remove-orphans || true
-docker compose -f "${COMPOSE_FILE}" --env-file "${ENV_FILE}" up -d
+# 프로젝트명 전환 감지: 기존 컨테이너가 다른 프로젝트로 관리되는 경우만 정리
+OLD_PROJECT=$(docker inspect --format '{{index .Config.Labels "com.docker.compose.project"}}' goti-postgres 2>/dev/null || true)
+if [ -n "$OLD_PROJECT" ] && [ "$OLD_PROJECT" != "goti-server" ]; then
+  echo "프로젝트명 전환 감지 ($OLD_PROJECT → goti-server) — 이전 스택 정리..."
+  docker compose -f "${COMPOSE_FILE}" -p "$OLD_PROJECT" --env-file "${ENV_FILE}" down --remove-orphans || true
+fi
+docker compose -f "${COMPOSE_FILE}" -p goti-server --env-file "${ENV_FILE}" up -d
 
 # --- 헬스체크 ---
 echo "헬스체크 대기 중..."

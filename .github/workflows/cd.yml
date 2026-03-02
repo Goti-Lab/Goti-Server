@@ -45,10 +45,21 @@ jobs:
           echo "tag=${IMAGE_TAG}" >> "$GITHUB_OUTPUT"
           echo "full_image=${FULL_IMAGE}" >> "$GITHUB_OUTPUT"
 
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
       - name: Build and push Docker image
         run: |
-          DOCKER_BUILDKIT=1 docker build -t ${{ steps.image.outputs.full_image }} .
-          docker push ${{ steps.image.outputs.full_image }}
+          if aws ecr describe-images --repository-name ${{ env.ECR_REPOSITORY }} --image-ids imageTag=${{ steps.image.outputs.tag }} > /dev/null 2>&1; then
+            echo "이미지 ${{ steps.image.outputs.tag }} 이미 존재 — 빌드 스킵"
+          else
+            docker buildx build \
+              --cache-from type=gha \
+              --cache-to type=gha,mode=max \
+              --tag ${{ steps.image.outputs.full_image }} \
+              --push \
+              .
+          fi
 
       - name: Upload deploy artifacts to S3
         run: |
@@ -88,22 +99,48 @@ jobs:
 
       - name: Wait for deployment
         run: |
-          aws ssm wait command-executed \
-            --command-id "${{ steps.ssm.outputs.command_id }}" \
-            --instance-id "${{ steps.ec2.outputs.instance_id }}" || true
+          COMMAND_ID="${{ steps.ssm.outputs.command_id }}"
+          INSTANCE_ID="${{ steps.ec2.outputs.instance_id }}"
+          MAX_WAIT=300  # 5분 (send-command timeout과 동일)
+          INTERVAL=10
+          ELAPSED=0
 
-          STATUS=$(aws ssm get-command-invocation \
-            --command-id "${{ steps.ssm.outputs.command_id }}" \
-            --instance-id "${{ steps.ec2.outputs.instance_id }}" \
-            --query "Status" --output text)
+          echo "배포 완료 대기 중... (최대 ${MAX_WAIT}초)"
+          while [ $ELAPSED -lt $MAX_WAIT ]; do
+            STATUS=$(aws ssm get-command-invocation \
+              --command-id "$COMMAND_ID" \
+              --instance-id "$INSTANCE_ID" \
+              --query "Status" --output text 2>/dev/null || echo "Pending")
 
-          echo "배포 상태: $STATUS"
+            case "$STATUS" in
+              Success)
+                echo "배포 성공 (${ELAPSED}초 경과)"
+                exit 0
+                ;;
+              Failed|TimedOut|Cancelled|Undeliverable|Terminated)
+                echo "::error::배포 실패 (Status: $STATUS, ${ELAPSED}초 경과)"
+                aws ssm get-command-invocation \
+                  --command-id "$COMMAND_ID" \
+                  --instance-id "$INSTANCE_ID" \
+                  --query "StandardOutputContent" --output text
+                echo "=== Error ==="
+                aws ssm get-command-invocation \
+                  --command-id "$COMMAND_ID" \
+                  --instance-id "$INSTANCE_ID" \
+                  --query "StandardErrorContent" --output text
+                exit 1
+                ;;
+              *)
+                echo "  대기 중... (${ELAPSED}s / ${MAX_WAIT}s, Status: $STATUS)"
+                sleep $INTERVAL
+                ELAPSED=$((ELAPSED + INTERVAL))
+                ;;
+            esac
+          done
 
-          if [ "$STATUS" != "Success" ]; then
-            echo "::error::배포 실패 (Status: $STATUS)"
-            aws ssm get-command-invocation \
-              --command-id "${{ steps.ssm.outputs.command_id }}" \
-              --instance-id "${{ steps.ec2.outputs.instance_id }}" \
-              --query "StandardErrorContent" --output text
-            exit 1
-          fi
+          echo "::error::배포 대기 타임아웃 (${MAX_WAIT}초 초과)"
+          aws ssm get-command-invocation \
+            --command-id "$COMMAND_ID" \
+            --instance-id "$INSTANCE_ID" \
+            --query "StandardOutputContent" --output text
+          exit 1
