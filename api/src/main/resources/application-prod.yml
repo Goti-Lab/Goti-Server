@@ -1,0 +1,22 @@
+# EKS 환경 전용 — SPRING_PROFILES_ACTIVE=prod 로 활성화
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        format_sql: false
+        show_sql: false
+  data:
+    redis:
+      cluster:
+        nodes: ${REDIS_CLUSTER_NODES}
+        max-redirects: 3
+      ssl:
+        enabled: true
+      timeout: 3000
+
+management:
+  tracing:
+    sampling:
+      probability: 0.1
