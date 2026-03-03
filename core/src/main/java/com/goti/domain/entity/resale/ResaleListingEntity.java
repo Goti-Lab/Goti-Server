@@ -41,7 +41,7 @@ public class ResaleListingEntity extends ModificationTimestampEntity {
 	private String seatInfo;
 
 	@Column(nullable = false)
-	private Integer originalPrice;
+	private Integer dailyBasePrice;
 
 	@Column(nullable = false)
 	private Integer listingPrice;
@@ -63,14 +63,14 @@ public class ResaleListingEntity extends ModificationTimestampEntity {
 		UUID sellerId,
 		UUID gameId,
 		String seatInfo,
-		Integer originalPrice,
+		Integer dailyBasePrice,
 		Integer listingPrice
 	) {
 		this.ticketId = ticketId;
 		this.sellerId = sellerId;
 		this.gameId = gameId;
 		this.seatInfo = seatInfo;
-		this.originalPrice = originalPrice;
+		this.dailyBasePrice = dailyBasePrice;
 		this.listingPrice = listingPrice;
 		this.listingStatus = ResaleListingStatus.RESELL_AVAILABLE;
 		this.lastTransactionPrice = null;
@@ -84,17 +84,17 @@ public class ResaleListingEntity extends ModificationTimestampEntity {
 		UUID sellerId,
 		UUID gameId,
 		String seatInfo,
-		Integer originalPrice,
+		Integer dailyBasePrice,
 		Integer listingPrice
 	) {
-		validate(ticketId, sellerId, gameId, seatInfo, originalPrice, listingPrice);
+		validate(ticketId, sellerId, gameId, seatInfo, dailyBasePrice, listingPrice);
 
 		return new ResaleListingEntity(
 			ticketId,
 			sellerId,
 			gameId,
 			seatInfo,
-			originalPrice,
+			dailyBasePrice,
 			listingPrice
 		);
 	}
@@ -104,14 +104,14 @@ public class ResaleListingEntity extends ModificationTimestampEntity {
 		UUID sellerId,
 		UUID gameId,
 		String seatInfo,
-		Integer originalPrice,
+		Integer dailyBasePrice,
 		Integer listingPrice
 	) {
 		Preconditions.domainValidate(ticketId != null, "티켓 ID는 비어 있을 수 없습니다.");
 		Preconditions.domainValidate(sellerId != null, "판매자 ID는 비어 있을 수 없습니다.");
 		Preconditions.domainValidate(gameId != null, "게임 ID는 비어 있을 수 없습니다.");
 		Preconditions.domainValidate(seatInfo != null, "좌석 정보는 비어 있을 수 없습니다.");
-		Preconditions.domainValidate(originalPrice != null && originalPrice >= 0, "원가는 0 이상이어야 합니다.");
+		Preconditions.domainValidate(dailyBasePrice != null && dailyBasePrice >= 0, "시작가는 0 이상이어야 합니다.");
 		Preconditions.domainValidate(listingPrice != null && listingPrice >= 0, "판매가는 0 이상이어야 합니다.");
 	}
 
