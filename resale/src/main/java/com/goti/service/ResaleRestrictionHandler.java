@@ -23,13 +23,13 @@ public class ResaleRestrictionHandler {
 		if (restriction.isTodayAction(restriction.getLastSellAt())) {
 			Preconditions.validate(
 				restriction.getDailySellCount() < MAX_DAILY_SELL_COUNT,
-				ErrorCode.DAILY_SELL_LIMIT_EXCEEDED
+				ErrorCode.DAILY_SELL_LIMIT_EXCEEDED, String.valueOf(MAX_DAILY_SELL_COUNT)
 			);
 		}
 
 		Preconditions.validate(
 			restriction.getGameSellCount(gameId) < MAX_GAME_SELL_COUNT,
-			ErrorCode.GAME_SELL_LIMIT_EXCEEDED
+			ErrorCode.GAME_SELL_LIMIT_EXCEEDED, String.valueOf(MAX_GAME_SELL_COUNT)
 		);
 	}
 
@@ -39,13 +39,13 @@ public class ResaleRestrictionHandler {
 		if (restriction.isTodayAction(restriction.getLastBuyAt())) {
 			Preconditions.validate(
 				restriction.getDailyBuyCount() < MAX_DAILY_BUY_COUNT,
-				ErrorCode.DAILY_BUY_LIMIT_EXCEEDED
+				ErrorCode.DAILY_BUY_LIMIT_EXCEEDED, String.valueOf(MAX_DAILY_BUY_COUNT)
 			);
 		}
 
 		Preconditions.validate(
 			restriction.getGameBuyCount(gameId) < MAX_GAME_BUY_COUNT,
-			ErrorCode.GAME_BUY_LIMIT_EXCEEDED
+			ErrorCode.GAME_BUY_LIMIT_EXCEEDED, String.valueOf(MAX_GAME_BUY_COUNT)
 		);
 	}
 
@@ -55,13 +55,13 @@ public class ResaleRestrictionHandler {
 		if (restriction.isTodayAction(restriction.getLastCancelAt())) {
 			Preconditions.validate(
 				restriction.getDailyCancelCount() < MAX_DAILY_CANCEL_COUNT,
-				ErrorCode.DAILY_CANCEL_LIMIT_EXCEEDED
+				ErrorCode.DAILY_CANCEL_LIMIT_EXCEEDED, String.valueOf(MAX_DAILY_CANCEL_COUNT)
 			);
 		}
 
 		Preconditions.validate(
 			restriction.getGameCancelCount(gameId) < MAX_GAME_CANCEL_COUNT,
-			ErrorCode.GAME_CANCEL_LIMIT_EXCEEDED
+			ErrorCode.GAME_CANCEL_LIMIT_EXCEEDED, String.valueOf(MAX_GAME_CANCEL_COUNT)
 		);
 	}
 
