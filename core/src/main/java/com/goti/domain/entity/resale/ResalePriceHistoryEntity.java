@@ -88,7 +88,9 @@ public class ResalePriceHistoryEntity extends BaseUuidEntity {
 		Preconditions.domainValidate(gradeId != null, "등급 ID는 비어 있을 수 없습니다");
 		Preconditions.domainValidate(transactionPrice != null && transactionPrice >= 0, "거래 가격은 0 이상이어야 합니다");
 		Preconditions.domainValidate(transactionDate != null, "체결 날짜는 비어 있을 수 없습니다");
+		Preconditions.domainValidate(transactionDate.isBefore(LocalDate.now()), "체결 날짜는 과거 날짜여야 합니다.");
 		Preconditions.domainValidate(transactionTime != null, "체결 일시는 비어 있을 수 없습니다");
+		Preconditions.domainValidate(transactionTime.isBefore(LocalDateTime.now()), "체결 일시는 과거여야합니다");
 
 	}
 
