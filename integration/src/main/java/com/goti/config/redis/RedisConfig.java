@@ -4,12 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
-import lombok.RequiredArgsConstructor;
-
-import org.redisson.Redisson;
-import org.redisson.api.RedissonClient;
-import org.redisson.config.Config;
-import org.springframework.boot.autoconfigure.data.redis.RedisProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
@@ -18,20 +12,10 @@ import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSeriali
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 @Configuration
-@RequiredArgsConstructor
 public class RedisConfig {
 
-	private final RedisProperties redisProperties;
-
-	@Bean
-	public RedissonClient localRedissonClient() {
-		var config = new Config();
-		var host = redisProperties.getCluster().getNodes().getFirst();
-		var uri = String.format("redis://%s", host);
-
-		config.useSingleServer().setAddress(uri);
-		return Redisson.create(config);
-	}
+	// RedissonClient는 redisson-spring-boot-starter가 spring.data.redis 프로퍼티로 자동 구성
+	// standalone(host/port), cluster(cluster.nodes), sentinel, SSL 모두 자동 처리
 
 	@Bean
 	public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory factory) {

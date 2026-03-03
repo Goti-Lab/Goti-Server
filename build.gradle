@@ -41,6 +41,7 @@ subprojects {
 
     tasks.named('test') {
         useJUnitPlatform()
+        workingDir = rootProject.projectDir
     }
 
     plugins.withId('org.springframework.boot') {
