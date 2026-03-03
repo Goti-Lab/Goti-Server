@@ -13,13 +13,19 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.Index;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Getter
 @Entity
-@Table(name = "resale_listings")
+@Table(name = "resale_listings",
+	indexes = {
+		@Index(name = "unique_idx_ticket_id", columnList = "ticket_id", unique = true),
+		@Index(name = "idx_seller_id", columnList = "seller_id"),
+		@Index(name = "idx_game_id", columnList = "game_id")
+	})
 @NoArgsConstructor(access = PROTECTED)
 public class ResaleListingEntity extends ModificationTimestampEntity {
 	@Column(nullable = false)
@@ -109,4 +115,40 @@ public class ResaleListingEntity extends ModificationTimestampEntity {
 		Preconditions.domainValidate(listingPrice != null && listingPrice >= 0, "판매가는 0 이상이어야 합니다.");
 	}
 
+	public boolean isCancelable() {
+		return this.listingStatus == ResaleListingStatus.RESELL_AVAILABLE;
+	}
+
+	public boolean canDefrost() {
+		if (this.listingStatus != ResaleListingStatus.FROZEN || this.defrostAt == null) {
+			return false;
+		}
+		return LocalDateTime.now().isAfter(this.defrostAt);
+	}
+
+	public void freeze() {
+		Preconditions.domainValidate(isCancelable(), "리셀 가능 상태에서만 취소할 수 있습니다.");
+
+		this.listingStatus = ResaleListingStatus.FROZEN;
+		this.canceledAt = LocalDateTime.now();
+		this.defrostAt = LocalDateTime.now().plusHours(12);
+	}
+
+	public void defrost() {
+		Preconditions.domainValidate(canDefrost(), "아직 해제 시간이 아닙니다.");
+
+		this.listingStatus = ResaleListingStatus.RESELL_AVAILABLE;
+		this.defrostAt = null;
+	}
+
+	public void SoldOut(Integer transactionPrice) {
+		Preconditions.domainValidate(
+			this.listingStatus == ResaleListingStatus.RESELL_AVAILABLE,
+			"판매 가능한 상태에서만 판매할 수 있습니다."
+		);
+
+		this.listingStatus = ResaleListingStatus.SOLD;
+		this.lastTransactionPrice = transactionPrice;
+		this.soldAt = LocalDateTime.now();
+	}
 }

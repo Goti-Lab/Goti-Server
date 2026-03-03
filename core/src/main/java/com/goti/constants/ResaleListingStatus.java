@@ -8,7 +8,8 @@ public enum ResaleListingStatus {
 	HOLD("점유상태"),
 	SOLD("판매완료"),
 	CANCELED("취소"),
-	FROZEN("동결");
+	FROZEN("동결"),
+	EXPIRED("만료됨");
 
 	private final String description;
 }
