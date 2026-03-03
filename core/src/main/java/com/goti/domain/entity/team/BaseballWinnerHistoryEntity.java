@@ -1,4 +1,4 @@
-package com.goti.domain.entity.baseball;
+package com.goti.domain.entity.team;
 
 import static lombok.AccessLevel.*;
 
