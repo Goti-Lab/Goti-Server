@@ -52,6 +52,9 @@ public class ResaleListingEntity extends ModificationTimestampEntity {
 
 	private Integer lastTransactionPrice;
 
+	@Column(nullable = false)
+	private LocalDateTime listedAt;
+
 	private LocalDateTime soldAt;
 
 	private LocalDateTime canceledAt;
@@ -74,6 +77,7 @@ public class ResaleListingEntity extends ModificationTimestampEntity {
 		this.listingPrice = listingPrice;
 		this.listingStatus = ResaleListingStatus.RESELL_AVAILABLE;
 		this.lastTransactionPrice = null;
+		this.listedAt = LocalDateTime.now();
 		this.soldAt = null;
 		this.canceledAt = null;
 		this.defrostAt = null;
@@ -115,16 +119,6 @@ public class ResaleListingEntity extends ModificationTimestampEntity {
 		Preconditions.domainValidate(listingPrice != null && listingPrice >= 0, "판매가는 0 이상이어야 합니다.");
 	}
 
-	private static void validatePriceRange(Integer dailyBasePrice, Integer listingPrice) {
-		int maxPrice = (int)(dailyBasePrice * 1.3);  // 30% 상한
-		int minPrice = (int)(dailyBasePrice * 0.7);  // 30% 하한
-
-		Preconditions.domainValidate(
-			listingPrice >= minPrice && listingPrice <= maxPrice,
-			String.format("판매가는 일일 기준가의 ±30%% 범위(%d ~ %d원) 내여야 합니다.", minPrice, maxPrice)
-		);
-	}
-
 	public boolean isCancelable() {
 		return this.listingStatus == ResaleListingStatus.RESELL_AVAILABLE;
 	}
@@ -137,7 +131,7 @@ public class ResaleListingEntity extends ModificationTimestampEntity {
 	}
 
 	public boolean isWithinOneHour() {
-		return getCreatedAt().plusSeconds(3600).isAfter(java.time.Instant.now());
+		return LocalDateTime.now().isBefore(this.listedAt.plusHours(1));
 	}
 
 	public void cancelImmediately() {
