@@ -138,7 +138,7 @@ class ResaleListingEntityTest {
 			VALID_LISTING_PRICE
 		))
 			.isInstanceOf(FieldValidationException.class)
-			.hasMessageContaining("시작가는 0 이상이어야 합니다");
+			.hasMessageContaining("일일 기준가는 0 이상이어야 합니다");
 	}
 
 	@ParameterizedTest
@@ -153,7 +153,7 @@ class ResaleListingEntityTest {
 			VALID_LISTING_PRICE
 		))
 			.isInstanceOf(FieldValidationException.class)
-			.hasMessageContaining("시작가는 0 이상이어야 합니다");
+			.hasMessageContaining("일일 기준가는 0 이상이어야 합니다");
 	}
 
 	@ParameterizedTest
