@@ -55,7 +55,9 @@ public class ResaleRestrictionEntity extends ModificationTimestampEntity {
 
 	private LocalDateTime lastCancelAt;
 
-	private LocalDate resaleBlockedUntil;
+	private LocalDateTime resaleBlockedUntil;
+	private LocalDateTime buyBlockedUntil;
+	private LocalDateTime cancelBlockedUntil;
 
 	@JdbcTypeCode(SqlTypes.JSON)
 	@Column(name = "game_sell_counts", columnDefinition = "jsonb")
@@ -80,6 +82,8 @@ public class ResaleRestrictionEntity extends ModificationTimestampEntity {
 		this.lastSellAt = null;
 		this.lastCancelAt = null;
 		this.resaleBlockedUntil = null;
+		this.buyBlockedUntil = null;
+		this.cancelBlockedUntil = null;
 	}
 
 	public static ResaleRestrictionEntity create(
@@ -110,14 +114,6 @@ public class ResaleRestrictionEntity extends ModificationTimestampEntity {
 		return gameCancelCounts.getOrDefault(gameId, 0);
 	}
 
-	public boolean isResaleBlocked() {
-		if (resaleBlockedUntil == null) {
-			return false;
-		}
-		LocalDate today = LocalDate.now();
-		return today.isBefore(resaleBlockedUntil) || today.isEqual(resaleBlockedUntil);
-	}
-
 	public boolean isTodayAction(LocalDateTime actionTime) {
 		if (actionTime == null) {
 			return false;
@@ -125,45 +121,90 @@ public class ResaleRestrictionEntity extends ModificationTimestampEntity {
 		return actionTime.toLocalDate().isEqual(LocalDate.now());
 	}
 
+	public boolean isResaleBlocked() {
+		if (resaleBlockedUntil == null) {
+			return false;
+		}
+		return LocalDateTime.now().isBefore(resaleBlockedUntil);
+	}
+
+	public boolean isBuyBlocked() {
+		if (buyBlockedUntil == null) {
+			return false;
+		}
+		return LocalDateTime.now().isBefore(buyBlockedUntil);
+	}
+
+	public boolean isCancelBlocked() {
+		if (cancelBlockedUntil == null) {
+			return false;
+		}
+		return LocalDateTime.now().isBefore(cancelBlockedUntil);
+	}
+
 	public void incrementSellCount(UUID gameId) {
-		if (!isTodayAction(lastSellAt)) {
-			this.dailySellCount = 0;
+		LocalDate today = LocalDate.now();
+
+		if (lastSellAt == null || !lastSellAt.toLocalDate().isEqual(today)) {
+			this.dailySellCount = 1;
 		} else {
 			this.dailySellCount++;
 		}
+
 		this.lastSellAt = LocalDateTime.now();
-		getGameSellCounts().merge(gameId, 1, Integer::sum);
+		gameSellCounts.merge(gameId, 1, Integer::sum);
 	}
 
 	public void incrementBuyCount(UUID gameId) {
-		if (!isTodayAction(lastBuyAt)) {
-			this.dailyBuyCount = 0;
+		LocalDate today = LocalDate.now();
+
+		if (lastBuyAt == null || !lastBuyAt.toLocalDate().isEqual(today)) {
+			this.dailyBuyCount = 1;
 		} else {
 			this.dailyBuyCount++;
 		}
+
 		this.lastBuyAt = LocalDateTime.now();
-		getGameBuyCounts().merge(gameId, 1, Integer::sum);
+		gameBuyCounts.merge(gameId, 1, Integer::sum);
 	}
 
 	public void incrementCancelCount(UUID gameId) {
-		if (!isTodayAction(lastCancelAt)) {
-			this.dailyCancelCount = 0;
+		LocalDate today = LocalDate.now();
+
+		if (lastCancelAt == null || !lastCancelAt.toLocalDate().isEqual(today)) {
+			this.dailyCancelCount = 1;
 		} else {
 			this.dailyCancelCount++;
 		}
+
 		this.lastCancelAt = LocalDateTime.now();
-		getGameCancelCounts().merge(gameId, 1, Integer::sum);
+		gameCancelCounts.merge(gameId, 1, Integer::sum);
 	}
 
-	public void blockResale(LocalDate until) {
-		Preconditions.domainValidate(
-			until != null && until.isAfter(LocalDate.now()),
-			"차단 날짜는 미래여야 합니다."
-		);
-		this.resaleBlockedUntil = until;
+	public void blockResale() {
+		LocalDate tomorrow = LocalDate.now().plusDays(1);
+		this.resaleBlockedUntil = tomorrow.atStartOfDay();
 	}
 
 	public void unblockResale() {
 		this.resaleBlockedUntil = null;
+	}
+
+	public void blockBuy() {
+		LocalDate tomorrow = LocalDate.now().plusDays(1);
+		this.buyBlockedUntil = tomorrow.atStartOfDay();
+	}
+
+	public void unblockBuy() {
+		this.buyBlockedUntil = null;
+	}
+
+	public void blockCancel() {
+		LocalDate tomorrow = LocalDate.now().plusDays(1);
+		this.cancelBlockedUntil = tomorrow.atStartOfDay();
+	}
+
+	public void unblockCancel() {
+		this.cancelBlockedUntil = null;
 	}
 }
