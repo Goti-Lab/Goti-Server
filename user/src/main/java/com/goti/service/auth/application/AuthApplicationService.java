@@ -1,7 +1,9 @@
 package com.goti.service.auth.application;
 
+import com.goti.config.jwt.JwtTokenProvider;
 import com.goti.constants.OAuthProvider;
 import com.goti.constants.messages.ErrorCode;
+import com.goti.dto.response.LoginResponse;
 import com.goti.exception.CustomException;
 import com.goti.infra.api.client.SocialApiClient;
 import com.goti.infra.api.client.SocialClientProvider;
@@ -10,6 +12,8 @@ import com.goti.infra.api.dto.response.common.SocialStateResponse;
 import com.goti.infra.cache.RedisCache;
 
 import com.goti.infra.constants.redis.RedisKey;
+
+import com.goti.service.domain.user.SocialProviderService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -24,18 +28,39 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class AuthApplicationService {
 	private final SocialClientProvider socialClientProvider;
+	private final SocialProviderService socialProviderService;
+	private final JwtTokenProvider jwtTokenProvider;
 	private final RedisCache redisCache;
 
 	static final String KEY_SEPARATOR = ":";
 
-	// todo : socialUserInfo 에서 받은 providerId 로 socialProvider 데이터 유무체크 및 로깅제거
-	public void login(OAuthProvider provider, String code, String state) {
+	public LoginResponse login(OAuthProvider provider, String code, String state) {
 		validateState(provider, state);
 		SocialApiClient apiClient = socialClientProvider.getClient(provider);
-		String accessToken = apiClient.getAccessToken(code, state);
-		log.info("accessToken :: {}", accessToken);
-		var socialUserInfo = apiClient.getSocialUserInfo(accessToken);
-		log.info("socialUserInfo : {}", socialUserInfo);
+		String socialAccessToken = apiClient.getAccessToken(code, state);
+		var socialUserInfo = apiClient.getSocialUserInfo(socialAccessToken);
+		String providerId = socialUserInfo.providerId();
+		log.info("providerId : {}", providerId);
+		return socialProviderService.findMemberBySocialInfo(
+			providerId, provider
+		).map(
+			member -> {
+				String accessToken = jwtTokenProvider.create(
+					member.getId(),
+					member.getMobile(),
+					member.getRole()
+				);
+				return LoginResponse.authenticated(accessToken);
+			}
+		).orElseGet(
+			() -> {
+				String registrationToken = jwtTokenProvider.createRegistrationToken(
+					provider,
+					providerId
+				);
+				return LoginResponse.onboarding(registrationToken);
+			}
+		);
 	}
 
 

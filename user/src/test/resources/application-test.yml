@@ -1,14 +1,30 @@
 server:
   port: 8080
 spring:
-  config:
-    import:
-      - application-integration.yml
-      - optional:file:.env.test[.properties]
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+  datasource:
+    url: ${DATASOURCE_URL}
+    username: ${DATASOURCE_USERNAME}
+    password: ${DATASOURCE_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      idle-timeout: 5000
+      max-lifetime: 420000
+      connection-timeout: 5000
+      validation-timeout: 3000
   data:
     redis:
       host: ${REDIS_HOST:localhost}
       port: ${REDIS_PORT:6379}
-  jpa:
-    hibernate:
-      ddl-auto: create-drop
+  config:
+    import:
+      - application-integration.yml
+      - optional:file:.env.test[.properties]
+
+jwt:
+  secret: ${JWT_SECRET_KEY}
+  access-valid-time: ${JWT_ACCESS_TIME}
+  refresh-valid-time: ${JWT_REFRESH_TIME}
+  registration-valid-time: ${JWT_REGISTRATION_TIME}

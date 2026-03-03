@@ -12,7 +12,8 @@ import java.time.Duration;
 public record JwtProperties(
 	String secret,
 	Duration accessValidTime,
-	Duration refreshValidTime
+	Duration refreshValidTime,
+	Duration registrationValidTime
 ) {
 
 	public SecretKey secretKey() {
