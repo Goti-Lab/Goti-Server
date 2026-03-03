@@ -53,6 +53,13 @@ management:
     sampling:
       probability: 1.0  # dev 전수 — EKS에서는 SPRING_PROFILES_ACTIVE=prod → 0.1
 
+otel:
+  exporter:
+    otlp:
+      enabled: false
+  sdk:
+    disabled: true
+
 logging:
   pattern:
     level: "%5p [${spring.application.name:},%X{trace_id:-},%X{span_id:-}]"
