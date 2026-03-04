@@ -11,4 +11,6 @@ import com.goti.domain.entity.resale.ResaleListingEntity;
 public interface ResaleListingRepository extends JpaRepository<ResaleListingEntity, UUID> {
 
 	boolean existsByTicketIdAndListingStatusIn(UUID ticketId, List<ResaleListingStatus> statuses);
+
+	List<ResaleListingEntity> findBySellerId(UUID sellerId);
 }

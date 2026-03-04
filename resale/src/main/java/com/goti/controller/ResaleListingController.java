@@ -1,8 +1,10 @@
 package com.goti.controller;
 
+import java.util.List;
 import java.util.UUID;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -42,6 +44,14 @@ public class ResaleListingController {
 	) {
 		ResaleListingResponse response = listingService.cancelListing(sellerId, request);
 		return ApiSuccessResponse.wrap(response);
+	}
+
+	@GetMapping
+	public ResponseEntity<ApiSuccessResponse<List<ResaleListingResponse>>> getListingsBySellerId(
+		@RequestParam(required = false) UUID sellerId // TODO : 로그인 구현완료시 로그인으로 받아올 것
+	) {
+		List<ResaleListingResponse> responses = listingService.getListingsBySellerId(sellerId);
+		return ApiSuccessResponse.wrap(responses);
 	}
 
 }

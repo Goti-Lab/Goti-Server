@@ -93,7 +93,16 @@ public class ResaleListingService {
 
 		return ResaleListingResponse.from(saved);
 	}
-	
+
+	@Transactional
+	public List<ResaleListingResponse> getListingsBySellerId(UUID sellerId) {
+		List<ResaleListingEntity> listings = listingRepository.findBySellerId(sellerId);
+
+		return listings.stream()
+			.map(ResaleListingResponse::from)
+			.toList();
+	}
+
 	private void validateTicketOwner(ResaleTicketResponse ticketResponse, UUID sellerId) {
 		Preconditions.validate(ticketResponse.ownerId().equals(sellerId), ErrorCode.AUTH_PERMISSION_DENIED);
 	}
@@ -115,7 +124,7 @@ public class ResaleListingService {
 		Preconditions.validate(
 			listing.getSellerId().equals(sellerId),
 			ErrorCode.AUTH_PERMISSION_DENIED,
-			"본인의 리스팅만 취소할 수 있습니다"
+			"본인의 리셀만 취소할 수 있습니다"
 		);
 	}
 
