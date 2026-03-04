@@ -37,6 +37,9 @@ public class ResaleListingEntity extends ModificationTimestampEntity {
 	private UUID sellerId;
 
 	@Column(nullable = false)
+	private UUID gameId;
+
+	@Column(nullable = false)
 	private String seatInfo;
 
 	@Column(nullable = false)
@@ -68,12 +71,14 @@ public class ResaleListingEntity extends ModificationTimestampEntity {
 	public ResaleListingEntity(
 		UUID ticketId,
 		UUID sellerId,
+		UUID gameId,
 		String seatInfo,
 		Integer dailyBasePrice,
 		Integer listingPrice
 	) {
 		this.ticketId = ticketId;
 		this.sellerId = sellerId;
+		this.gameId = gameId;
 		this.seatInfo = seatInfo;
 		this.dailyBasePrice = dailyBasePrice;
 		this.listingPrice = listingPrice;
@@ -88,15 +93,17 @@ public class ResaleListingEntity extends ModificationTimestampEntity {
 	public static ResaleListingEntity create(
 		UUID ticketId,
 		UUID sellerId,
+		UUID gameId,
 		String seatInfo,
 		Integer dailyBasePrice,
 		Integer listingPrice
 	) {
-		validate(ticketId, sellerId, seatInfo, dailyBasePrice, listingPrice);
+		validate(ticketId, sellerId, gameId, seatInfo, dailyBasePrice, listingPrice);
 
 		return new ResaleListingEntity(
 			ticketId,
 			sellerId,
+			gameId,
 			seatInfo,
 			dailyBasePrice,
 			listingPrice
@@ -106,12 +113,14 @@ public class ResaleListingEntity extends ModificationTimestampEntity {
 	private static void validate(
 		UUID ticketId,
 		UUID sellerId,
+		UUID gameId,
 		String seatInfo,
 		Integer dailyBasePrice,
 		Integer listingPrice
 	) {
 		Preconditions.domainValidate(ticketId != null, "티켓 ID는 비어 있을 수 없습니다.");
 		Preconditions.domainValidate(sellerId != null, "판매자 ID는 비어 있을 수 없습니다.");
+		Preconditions.domainValidate(gameId != null, "게임 ID는 비어 있을 수 없습니다.");
 		Preconditions.domainValidate(seatInfo != null, "좌석 정보는 비어 있을 수 없습니다.");
 		Preconditions.domainValidate(dailyBasePrice != null && dailyBasePrice >= 0, "일일 기준가는 0 이상이어야 합니다.");
 		Preconditions.domainValidate(listingPrice != null && listingPrice >= 0, "판매가는 0 이상이어야 합니다.");

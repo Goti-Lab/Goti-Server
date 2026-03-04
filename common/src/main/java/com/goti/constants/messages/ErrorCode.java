@@ -30,6 +30,8 @@ public enum ErrorCode {
 	INVALID_BASE_PRICE(HttpStatus.BAD_REQUEST, "시작가가 올바르지 않습니다."),
 	INVALID_LISTING_PRICE(HttpStatus.BAD_REQUEST, "판매가가 올바르지 않습니다."),
 	INVALID_PRICE_RANGE(HttpStatus.BAD_REQUEST, "판매가는 {0} 이내여야 합니다."),
+	ALREADY_LISTED(HttpStatus.BAD_REQUEST, "이미 등록된 티켓입니다"),
+	LISTING_ALREADY_CLOSED(HttpStatus.BAD_REQUEST, "리셀 등록 가능한 시간이 지났습니다."),
 
 	AUTH_INVALID_ACCESS_PATH(HttpStatus.UNAUTHORIZED, "올바르지 않은 접근 경로입니다."),
 	AUTH_PERMISSION_DENIED(HttpStatus.FORBIDDEN, "접근 권한이 없습니다."),
