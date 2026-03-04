@@ -1,4 +1,4 @@
-package com.goti.service;
+package com.goti.utils;
 
 import java.util.UUID;
 
