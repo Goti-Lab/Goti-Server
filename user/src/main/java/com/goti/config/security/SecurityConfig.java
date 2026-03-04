@@ -1,11 +1,5 @@
 package com.goti.config.security;
 
-import com.goti.config.jwt.JwtAccessDeniedHandler;
-import com.goti.config.jwt.JwtAuthenticationEntryPoint;
-import com.goti.config.jwt.JwtAuthenticationFilter;
-
-import lombok.RequiredArgsConstructor;
-
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -20,6 +14,12 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+import com.goti.config.jwt.JwtAccessDeniedHandler;
+import com.goti.config.jwt.JwtAuthenticationEntryPoint;
+import com.goti.config.jwt.JwtAuthenticationFilter;
+
+import lombok.RequiredArgsConstructor;
+
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
@@ -31,9 +31,9 @@ public class SecurityConfig {
 
 	public static final String[] PERMIT_PUBLIC_PATH = {
 		"/api/v1/auth/**",
-		"/actuator/**"
+		"/actuator/**",
+		"/resale/listings/**"
 	};
-
 
 	@Bean
 	public PasswordEncoder passwordEncoder() {

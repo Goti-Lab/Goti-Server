@@ -29,14 +29,7 @@ import lombok.NoArgsConstructor;
 	})
 @NoArgsConstructor(access = PROTECTED)
 public class ResaleRestrictionEntity extends ModificationTimestampEntity {
-
-	private static final int MAX_DAILY_SELL_COUNT = 10;
-	private static final int MAX_DAILY_BUY_COUNT = 10;
-	private static final int MAX_DAILY_CANCEL_COUNT = 10;
-	private static final int MAX_GAME_SELL_COUNT = 5;
-	private static final int MAX_GAME_BUY_COUNT = 3;
-	private static final int MAX_GAME_CANCEL_COUNT = 3;
-
+	
 	@Column(nullable = false)
 	private UUID userId;
 

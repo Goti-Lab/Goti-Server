@@ -11,9 +11,11 @@ import com.goti.constants.ResaleListingStatus;
 import com.goti.constants.messages.ErrorCode;
 import com.goti.domain.entity.resale.ResaleListingEntity;
 import com.goti.domain.entity.resale.ResaleRestrictionEntity;
+import com.goti.dto.request.ResaleListingCancelRequest;
 import com.goti.dto.request.ResaleListingCreateRequest;
 import com.goti.dto.response.ResaleListingResponse;
 import com.goti.dto.response.ResaleTicketResponse;
+import com.goti.exception.CustomException;
 import com.goti.global.validation.Preconditions;
 import com.goti.repository.ResaleListingRepository;
 import com.goti.repository.ResaleRestrictionRepository;
@@ -65,6 +67,33 @@ public class ResaleListingService {
 		return ResaleListingResponse.from(saved);
 	}
 
+	@Transactional
+	public ResaleListingResponse cancelListing(UUID sellerId, ResaleListingCancelRequest request) {
+		ResaleListingEntity listing = listingRepository.findById(request.listingId())
+			.orElseThrow(() -> new CustomException(ErrorCode.LISTING_NOT_FOUND));
+
+		validateListingOwnership(listing, sellerId);
+
+		validateCancelable(listing);
+
+		ResaleRestrictionEntity restriction =
+			restrictionRepository.findByUserId(sellerId)
+				.orElseThrow(() -> new CustomException(ErrorCode.INTERNAL_SERVER_ERROR,
+					"정보를 찾을 수 없습니다"
+				));
+
+		restrictionHandler.validateCanCancel(restriction, listing.getGameId());
+
+		listing.cancel();
+
+		ResaleListingEntity saved = listingRepository.save(listing);
+
+		restrictionHandler.handleAfterCancel(restriction, listing.getGameId());
+		restrictionRepository.save(restriction);
+
+		return ResaleListingResponse.from(saved);
+	}
+	
 	private void validateTicketOwner(ResaleTicketResponse ticketResponse, UUID sellerId) {
 		Preconditions.validate(ticketResponse.ownerId().equals(sellerId), ErrorCode.AUTH_PERMISSION_DENIED);
 	}
@@ -80,6 +109,22 @@ public class ResaleListingService {
 				ticketId,
 				List.of(ResaleListingStatus.LISTING, ResaleListingStatus.HOLD)
 			), ErrorCode.ALREADY_LISTED);
+	}
+
+	private void validateListingOwnership(ResaleListingEntity listing, UUID sellerId) {
+		Preconditions.validate(
+			listing.getSellerId().equals(sellerId),
+			ErrorCode.AUTH_PERMISSION_DENIED,
+			"본인의 리스팅만 취소할 수 있습니다"
+		);
+	}
+
+	private void validateCancelable(ResaleListingEntity listing) {
+		Preconditions.validate(
+			listing.isCancelable(),
+			ErrorCode.BAD_REQUEST,
+			"취소할 수 없는 상태입니다 (현재: " + listing.getListingStatus() + ")"
+		);
 	}
 
 	private ResaleRestrictionEntity getOrCreateRestriction(UUID userId) {
