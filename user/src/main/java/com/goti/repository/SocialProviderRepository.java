@@ -19,8 +19,9 @@ public interface SocialProviderRepository extends JpaRepository<SocialProviderEn
 		 "JOIN FETCH s.member " +
 					"WHERE s.providerId = :providerId " +
 		 				"AND s.provider = :provider")
-	Optional<SocialProviderEntity> findByProviderIdAndProviderWithUser(
+	Optional<SocialProviderEntity> findByProviderIdAndProvider(
 		@Param("providerId") String providerId,
 		@Param("provider") OAuthProvider provider
 	);
+
 }

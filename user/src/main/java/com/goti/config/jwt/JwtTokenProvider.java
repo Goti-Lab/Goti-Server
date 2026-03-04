@@ -5,9 +5,12 @@ import com.goti.config.properties.JwtProperties;
 import com.goti.constants.OAuthProvider;
 import com.goti.constants.UserRole;
 
+import com.goti.constants.messages.ErrorCode;
+import com.goti.exception.CustomException;
 import com.goti.security.ExtendedUserDetailsService;
 
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
@@ -78,6 +81,24 @@ public class JwtTokenProvider {
 			.verifyWith(jwtProperties.secretKey())
 			.build().parseSignedClaims(token);
 		log.info("ExpiredAt :: {}", claims.getPayload().getExpiration());
+	}
+
+	public Claims getRegistrationClaims(String token) {
+		try {
+			Claims claims = Jwts.parser()
+				.verifyWith(jwtProperties.secretKey())
+				.build()
+				.parseSignedClaims(token)
+				.getPayload();
+			if (!REGISTRATION_SUBJECT.equals(claims.getSubject())) {
+				throw new CustomException(ErrorCode.AUTH_INVALID);
+			}
+			return claims;
+		} catch (ExpiredJwtException e) {
+			throw new CustomException(ErrorCode.AUTH_REGISTRATION_EXPIRED);
+		} catch (JwtException | IllegalArgumentException e) {
+			throw new CustomException(ErrorCode.AUTH_INVALID);
+		}
 	}
 
 	public String resolve(HttpServletRequest request) {
