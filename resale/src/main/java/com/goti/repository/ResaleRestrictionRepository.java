@@ -10,5 +10,4 @@ import com.goti.domain.entity.resale.ResaleRestrictionEntity;
 public interface ResaleRestrictionRepository extends JpaRepository<ResaleRestrictionEntity, UUID> {
 
 	Optional<ResaleRestrictionEntity> findByUserId(UUID userId);
-
 }
