@@ -1,5 +1,6 @@
 package com.goti.dto.response;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 public record ResaleTicketResponse(
@@ -7,6 +8,7 @@ public record ResaleTicketResponse(
 	UUID gameId,
 	UUID ownerId,
 	String seatInfo,
-	Integer ticketPrice
+	Integer ticketPrice,
+	LocalDateTime gameDate
 ) {
 }
