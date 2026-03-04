@@ -11,6 +11,7 @@ import org.junit.jupiter.params.provider.NullSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.test.context.ActiveProfiles;
 
+import com.goti.constants.ResaleAvailableStatus;
 import com.goti.constants.ResaleListingStatus;
 import com.goti.exception.FieldValidationException;
 
@@ -45,11 +46,11 @@ class ResaleListingEntityTest {
 			() -> assertThat(entity.getSeatInfo()).isEqualTo(VALID_SEAT_INFO),
 			() -> assertThat(entity.getDailyBasePrice()).isEqualTo(VALID_DAILY_BASE_PRICE),
 			() -> assertThat(entity.getListingPrice()).isEqualTo(VALID_LISTING_PRICE),
-			() -> assertThat(entity.getListingStatus()).isEqualTo(ResaleListingStatus.RESELL_AVAILABLE),
+			() -> assertThat(entity.getListingStatus()).isEqualTo(ResaleListingStatus.LISTING),
+			() -> assertThat(entity.getAvailableStatus()).isEqualTo(ResaleAvailableStatus.ENABLED),
 			() -> assertThat(entity.getLastTransactionPrice()).isNull(),
 			() -> assertThat(entity.getSoldAt()).isNull(),
-			() -> assertThat(entity.getCanceledAt()).isNull(),
-			() -> assertThat(entity.getDefrostAt()).isNull()
+			() -> assertThat(entity.getCanceledAt()).isNull()
 		);
 	}
 
