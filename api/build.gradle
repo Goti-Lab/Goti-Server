@@ -10,6 +10,7 @@ dependencyManagement {
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 
     // OpenTelemetry (metrics + traces + logs 자동 설정)
     implementation 'io.opentelemetry.instrumentation:opentelemetry-spring-boot-starter'

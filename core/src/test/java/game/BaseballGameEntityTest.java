@@ -12,7 +12,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.context.ActiveProfiles;
 
-import com.goti.constants.GameStatus;
 import com.goti.constants.LeagueType;
 import com.goti.constants.ReservationAvailableStatus;
 import com.goti.domain.entity.game.BaseballGameEntity;
@@ -51,9 +50,6 @@ public class BaseballGameEntityTest {
 			stadiumId,
 			playDate,
 			startAt,
-			GameStatus.SCHEDULED,
-			LeagueType.REGULAR,
-			ReservationAvailableStatus.ON_SALE,
 			reservationOpenedAt,
 			reservationClosedAt
 		);
@@ -65,23 +61,20 @@ public class BaseballGameEntityTest {
 		assertThat(game.getPlayDate()).isEqualTo(playDate);
 		assertThat(game.getStartAt()).isEqualTo(startAt);
 		assertThat(game.getLeagueType()).isEqualTo(LeagueType.REGULAR);
-		assertThat(game.getReservationAvailableStatus()).isEqualTo(ReservationAvailableStatus.ON_SALE);
+		assertThat(game.getReservationAvailableStatus()).isEqualTo(ReservationAvailableStatus.PENDING);
 
 		log.info("game playDate: {}", game.getPlayDate());
 		log.info("reservation status: {}", game.getReservationAvailableStatus());
 	}
 
 	@Test
-	void 경기_생성_성공_리그타입_예매상태_기본값_적용() {
+	void 경기_생성_성공_리그타입_기본값_적용() {
 		BaseballGameEntity game = BaseballGameEntity.create(
 			homeTeamId,
 			awayTeamId,
 			stadiumId,
 			playDate,
 			startAt,
-			GameStatus.SCHEDULED,
-			null,
-			null,
 			reservationOpenedAt,
 			reservationClosedAt
 		);
@@ -99,9 +92,6 @@ public class BaseballGameEntityTest {
 				stadiumId,
 				playDate,
 				startAt,
-				GameStatus.SCHEDULED,
-				LeagueType.REGULAR,
-				ReservationAvailableStatus.ON_SALE,
 				reservationOpenedAt,
 				reservationClosedAt
 			)
@@ -118,9 +108,6 @@ public class BaseballGameEntityTest {
 				stadiumId,
 				playDate,
 				startAt,
-				GameStatus.SCHEDULED,
-				LeagueType.REGULAR,
-				ReservationAvailableStatus.ON_SALE,
 				reservationOpenedAt,
 				reservationClosedAt
 			)
@@ -137,9 +124,6 @@ public class BaseballGameEntityTest {
 				null,
 				playDate,
 				startAt,
-				GameStatus.SCHEDULED,
-				LeagueType.REGULAR,
-				ReservationAvailableStatus.ON_SALE,
 				reservationOpenedAt,
 				reservationClosedAt
 			)
@@ -156,9 +140,6 @@ public class BaseballGameEntityTest {
 				stadiumId,
 				playDate,
 				startAt,
-				GameStatus.SCHEDULED,
-				LeagueType.REGULAR,
-				ReservationAvailableStatus.ON_SALE,
 				reservationOpenedAt,
 				reservationClosedAt
 			)
@@ -175,9 +156,6 @@ public class BaseballGameEntityTest {
 				stadiumId,
 				null,
 				startAt,
-				GameStatus.SCHEDULED,
-				LeagueType.REGULAR,
-				ReservationAvailableStatus.ON_SALE,
 				reservationOpenedAt,
 				reservationClosedAt
 			)
@@ -194,9 +172,6 @@ public class BaseballGameEntityTest {
 				stadiumId,
 				playDate,
 				null,
-				GameStatus.SCHEDULED,
-				LeagueType.REGULAR,
-				ReservationAvailableStatus.ON_SALE,
 				reservationOpenedAt,
 				reservationClosedAt
 			)
@@ -213,9 +188,6 @@ public class BaseballGameEntityTest {
 				stadiumId,
 				playDate,
 				startAt,
-				GameStatus.SCHEDULED,
-				LeagueType.REGULAR,
-				ReservationAvailableStatus.ON_SALE,
 				null,
 				reservationClosedAt
 			)
@@ -232,9 +204,6 @@ public class BaseballGameEntityTest {
 				stadiumId,
 				playDate,
 				startAt,
-				GameStatus.SCHEDULED,
-				LeagueType.REGULAR,
-				ReservationAvailableStatus.ON_SALE,
 				reservationOpenedAt,
 				null
 			)
@@ -254,9 +223,6 @@ public class BaseballGameEntityTest {
 				stadiumId,
 				playDate,
 				startAt,
-				GameStatus.SCHEDULED,
-				LeagueType.REGULAR,
-				ReservationAvailableStatus.ON_SALE,
 				invalidOpen,
 				invalidClose
 			)

@@ -58,10 +58,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 				SecurityContextHolder.getContext().setAuthentication(authenticationToken);
 			}
 		} catch (ExpiredJwtException e) {
-			String subject = e.getClaims().getSubject();
-			if (JwtTokenProvider.REGISTRATION_SUBJECT.equals(subject)) {
-				reject(request, ErrorCode.AUTH_REGISTRATION_EXPIRED);
-			}
 			reject(request, ErrorCode.AUTH_ACCESS_EXPIRED);
 		} catch (JwtException | IllegalArgumentException e) {
 			reject(request, ErrorCode.AUTH_INVALID);
