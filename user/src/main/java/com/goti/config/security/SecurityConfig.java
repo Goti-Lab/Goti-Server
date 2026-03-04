@@ -32,6 +32,9 @@ public class SecurityConfig {
 	public static final String[] PERMIT_PUBLIC_PATH = {
 		"/api/v1/auth/**",
 		"/actuator/**",
+	};
+
+	public static final String[] PERMIT_MEMBER_PATH = {
 		"/resale/listings/**"
 	};
 
@@ -57,6 +60,7 @@ public class SecurityConfig {
 					.accessDeniedHandler(accessDeniedHandler)
 			).authorizeHttpRequests(
 				auth -> auth
+					.requestMatchers(PERMIT_MEMBER_PATH).hasRole("MEMBER")
 					.requestMatchers(PERMIT_PUBLIC_PATH).permitAll()
 					.anyRequest().authenticated()
 			).addFilterBefore(
