@@ -6,7 +6,7 @@ import com.goti.infra.api.dto.response.common.SocialUserInfoResponse;
 public interface SocialApiClient {
 	OAuthProvider getProviderType();
 
-	String getAccessToken(String code, String state);
+	String getAccessToken(String authCode, String state);
 
 	SocialUserInfoResponse getSocialUserInfo(String accessToken);
 }
