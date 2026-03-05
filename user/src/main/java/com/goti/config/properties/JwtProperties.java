@@ -13,7 +13,7 @@ public record JwtProperties(
 	String secret,
 	Duration accessValidTime,
 	Duration refreshValidTime,
-	Duration registrationValidTime
+	Duration socialVerifyValidTime
 ) {
 
 	public SecretKey secretKey() {

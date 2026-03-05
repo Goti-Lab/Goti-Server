@@ -4,8 +4,12 @@ import com.goti.constants.Gender;
 import com.goti.domain.entity.user.MemberEntity;
 
 import java.time.LocalDate;
+import java.util.Optional;
 
 public interface MemberService {
 
-	MemberEntity save(String name, String mobile, Gender gender, LocalDate birthDate);
+  MemberEntity save(String name, String mobile, Gender gender, LocalDate birthDate);
+
+  Optional<MemberEntity> findByMobile(String mobile);
+
 }

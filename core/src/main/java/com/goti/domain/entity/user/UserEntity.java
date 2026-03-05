@@ -25,8 +25,8 @@ import lombok.NoArgsConstructor;
 @Entity
 @Table(name = "users",
 	uniqueConstraints = {
-		@UniqueConstraint(name = "uk_users_mobile", columnNames = {"mobile"}),
-		@UniqueConstraint(name = "uk_users_email", columnNames = {"email"})
+		@UniqueConstraint(name = "uk_users_mobile", columnNames = "mobile"),
+		@UniqueConstraint(name = "uk_users_email", columnNames = "email")
 	})
 @Inheritance(strategy = InheritanceType.JOINED)
 @NoArgsConstructor(access = PROTECTED)

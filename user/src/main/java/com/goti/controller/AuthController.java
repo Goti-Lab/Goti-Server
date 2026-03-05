@@ -2,6 +2,7 @@ package com.goti.controller;
 
 import com.goti.constants.OAuthProvider;
 import com.goti.dto.request.LoginRequest;
+import com.goti.dto.request.SignupRequest;
 import com.goti.dto.request.SocialVerifyRequest;
 import com.goti.dto.response.SocialVerifyResponse;
 import com.goti.dto.response.TokenResponse;
@@ -56,6 +57,22 @@ public class AuthController {
 		String accessToken = socialAuthService.login(
 			request.socialVerifyToken()
 		).getFirst();
+		return wrap(new TokenResponse(accessToken));
+	}
+
+	@PostMapping("/signup")
+	public ResponseEntity<ApiSuccessResponse<TokenResponse>> signup(
+		@RequestBody @Valid SignupRequest request
+	) {
+		String accessToken = socialAuthService.signup(
+			request.socialVerifyToken(),
+			request.email(),
+			request.name(),
+			request.mobile(),
+			request.gender(),
+			request.birthDate()
+		).getFirst();
+
 		return wrap(new TokenResponse(accessToken));
 	}
 }

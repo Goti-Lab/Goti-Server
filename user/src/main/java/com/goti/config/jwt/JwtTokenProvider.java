@@ -42,7 +42,6 @@ public class JwtTokenProvider {
 
 	private static final String PROVIDER_TYPE_KEY = "provider_type";
 	private static final String PROVIDER_ID_KEY = "provider_id";
-	static final String REGISTRATION_SUBJECT = "registration";
 	static final String SOCIAL_VERIFY_SUBJECT = "social_verify";
 
 	public String create(UUID id, String mobile, UserRole role) {
@@ -64,26 +63,10 @@ public class JwtTokenProvider {
 	// todo: 추가로 create method 도 같은 error 날것으로 예상됨
 	public String createSocialVerifyToken(OAuthProvider provider, String providerId) {
 		Date issuedAt = new Date();
-		Date expireAt = new Date(issuedAt.getTime() + Duration.ofMinutes(3).toMillis());
+		Date expireAt = new Date(issuedAt.getTime() + Duration.ofMinutes(10).toMillis());
 		String jwtId = getJwtId();
 		return Jwts.builder()
 			.subject(SOCIAL_VERIFY_SUBJECT)
-			.id(jwtId)
-			.claim(PROVIDER_TYPE_KEY, provider)
-			.claim(PROVIDER_ID_KEY, providerId)
-			.issuedAt(issuedAt)
-			.expiration(expireAt)
-			.signWith(jwtProperties.secretKey())
-			.compact();
-	}
-
-	// todo: 삭제 예정
-	public String createRegistrationToken(OAuthProvider provider, String providerId) {
-		Date issuedAt = new Date();
-		Date expireAt = new Date(issuedAt.getTime() + Duration.ofMinutes(3).toMillis());
-		String jwtId = getJwtId();
-		return Jwts.builder()
-			.subject(REGISTRATION_SUBJECT)
 			.id(jwtId)
 			.claim(PROVIDER_TYPE_KEY, provider)
 			.claim(PROVIDER_ID_KEY, providerId)
@@ -112,7 +95,7 @@ public class JwtTokenProvider {
 			}
 			return claims;
 		} catch (ExpiredJwtException e) {
-			throw new CustomException(ErrorCode.AUTH_REGISTRATION_EXPIRED);
+			throw new CustomException(ErrorCode.AUTH_SIGNUP_EXPIRED);
 		} catch (JwtException | IllegalArgumentException e) {
 			throw new CustomException(ErrorCode.AUTH_INVALID);
 		}

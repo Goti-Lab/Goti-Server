@@ -40,7 +40,7 @@ jwt:
   secret: ${JWT_SECRET_KEY}
   access-valid-time: ${JWT_ACCESS_TIME}
   refresh-valid-time: ${JWT_REFRESH_TIME}
-  registration-valid-time: ${JWT_REGISTRATION_TIME}
+  social-verify-valid-time: ${JWT_SOCIAL_VERIFY_TIME}
 
 management:
   endpoints:

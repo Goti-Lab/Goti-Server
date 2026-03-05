@@ -85,7 +85,7 @@ jobs:
           JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
           JWT_ACCESS_TIME: ${{ secrets.JWT_ACCESS_TIME }}
           JWT_REFRESH_TIME: ${{ secrets.JWT_REFRESH_TIME }}
-          JWT_REGISTRATION_TIME: ${{ secrets.JWT_REGISTRATION_TIME }}
+          JWT_REGISTRATION_TIME: ${{ secrets.JWT_SOCIAL_VERIFY_TIME }}
           KAKAO_CLIENT: ${{ secrets.KAKAO_CLIENT }}
           KAKAO_SECRET: ${{ secrets.KAKAO_SECRET }}
           KAKAO_REDIRECT_URI: ${{ secrets.KAKAO_REDIRECT_URI }}

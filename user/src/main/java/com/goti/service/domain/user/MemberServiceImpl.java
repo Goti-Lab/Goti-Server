@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -17,6 +18,7 @@ public class MemberServiceImpl implements MemberService {
 
 	private final MemberRepository memberRepository;
 
+	@Override
 	@Transactional
 	public MemberEntity save(String name, String mobile, Gender gender, LocalDate birthDate) {
 		MemberEntity member = MemberEntity.create(
@@ -24,5 +26,10 @@ public class MemberServiceImpl implements MemberService {
 		);
 		memberRepository.save(member);
 		return member;
+	}
+
+	@Override
+	public Optional<MemberEntity> findByMobile(String mobile) {
+		return memberRepository.findByMobile(mobile);
 	}
 }
