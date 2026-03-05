@@ -24,7 +24,7 @@ management:
 otel:
   exporter:
     otlp:
-      enabled: true
-      endpoint: http://otel-collector.monitoring:4318
+      enabled: ${OTEL_EXPORTER_ENABLED:true}
+      endpoint: ${OTEL_EXPORTER_ENDPOINT:http://alloy.monitoring.svc:4318}
   sdk:
-    disabled: false
+    disabled: ${OTEL_SDK_DISABLED:false}

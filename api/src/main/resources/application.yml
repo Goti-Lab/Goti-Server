@@ -57,9 +57,10 @@ management:
 otel:
   exporter:
     otlp:
-      enabled: false
+      enabled: ${OTEL_EXPORTER_ENABLED:false}
+      endpoint: ${OTEL_EXPORTER_ENDPOINT:http://localhost:4318}
   sdk:
-    disabled: true
+    disabled: ${OTEL_SDK_DISABLED:true}
 
 logging:
   pattern:
