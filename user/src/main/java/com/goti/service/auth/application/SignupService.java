@@ -3,10 +3,8 @@ package com.goti.service.auth.application;
 import com.goti.config.jwt.JwtTokenProvider;
 import com.goti.constants.Gender;
 import com.goti.constants.OAuthProvider;
-import com.goti.constants.UserRole;
 import com.goti.domain.entity.user.MemberEntity;
 import com.goti.domain.entity.user.SocialProviderEntity;
-import com.goti.dto.request.LoginRequest;
 import com.goti.dto.response.LoginResponse;
 import com.goti.repository.MemberRepository;
 
@@ -41,7 +39,7 @@ public class SignupService {
 		Gender gender,
 		LocalDate birthDate
 	) {
-		Claims claims = jwtTokenProvider.getRegistrationClaims(registrationToken);
+		Claims claims = jwtTokenProvider.getSocialVerifyClaims(registrationToken);
 		String providerId = claims.get(PROVIDER_ID_KEY, String.class);
 		OAuthProvider provider = OAuthProvider.valueOf(claims.get(REGISTRATION_SUBJECT, String.class));
 

@@ -100,14 +100,14 @@ public class JwtTokenProvider {
 		log.info("ExpiredAt :: {}", claims.getPayload().getExpiration());
 	}
 
-	public Claims getRegistrationClaims(String token) {
+	public Claims getSocialVerifyClaims(String token) {
 		try {
 			Claims claims = Jwts.parser()
 				.verifyWith(jwtProperties.secretKey())
 				.build()
 				.parseSignedClaims(token)
 				.getPayload();
-			if (!REGISTRATION_SUBJECT.equals(claims.getSubject())) {
+			if (!SOCIAL_VERIFY_SUBJECT.equals(claims.getSubject())) {
 				throw new CustomException(ErrorCode.AUTH_INVALID);
 			}
 			return claims;

@@ -3,6 +3,7 @@ package com.goti.service.auth.application;
 import com.goti.config.jwt.JwtTokenProvider;
 import com.goti.constants.OAuthProvider;
 import com.goti.constants.messages.ErrorCode;
+import com.goti.domain.entity.user.MemberEntity;
 import com.goti.dto.response.SocialVerifyResponse;
 import com.goti.exception.CustomException;
 import com.goti.infra.api.client.SocialApiClient;
@@ -14,10 +15,12 @@ import com.goti.infra.constants.redis.RedisKey;
 
 import com.goti.service.domain.user.SocialProviderService;
 
+import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
 
 import lombok.extern.slf4j.Slf4j;
 
+import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Service;
 
 import java.util.UUID;
@@ -33,6 +36,8 @@ public class SocialAuthService {
 	private final RedisCache redisCache;
 
 	private static final String KEY_SEPARATOR = ":";
+	private static final String PROVIDER_ID_KEY = "provider_id";
+	private static final String PROVIDER_TYPE_KEY = "provider_type";
 
 	public SocialStateResponse issueState(OAuthProvider provider) {
 		if (provider == OAuthProvider.KAKAO) {
@@ -60,6 +65,27 @@ public class SocialAuthService {
 			provider, providerId
 		);
 		return SocialVerifyResponse.of(isRegistered, socialVerifyToken);
+	}
+
+	public Pair<String, String> login(String socialVerifyToken) {
+		Claims claims = jwtTokenProvider.getSocialVerifyClaims(socialVerifyToken);
+		String providerId = claims.get(PROVIDER_ID_KEY, String.class);
+		OAuthProvider provider = OAuthProvider.valueOf(claims.get(PROVIDER_TYPE_KEY, String.class));
+		MemberEntity member = socialProviderService.findMemberBySocialInfo(providerId, provider)
+			.orElseThrow(
+				() ->{
+					log.error(
+						"Member not found after social verify - providerId: {}, provider: {}", providerId, provider
+					);
+					return new CustomException(ErrorCode.MEMBER_NOT_FOUND);
+				}
+			);
+		String accessToken = jwtTokenProvider.create(
+			member.getId(),
+			member.getMobile(),
+			member.getRole()
+		);
+		return Pair.of(accessToken, "");
 	}
 
 	private void validateState(OAuthProvider provider, String state) {

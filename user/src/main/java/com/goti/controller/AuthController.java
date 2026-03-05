@@ -3,11 +3,10 @@ package com.goti.controller;
 import com.goti.constants.OAuthProvider;
 import com.goti.dto.request.LoginRequest;
 import com.goti.dto.request.SocialVerifyRequest;
-import com.goti.dto.response.LoginResponse;
 import com.goti.dto.response.SocialVerifyResponse;
+import com.goti.dto.response.TokenResponse;
 import com.goti.global.api.ApiSuccessResponse;
 import com.goti.infra.api.dto.response.common.SocialStateResponse;
-import com.goti.service.auth.application.AuthApplicationService;
 
 import com.goti.service.auth.application.SocialAuthService;
 
@@ -29,7 +28,6 @@ import static com.goti.global.api.ApiSuccessResponse.wrap;
 @RequiredArgsConstructor
 public class AuthController {
 
-	private final AuthApplicationService authApplicationService;
 	private final SocialAuthService socialAuthService;
 
 	@GetMapping("/{provider}/state")
@@ -51,15 +49,13 @@ public class AuthController {
 		);
 	}
 
-	@PostMapping("/{provider}/login")
-	public ResponseEntity<ApiSuccessResponse<LoginResponse>> login(
-		@PathVariable OAuthProvider provider,
+	@PostMapping("/login")
+	public ResponseEntity<ApiSuccessResponse<TokenResponse>> login(
 		@RequestBody @Valid LoginRequest request
 	) {
-		return wrap(
-			authApplicationService.login(
-				provider, request.authCode(), request.state()
-			)
-		);
+		String accessToken = socialAuthService.login(
+			request.socialVerifyToken()
+		).getFirst();
+		return wrap(new TokenResponse(accessToken));
 	}
 }
