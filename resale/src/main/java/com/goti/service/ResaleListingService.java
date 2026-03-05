@@ -105,6 +105,22 @@ public class ResaleListingService {
 			.toList();
 	}
 
+	@Transactional
+	public void cancelListingByGameStart(UUID gameId) {
+		List<ResaleListingEntity> listings = listingRepository.findByGameIdAndListingStatusIn(
+			gameId,
+			List.of(ResaleListingStatus.LISTING, ResaleListingStatus.HOLD)
+		);
+
+		for (ResaleListingEntity listing : listings) {
+			listing.cancel();
+
+			ResaleRestrictionEntity restriction = getOrCreateRestriction(gameId);
+
+			restrictionHandler.handleAfterCancel(restriction, gameId);
+		}
+	}
+
 	private void validateTicketOwner(ResaleTicketResponse ticketResponse, UUID sellerId) {
 		Preconditions.validate(ticketResponse.ownerId().equals(sellerId), ErrorCode.AUTH_PERMISSION_DENIED);
 	}

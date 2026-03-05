@@ -7,6 +7,8 @@ public record ResaleTicketResponse(
 	UUID ticketId,
 	UUID gameId,
 	UUID ownerId,
+	UUID seatId,
+	UUID gradeId,
 	String seatInfo,
 	Integer ticketPrice,
 	LocalDateTime gameDate
