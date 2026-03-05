@@ -1,8 +1,11 @@
 package com.goti.game.dto.response;
 
+import com.goti.constants.GameResult;
+import com.goti.constants.GameStatus;
 import com.goti.constants.LeagueType;
 import com.goti.constants.ReservationAvailableStatus;
 import com.goti.domain.entity.game.BaseballGameEntity;
+import com.goti.domain.entity.game.BaseballGameStatusEntity;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -19,9 +22,13 @@ public record GameResponse(
 	LeagueType leagueType,
 	ReservationAvailableStatus reservationAvailableStatus,
 	LocalDateTime reservationOpenedAt,
-	LocalDateTime reservationClosedAt
+	LocalDateTime reservationClosedAt,
+	GameStatus gameStatus,
+	Integer homeTeamScore,
+	Integer awayTeamScore,
+	GameResult gameResult
 ) {
-	public static GameResponse from(BaseballGameEntity game) {
+	public static GameResponse from(BaseballGameEntity game, BaseballGameStatusEntity status) {
 		return new GameResponse(
 			game.getId(),
 			game.getHomeTeamId(),
@@ -32,7 +39,11 @@ public record GameResponse(
 			game.getLeagueType(),
 			game.getReservationAvailableStatus(),
 			game.getReservationOpenedAt(),
-			game.getReservationClosedAt()
+			game.getReservationClosedAt(),
+			status.getGameStatus(),
+			status.getHomeTeamScore(),
+			status.getAwayTeamScore(),
+			status.getGameResult()
 		);
 	}
 }

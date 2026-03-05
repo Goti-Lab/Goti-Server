@@ -41,6 +41,7 @@ public enum ErrorCode {
 	AUTH_SIGNUP_EXPIRED(HttpStatus.GONE, "회원가입 유효 시간이 만료되었습니다. 다시 소셜 로그인을 진행해주세요."),
 
 	GAME_ALREADY_EXISTS(HttpStatus.CONFLICT, "이미 동일한 경기 일정이 존재합니다."),
+	GAME_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 경기입니다."),
 
 	MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 회원입니다."),
 	SOCIAL_PROVIDER_ALREADY_LINKED(HttpStatus.BAD_REQUEST, "해당 소셜 계정은 이미 다른 회원과 연동되어 있습니다."),

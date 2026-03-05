@@ -2,14 +2,19 @@ package com.goti.game.controller;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.goti.constants.GameResult;
+import com.goti.constants.GameStatus;
 import com.goti.constants.LeagueType;
 import com.goti.constants.ReservationAvailableStatus;
+import com.goti.constants.messages.ErrorCode;
+import com.goti.exception.CustomException;
 import com.goti.exception.handler.SpringExceptionHandler;
 import com.goti.exception.handler.SystemExceptionHandler;
 import com.goti.game.dto.request.CreateGameRequest;
@@ -21,6 +26,9 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.security.test.context.support.WithMockUser;
@@ -80,7 +88,11 @@ class BaseballGameControllerTest {
 			LeagueType.REGULAR,
 			ReservationAvailableStatus.PENDING,
 			request.reservationOpenedAt(),
-			request.reservationClosedAt()
+			request.reservationClosedAt(),
+			GameStatus.SCHEDULED,
+			0,
+			0,
+			GameResult.PENDING
 		);
 		given(baseballGameApplicationService.create(any())).willReturn(response);
 
@@ -120,5 +132,90 @@ class BaseballGameControllerTest {
 					.content(invalidBody)
 			)
 			.andExpect(status().isBadRequest());
+	}
+
+	@Test
+	@DisplayName("GET /api/v1/games/baseball - 경기 전체 조회 성공")
+	@WithMockUser
+	void 경기_전체조회_API_성공() throws Exception {
+		UUID gameId = UUID.randomUUID();
+		GameResponse response = new GameResponse(
+			gameId,
+			UUID.randomUUID(),
+			UUID.randomUUID(),
+			UUID.randomUUID(),
+			LocalDate.of(2026, 4, 10),
+			LocalTime.of(18, 30),
+			LeagueType.REGULAR,
+			ReservationAvailableStatus.PENDING,
+			LocalDateTime.of(2026, 4, 1, 14, 0),
+			LocalDateTime.of(2026, 4, 10, 17, 0),
+			GameStatus.SCHEDULED,
+			0,
+			0,
+			GameResult.PENDING
+		);
+		Page<GameResponse> page = new PageImpl<>(
+			java.util.List.of(response),
+			PageRequest.of(0, 10),
+			1
+		);
+		given(baseballGameApplicationService.getGames(any())).willReturn(page);
+
+		mockMvc.perform(
+				get("/api/v1/games/baseball")
+					.param("page", "0")
+					.param("size", "10")
+			)
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.code").value("ok"))
+			.andExpect(jsonPath("$.message").value("성공"))
+			.andExpect(jsonPath("$.data.list[0].gameId").value(gameId.toString()))
+			.andExpect(jsonPath("$.data.totalCount").value(1))
+			.andExpect(jsonPath("$.data.totalPages").value(1));
+	}
+
+	@Test
+	@DisplayName("GET /api/v1/games/baseball/{gameId} - 경기 단건 조회 성공")
+	@WithMockUser
+	void 경기_단건조회_API_성공() throws Exception {
+		UUID gameId = UUID.randomUUID();
+		GameResponse response = new GameResponse(
+			gameId,
+			UUID.randomUUID(),
+			UUID.randomUUID(),
+			UUID.randomUUID(),
+			LocalDate.of(2026, 4, 10),
+			LocalTime.of(18, 30),
+			LeagueType.REGULAR,
+			ReservationAvailableStatus.PENDING,
+			LocalDateTime.of(2026, 4, 1, 14, 0),
+			LocalDateTime.of(2026, 4, 10, 17, 0),
+			GameStatus.SCHEDULED,
+			0,
+			0,
+			GameResult.PENDING
+		);
+		given(baseballGameApplicationService.getGame(gameId)).willReturn(response);
+
+		mockMvc.perform(get("/api/v1/games/baseball/{gameId}", gameId))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.code").value("ok"))
+			.andExpect(jsonPath("$.message").value("성공"))
+			.andExpect(jsonPath("$.data.gameId").value(gameId.toString()));
+	}
+
+	@Test
+	@DisplayName("GET /api/v1/games/baseball/{gameId} - 경기 미존재 시 404 반환")
+	@WithMockUser
+	void 경기_단건조회_API_실패_미존재() throws Exception {
+		UUID gameId = UUID.randomUUID();
+		given(baseballGameApplicationService.getGame(gameId))
+			.willThrow(new CustomException(ErrorCode.GAME_NOT_FOUND));
+
+		mockMvc.perform(get("/api/v1/games/baseball/{gameId}", gameId))
+			.andExpect(status().isNotFound())
+			.andExpect(jsonPath("$.code").value("CLIENT_ERROR"))
+			.andExpect(jsonPath("$.message").value(ErrorCode.GAME_NOT_FOUND.getMessage()));
 	}
 }
