@@ -113,7 +113,7 @@ public class ResaleListingService {
 		);
 
 		for (ResaleListingEntity listing : listings) {
-			listing.cancel();
+			listing.cancelByGameStart();
 
 			ResaleRestrictionEntity restriction = getOrCreateRestriction(gameId);
 
