@@ -3,11 +3,9 @@ package com.goti.constants;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
-public enum ResaleListingStatus {
-	LISTING("등록됨"),
-	HOLD("점유상태"),
-	SOLD("판매완료"),
-	CANCELED("취소됨");
+public enum ResaleAvailableStatus {
+	ENABLED("활성"),
+	DISABLED("비활성");
 
 	private final String description;
 }

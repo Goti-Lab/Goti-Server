@@ -1,11 +1,11 @@
 package com.goti.constants.messages;
 
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
+import java.text.MessageFormat;
 
 import org.springframework.http.HttpStatus;
 
-import java.text.MessageFormat;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
 @Getter
 @RequiredArgsConstructor
@@ -19,6 +19,20 @@ public enum ErrorCode {
 	INVALID_FORMAT(HttpStatus.BAD_REQUEST, "{0} 형식 오류"),
 	INVALID_PROVIDER_TYPE(HttpStatus.BAD_REQUEST, "{0} 은(는) 지원하지 않는 소셜 서비스입니다."),
 	INVALID_STATE(HttpStatus.BAD_REQUEST, "유효하지 않은 state입니다."),
+
+	RESALE_BLOCKED(HttpStatus.FORBIDDEN, "리셀이 차단되었습니다. 차단 해제일을 확인해주세요."),
+	DAILY_SELL_LIMIT_EXCEEDED(HttpStatus.TOO_MANY_REQUESTS, "오늘의 판매 가능 횟수({0}회)를 초과했습니다."),
+	DAILY_BUY_LIMIT_EXCEEDED(HttpStatus.TOO_MANY_REQUESTS, "오늘의 구매 가능 횟수({0}회)를 초과했습니다."),
+	DAILY_CANCEL_LIMIT_EXCEEDED(HttpStatus.TOO_MANY_REQUESTS, "오늘의 취소 가능 횟수({0}회)를 초과했습니다."),
+	GAME_SELL_LIMIT_EXCEEDED(HttpStatus.TOO_MANY_REQUESTS, "이 경기에 대한 판매 가능 횟수({0}회)를 초과했습니다."),
+	GAME_BUY_LIMIT_EXCEEDED(HttpStatus.TOO_MANY_REQUESTS, "이 경기에 대한 구매 가능 횟수({0}회)를 초과했습니다."),
+	GAME_CANCEL_LIMIT_EXCEEDED(HttpStatus.TOO_MANY_REQUESTS, "이 경기에 대한 취소 가능 횟수({0}회)를 초과했습니다."),
+	INVALID_BASE_PRICE(HttpStatus.BAD_REQUEST, "시작가가 올바르지 않습니다."),
+	INVALID_LISTING_PRICE(HttpStatus.BAD_REQUEST, "판매가가 올바르지 않습니다."),
+	INVALID_PRICE_RANGE(HttpStatus.BAD_REQUEST, "판매가는 {0} 이내여야 합니다."),
+	ALREADY_LISTED(HttpStatus.BAD_REQUEST, "이미 등록된 티켓입니다"),
+	LISTING_NOT_FOUND(HttpStatus.NOT_FOUND, "등록된 리셀을 찾을 수 없습니다"),
+	LISTING_ALREADY_CLOSED(HttpStatus.BAD_REQUEST, "리셀 등록 가능한 시간이 지났습니다."),
 
 	AUTH_INVALID_ACCESS_PATH(HttpStatus.UNAUTHORIZED, "올바르지 않은 접근 경로입니다."),
 	AUTH_PERMISSION_DENIED(HttpStatus.FORBIDDEN, "접근 권한이 없습니다."),
