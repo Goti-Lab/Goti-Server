@@ -2,6 +2,7 @@ package com.goti.controller;
 
 import com.goti.constants.OAuthProvider;
 import com.goti.dto.request.LoginRequest;
+import com.goti.dto.request.SendSmsRequest;
 import com.goti.dto.request.SignupRequest;
 import com.goti.dto.request.SocialVerifyRequest;
 import com.goti.dto.response.SocialVerifyResponse;
@@ -24,7 +25,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import static com.goti.global.api.ApiSuccessResponse.wrap;
+import static com.goti.global.api.ApiSuccessResponse.*;
 
 @Tag(name = "Auth", description = "소셜 로그인 및 회원가입 인증 관련 API")
 @RestController
@@ -93,5 +94,19 @@ public class AuthController {
 		).getFirst();
 
 		return wrap(new TokenResponse(accessToken));
+	}
+
+	@Operation(
+		summary = "회원가입 휴대폰 인증번호 발송",
+		description = "회원가입 시도 전 요청 휴대폰번호 기반 인증번호 발송 API"
+	)
+	@PostMapping("/signup/sms/send")
+	public ResponseEntity<ApiSuccessResponse<Void>> sendSmsCode(
+		@RequestBody @Valid SendSmsRequest request
+	) {
+		socialAuthService.sendSignupSmsCode(
+			request.socialVerifyToken(), request.mobile()
+		);
+		return empty();
 	}
 }

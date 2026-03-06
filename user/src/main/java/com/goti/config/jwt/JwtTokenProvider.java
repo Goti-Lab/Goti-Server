@@ -96,8 +96,6 @@ public class JwtTokenProvider {
 			return claims;
 		} catch (ExpiredJwtException e) {
 			throw new CustomException(ErrorCode.AUTH_SIGNUP_EXPIRED);
-		} catch (JwtException | IllegalArgumentException e) {
-			throw new CustomException(ErrorCode.AUTH_INVALID);
 		}
 	}
 

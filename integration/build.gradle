@@ -5,6 +5,9 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
     implementation 'org.redisson:redisson-spring-boot-starter:3.32.0'
 
+    /* Sms nurigo */
+    implementation 'net.nurigo:sdk:4.3.2'
+
     implementation(project(":common"))
     implementation(project(":core"))
 }

@@ -8,7 +8,7 @@ import lombok.RequiredArgsConstructor;
 @Getter
 @RequiredArgsConstructor
 public enum RedisKey {
-	AUTH_CODE("auth:code:", Duration.ofMinutes(3)),
+	SMS_AUTH_CODE("auth:sms:", Duration.ofMinutes(3)),
 	OAUTH_STATE("oauth:state:", Duration.ofMinutes(5));
 
 	private final String prefix;

@@ -6,6 +6,10 @@ import com.goti.exception.CustomException;
 import com.goti.exception.FieldValidationException;
 import com.goti.exception.handler.base.BaseExceptionHandler;
 
+import io.jsonwebtoken.ExpiredJwtException;
+
+import io.jsonwebtoken.JwtException;
+
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.ResponseEntity;
@@ -43,5 +47,27 @@ public class SystemExceptionHandler extends BaseExceptionHandler {
 			ex.error().getMessage()
 		);
 		return toResponse(ex);
+	}
+
+	/**
+	 * JWT 만료 예외 처리
+	 */
+	@ExceptionHandler(ExpiredJwtException.class)
+	public ResponseEntity<ApiErrorResponse> handleExpiredJwt(ExpiredJwtException ex) {
+		log.warn("[Auth Error] Token Expired - message={}", ex.getMessage());
+		return toResponse(ErrorCode.AUTH_ACCESS_EXPIRED);
+	}
+
+	/**
+	 * 기타 모든 JWT 관련 예외 처리
+	 */
+	@ExceptionHandler(JwtException.class)
+	public ResponseEntity<ApiErrorResponse> handleJwtException(JwtException ex) {
+		log.warn(
+			"[Auth Error] Invalid Token: {}, message={}",
+			ex.getClass().getSimpleName(),
+			ex.getMessage()
+		);
+		return toResponse(ErrorCode.AUTH_INVALID);
 	}
 }

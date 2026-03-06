@@ -14,6 +14,7 @@ import com.goti.infra.api.dto.response.common.SocialUserInfoResponse;
 import com.goti.infra.cache.RedisCache;
 import com.goti.infra.constants.redis.RedisKey;
 
+import com.goti.service.domain.auth.AuthService;
 import com.goti.service.domain.user.MemberService;
 import com.goti.service.domain.user.SocialProviderService;
 
@@ -39,6 +40,7 @@ public class SocialAuthService {
 	private final JwtTokenProvider jwtTokenProvider;
 	private final RedisCache redisCache;
 	private final MemberService memberService;
+	private final AuthService authService;
 
 	private static final String KEY_SEPARATOR = ":";
 	private static final String PROVIDER_ID_KEY = "provider_id";
@@ -113,6 +115,10 @@ public class SocialAuthService {
 			member.getRole()
 		);
 		return Pair.of(accessToken, "");
+	}
+
+	public void sendSignupSmsCode(String socialVerifyToken, String mobile) {
+		authService.sendSmsCode(socialVerifyToken, mobile);
 	}
 
 	private void validateState(OAuthProvider provider, String state) {
