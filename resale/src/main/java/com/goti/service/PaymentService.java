@@ -4,7 +4,7 @@ import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 
-import com.goti.dto.response.ResalePaymentResponse;
+import com.goti.dto.response.ResaleTransactionInitResponse;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,7 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class PaymentService {
 	// TODO: 실제 구현 시 Payment 도메인과 통신
-	public ResalePaymentResponse createResalePayment(
+	public ResaleTransactionInitResponse createResalePayment(
 		UUID listingId,
 		UUID transactionId,
 		UUID buyerId,
@@ -28,7 +28,7 @@ public class PaymentService {
 		log.info("거래: {}", transactionId);
 		log.info("구매자: {}", buyerId);
 		log.info("구매자 가격: {}", buyerTotal);
-		return ResalePaymentResponse.page();
+		return ResaleTransactionInitResponse.page();
 	}
 
 	public boolean verifyPaymentCompletion(String paymentId) {
