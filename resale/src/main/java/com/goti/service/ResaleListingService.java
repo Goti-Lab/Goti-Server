@@ -136,7 +136,7 @@ public class ResaleListingService {
 		Preconditions.validate(
 			!listingRepository.existsByTicketIdAndListingStatusIn(
 				ticketId,
-				List.of(ResaleListingStatus.LISTING, ResaleListingStatus.HOLD)
+				List.of(ResaleListingStatus.LISTING, ResaleListingStatus.HOLD, ResaleListingStatus.SOLD)
 			), ErrorCode.ALREADY_LISTED);
 	}
 
