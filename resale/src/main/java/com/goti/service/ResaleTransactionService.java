@@ -11,7 +11,8 @@ import com.goti.domain.entity.resale.ResaleListingEntity;
 import com.goti.domain.entity.resale.ResaleRestrictionEntity;
 import com.goti.domain.entity.resale.ResaleTransactionEntity;
 import com.goti.dto.request.ResaleTransactionRequest;
-import com.goti.dto.response.ResalePaymentResponse;
+import com.goti.dto.response.ResaleTransactionInitResponse;
+import com.goti.dto.response.ResaleTransactionSuccessResponse;
 import com.goti.exception.CustomException;
 import com.goti.global.validation.Preconditions;
 import com.goti.repository.ResaleListingRepository;
@@ -36,7 +37,7 @@ public class ResaleTransactionService {
 	private final PaymentService paymentService;
 
 	@Transactional
-	public ResalePaymentResponse initTransaction(
+	public ResaleTransactionInitResponse initTransaction(
 		UUID buyerId,
 		ResaleTransactionRequest request
 	) {
@@ -72,7 +73,7 @@ public class ResaleTransactionService {
 		);
 		ResaleTransactionEntity saved = transactionRepository.save(transaction);
 
-		ResalePaymentResponse paymentResponse = paymentService.createResalePayment(
+		ResaleTransactionInitResponse paymentResponse = paymentService.createResalePayment(
 			listing.getId(),
 			transaction.getId(),
 			buyerId,
@@ -83,16 +84,11 @@ public class ResaleTransactionService {
 		log.info("리셀 완료 거래ID: {}, 구매자 비용: {}, 판매자 비용: {}"
 			, saved.getId(), feeResult.buyerTotal(), feeResult.sellerTotal());
 
-		completePayment(
-			transaction.getId(),
-			UUID.fromString("임의의 에스크로 ID" + UUID.randomUUID())
-		);
-
 		return paymentResponse;
 	}
 
 	@Transactional
-	public void completePayment(UUID transactionId, UUID escrowId) {
+	public ResaleTransactionSuccessResponse completePayment(UUID transactionId, UUID escrowId) {
 		ResaleTransactionEntity transaction = transactionRepository.findById(transactionId)
 			.orElseThrow(() -> new CustomException(ErrorCode.TRANSACTION_NOT_FOUND));
 
@@ -116,6 +112,8 @@ public class ResaleTransactionService {
 			listing.getSellerId(),
 			transaction.getBuyerId()
 		);
+
+		return ResaleTransactionSuccessResponse.result(transaction);
 	}
 
 	private void publishTicketOwnershipTransfer(UUID ticketId, UUID sellerId, UUID buyerId) {
