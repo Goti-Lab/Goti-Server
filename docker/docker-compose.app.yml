@@ -16,6 +16,7 @@ services:
       JWT_SECRET_KEY: ${JWT_SECRET_KEY:-local-dev-secret-key-minimum-32-chars-long}
       JWT_ACCESS_TIME: ${JWT_ACCESS_TIME:-3600000}
       JWT_REFRESH_TIME: ${JWT_REFRESH_TIME:-604800000}
+      JWT_SOCIAL_VERIFY_TIME: ${JWT_SOCIAL_VERIFY_TIME:-300000}
       KAKAO_CLIENT: ${KAKAO_CLIENT:-not-set}
       KAKAO_SECRET: ${KAKAO_SECRET:-not-set}
       KAKAO_REDIRECT_URI: ${KAKAO_REDIRECT_URI:-http://localhost:8080/callback}
