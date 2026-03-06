@@ -106,7 +106,7 @@ public class ResaleListingService {
 	}
 
 	@Transactional
-	public void cancelListingByGameStart(UUID gameId) {
+	public void cancelListingCauseGameStart(UUID gameId) {
 		List<ResaleListingEntity> listings = listingRepository.findByGameIdAndListingStatusIn(
 			gameId,
 			List.of(ResaleListingStatus.LISTING, ResaleListingStatus.HOLD)
@@ -114,10 +114,12 @@ public class ResaleListingService {
 
 		for (ResaleListingEntity listing : listings) {
 			listing.cancelByGameStart();
+			listingRepository.save(listing);
 
-			ResaleRestrictionEntity restriction = getOrCreateRestriction(gameId);
+			ResaleRestrictionEntity restriction = getOrCreateRestriction(listing.getSellerId());
 
-			restrictionHandler.handleAfterCancel(restriction, gameId);
+			restrictionHandler.handleAfterCancel(restriction, listing.getGameId());
+			restrictionRepository.save(restriction);
 		}
 	}
 

@@ -25,9 +25,10 @@ public class ResaleScheduler {
 
 		List<UUID> expiredGameIds = ticketService.getExpiredGameIds(threshold);
 
+		// TODO : 아래 for문을 batch 나 event로 변경할 것
 		for (UUID gameId : expiredGameIds) {
 			try {
-				listingService.cancelListingByGameStart(gameId);
+				listingService.cancelListingCauseGameStart(gameId);
 			} catch (Exception ignored) {
 			}
 		}
