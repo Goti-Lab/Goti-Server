@@ -19,7 +19,8 @@ public class ResaleScheduler {
 	private final TicketService ticketService;
 	private final ResaleListingService listingService;
 
-	@Scheduled(cron = "0 */5 * * * *")
+	@Scheduled(cron = "0 0 14,15,18,19 * * *")
+	@Scheduled(cron = "0 30 19 * * *")
 	public void autoCancelExpiredListings() {
 		LocalDateTime threshold = LocalDateTime.now().minusHours(1);
 
