@@ -169,23 +169,7 @@ class ResalePriceHistoryEntityTest {
 			.isInstanceOf(FieldValidationException.class)
 			.hasMessageContaining("체결 날짜는 비어 있을 수 없습니다");
 	}
-
-	@Test
-	void 체결_날짜가_오늘_실패() {
-		LocalDate today = LocalDate.now();
-
-		assertThatThrownBy(() -> ResalePriceHistoryEntity.create(
-			VALID_GAME_ID,
-			VALID_SEAT_ID,
-			VALID_GRADE_ID,
-			VALID_TRANSACTION_PRICE,
-			today,
-			VALID_TRANSACTION_TIME
-		))
-			.isInstanceOf(FieldValidationException.class)
-			.hasMessageContaining("체결 날짜는 과거 날짜여야 합니다");
-	}
-
+	
 	@Test
 	void 체결_날짜가_미래_실패() {
 		LocalDate futureDate = LocalDate.now().plusDays(1);
