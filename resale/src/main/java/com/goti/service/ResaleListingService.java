@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.goti.constants.ResaleListingStatus;
 import com.goti.constants.messages.ErrorCode;
 import com.goti.domain.entity.resale.ResaleListingEntity;
+import com.goti.domain.entity.resale.ResalePriceHistoryEntity;
 import com.goti.domain.entity.resale.ResaleRestrictionEntity;
 import com.goti.dto.request.ResaleListingCancelRequest;
 import com.goti.dto.request.ResaleListingCreateRequest;
@@ -18,6 +19,7 @@ import com.goti.dto.response.ResaleTicketResponse;
 import com.goti.exception.CustomException;
 import com.goti.global.validation.Preconditions;
 import com.goti.repository.ResaleListingRepository;
+import com.goti.repository.ResalePriceHistoryRepository;
 import com.goti.repository.ResaleRestrictionRepository;
 import com.goti.utils.ResalePricePolicy;
 import com.goti.utils.ResaleRestrictionHandler;
@@ -30,6 +32,7 @@ import lombok.RequiredArgsConstructor;
 public class ResaleListingService {
 	private final ResaleListingRepository listingRepository;
 	private final ResaleRestrictionRepository restrictionRepository;
+	private final ResalePriceHistoryRepository priceHistoryRepository;
 	private final ResaleRestrictionHandler restrictionHandler;
 	private final ResalePricePolicy pricePolicy;
 	private final TicketService ticketService;
@@ -50,6 +53,11 @@ public class ResaleListingService {
 
 		pricePolicy.validatePriceRange(ticketInfo.ticketPrice(), request.listingPrice());
 
+		Integer lastTransactionPrice = priceHistoryRepository
+			.findFirstBySeatIdOrderByTransactionTimeDesc(ticketInfo.seatId())
+			.map(ResalePriceHistoryEntity::getTransactionPrice)
+			.orElse(null);
+
 		ResaleListingEntity listing = ResaleListingEntity.create(
 			ticketInfo.ticketId(),
 			sellerId,
@@ -60,6 +68,10 @@ public class ResaleListingService {
 			ticketInfo.ticketPrice(),
 			request.listingPrice()
 		);
+
+		if (lastTransactionPrice != null) {
+			listing.setLastTransactionPrice(lastTransactionPrice);
+		}
 
 		ResaleListingEntity saved = listingRepository.save(listing);
 

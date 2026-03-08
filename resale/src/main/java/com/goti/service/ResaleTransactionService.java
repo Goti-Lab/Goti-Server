@@ -1,5 +1,7 @@
 package com.goti.service;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
@@ -8,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.goti.constants.ResaleTransactionStatus;
 import com.goti.constants.messages.ErrorCode;
 import com.goti.domain.entity.resale.ResaleListingEntity;
+import com.goti.domain.entity.resale.ResalePriceHistoryEntity;
 import com.goti.domain.entity.resale.ResaleRestrictionEntity;
 import com.goti.domain.entity.resale.ResaleTransactionEntity;
 import com.goti.dto.request.ResaleTransactionRequest;
@@ -16,6 +19,7 @@ import com.goti.dto.response.ResaleTransactionSuccessResponse;
 import com.goti.exception.CustomException;
 import com.goti.global.validation.Preconditions;
 import com.goti.repository.ResaleListingRepository;
+import com.goti.repository.ResalePriceHistoryRepository;
 import com.goti.repository.ResaleRestrictionRepository;
 import com.goti.repository.ResaleTransactionRepository;
 import com.goti.utils.ResalePricePolicy;
@@ -32,6 +36,7 @@ public class ResaleTransactionService {
 	private final ResaleListingRepository listingRepository;
 	private final ResaleRestrictionRepository restrictionRepository;
 	private final ResaleTransactionRepository transactionRepository;
+	private final ResalePriceHistoryRepository priceHistoryRepository;
 	private final ResaleRestrictionHandler restrictionHandler;
 	private final ResalePricePolicy pricePolicy;
 	private final PaymentService paymentService;
@@ -101,6 +106,16 @@ public class ResaleTransactionService {
 		ResaleListingEntity listing = transaction.getListing();
 		listing.SoldOut(transaction.getTransactionPrice());
 		listingRepository.save(listing);
+
+		ResalePriceHistoryEntity priceHistory = ResalePriceHistoryEntity.create(
+			listing.getGameId(),
+			listing.getSeatId(),
+			listing.getGradeId(),
+			transaction.getTransactionPrice(),
+			LocalDate.now(),
+			LocalDateTime.now()
+		);
+		priceHistoryRepository.save(priceHistory);
 
 		ResaleRestrictionEntity restriction = getOrCreateRestriction(transaction.getBuyerId());
 		restrictionHandler.handleAfterBuy(restriction, listing.getGameId());

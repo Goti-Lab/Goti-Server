@@ -15,4 +15,10 @@ public interface ResaleListingRepository extends JpaRepository<ResaleListingEnti
 	List<ResaleListingEntity> findByGameIdAndListingStatusIn(UUID gameId, List<ResaleListingStatus> statuses);
 
 	List<ResaleListingEntity> findBySellerId(UUID sellerId);
+
+	List<ResaleListingEntity> findByGameIdAndGradeIdAndListingStatus(
+		UUID gameId,
+		UUID gradeId,
+		ResaleListingStatus listingStatus
+	);
 }
