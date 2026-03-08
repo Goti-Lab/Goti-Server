@@ -34,6 +34,7 @@ public class ResalePriceService {
 
 		if (histories.isEmpty()) {
 			log.info("거래내역이 없습니다., gameId : {}, gradeId: {}", gameId, gradeId);
+			return;
 		}
 
 		List<Integer> prices = histories.stream()
@@ -50,8 +51,8 @@ public class ResalePriceService {
 
 		for (ResaleListingEntity listing : listings) {
 			listing.updateDailyBasePrice(medianPrice);
-			listingRepository.save(listing);
 		}
+		listingRepository.saveAll(listings);
 	}
 
 	private Integer calculateMedian(List<Integer> sortedPrices) {
