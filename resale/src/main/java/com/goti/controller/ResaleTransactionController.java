@@ -21,7 +21,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/resale/transactions")
+@RequestMapping("/api/v1/resale/transactions")
 @RequiredArgsConstructor
 public class ResaleTransactionController {
 	private final ResaleTransactionService transactionService;
