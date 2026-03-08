@@ -12,7 +12,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.goti.constants.GameResult;
 import com.goti.constants.GameStatus;
 import com.goti.constants.LeagueType;
-import com.goti.constants.ReservationAvailableStatus;
 import com.goti.constants.messages.ErrorCode;
 import com.goti.exception.CustomException;
 import com.goti.exception.handler.SpringExceptionHandler;
@@ -73,9 +72,7 @@ class BaseballGameControllerTest {
 			stadiumId,
 			LocalDate.of(2026, 4, 10),
 			LocalTime.of(18, 30),
-			LeagueType.REGULAR,
-			LocalDateTime.of(2026, 4, 1, 14, 0),
-			LocalDateTime.of(2026, 4, 10, 17, 0)
+			LeagueType.REGULAR
 		);
 
 		GameResponse response = new GameResponse(
@@ -86,9 +83,6 @@ class BaseballGameControllerTest {
 			request.playDate(),
 			request.startAt(),
 			LeagueType.REGULAR,
-			ReservationAvailableStatus.PENDING,
-			request.reservationOpenedAt(),
-			request.reservationClosedAt(),
 			GameStatus.SCHEDULED,
 			0,
 			0,
@@ -119,9 +113,7 @@ class BaseballGameControllerTest {
 			  "awayTeamId": "%s",
 			  "stadiumId": "%s",
 			  "playDate": "2026-04-10",
-			  "startAt": "18:30:00",
-			  "reservationOpenedAt": "2026-04-01 14:00:00",
-			  "reservationClosedAt": "2026-04-10 17:00:00"
+			  "startAt": "18:30:00"
 			}
 			""".formatted(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID());
 
@@ -147,9 +139,6 @@ class BaseballGameControllerTest {
 			LocalDate.of(2026, 4, 10),
 			LocalTime.of(18, 30),
 			LeagueType.REGULAR,
-			ReservationAvailableStatus.PENDING,
-			LocalDateTime.of(2026, 4, 1, 14, 0),
-			LocalDateTime.of(2026, 4, 10, 17, 0),
 			GameStatus.SCHEDULED,
 			0,
 			0,
@@ -188,9 +177,6 @@ class BaseballGameControllerTest {
 			LocalDate.of(2026, 4, 10),
 			LocalTime.of(18, 30),
 			LeagueType.REGULAR,
-			ReservationAvailableStatus.PENDING,
-			LocalDateTime.of(2026, 4, 1, 14, 0),
-			LocalDateTime.of(2026, 4, 10, 17, 0),
 			GameStatus.SCHEDULED,
 			0,
 			0,

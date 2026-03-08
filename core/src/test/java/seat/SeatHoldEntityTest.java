@@ -5,7 +5,6 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import java.time.Instant;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.UUID;
 
@@ -14,7 +13,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.test.context.ActiveProfiles;
 
 import com.goti.constants.SeatHoldStatus;
-import com.goti.domain.entity.game.BaseballGameEntity;
+import com.goti.domain.entity.game.GameScheduleEntity;
 import com.goti.domain.entity.seat.SeatEntity;
 import com.goti.domain.entity.seat.SeatGradeEntity;
 import com.goti.domain.entity.seat.SeatHoldEntity;
@@ -25,7 +24,7 @@ import com.goti.exception.FieldValidationException;
 public class SeatHoldEntityTest {
 
 	SeatEntity seat;
-	BaseballGameEntity game;
+	GameScheduleEntity game;
 	UUID userId;
 	String queueTokenJti;
 	Instant expiredAt;
@@ -36,14 +35,12 @@ public class SeatHoldEntityTest {
 		SeatSectionEntity seatSection = SeatSectionEntity.create(seatGrade, UUID.randomUUID(), "101", 120);
 		seat = SeatEntity.create(seatSection, "A", 1);
 
-		game = BaseballGameEntity.create(
+		game = GameScheduleEntity.create(
 			UUID.randomUUID(),
 			UUID.randomUUID(),
 			UUID.randomUUID(),
 			LocalDate.of(2026, 4, 1),
-			LocalTime.of(18, 30),
-			LocalDateTime.of(2026, 3, 25, 14, 0),
-			LocalDateTime.of(2026, 4, 1, 17, 0)
+			LocalTime.of(18, 30)
 		);
 
 		userId = UUID.randomUUID();
@@ -63,7 +60,7 @@ public class SeatHoldEntityTest {
 
 		assertNotNull(seatHold);
 		assertThat(seatHold.getSeat()).isEqualTo(seat);
-		assertThat(seatHold.getGame()).isEqualTo(game);
+		assertThat(seatHold.getGameSchedule()).isEqualTo(game);
 		assertThat(seatHold.getUserId()).isEqualTo(userId);
 		assertThat(seatHold.getQueueTokenJti()).isEqualTo(queueTokenJti);
 		assertThat(seatHold.getStatus()).isEqualTo(SeatHoldStatus.HOLDING);

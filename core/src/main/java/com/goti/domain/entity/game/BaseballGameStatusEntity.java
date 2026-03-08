@@ -5,7 +5,6 @@ import static lombok.AccessLevel.*;
 import com.goti.constants.GameResult;
 import com.goti.constants.GameStatus;
 import com.goti.domain.base.ModificationTimestampEntity;
-import com.goti.global.validation.Preconditions;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -14,6 +13,7 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -24,9 +24,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = PROTECTED)
 public class BaseballGameStatusEntity extends ModificationTimestampEntity {
 
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "baseball_game_id", nullable = false)
-	private BaseballGameEntity baseballGame;
+	@OneToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "game_schedule_id", nullable = false)
+	private GameScheduleEntity gameSchedule;
 
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false)
@@ -43,11 +43,11 @@ public class BaseballGameStatusEntity extends ModificationTimestampEntity {
 	private GameResult gameResult;
 
 	private BaseballGameStatusEntity(
-		BaseballGameEntity baseballGameId,
+		GameScheduleEntity gameSchedule,
 		GameStatus gameStatus,
 		GameResult gameResult
 	) {
-		this.baseballGame = baseballGameId;
+		this.gameSchedule = gameSchedule;
 		this.gameStatus = gameStatus;
 		this.homeTeamScore = 0;
 		this.awayTeamScore = 0;
@@ -56,7 +56,7 @@ public class BaseballGameStatusEntity extends ModificationTimestampEntity {
 
 	// TODO: 추후 점수 변경 시 메서드로 변경
 
-	public static BaseballGameStatusEntity init(BaseballGameEntity game) {
+	public static BaseballGameStatusEntity init(GameScheduleEntity game) {
 		return new BaseballGameStatusEntity(game, GameStatus.SCHEDULED, GameResult.PENDING);
 	}
 }

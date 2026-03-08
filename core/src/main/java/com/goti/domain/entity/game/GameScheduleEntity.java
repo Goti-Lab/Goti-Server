@@ -1,7 +1,6 @@
 package com.goti.domain.entity.game;
 
 import com.goti.constants.LeagueType;
-import com.goti.constants.ReservationAvailableStatus;
 import com.goti.domain.base.ModificationTimestampEntity;
 
 import com.goti.global.validation.Preconditions;
@@ -15,7 +14,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.UUID;
 
@@ -23,9 +21,9 @@ import static lombok.AccessLevel.*;
 
 @Getter
 @Entity
-@Table(name = "baseball_games")
+@Table(name = "game_schedules")
 @NoArgsConstructor(access = PROTECTED)
-public class BaseballGameEntity extends ModificationTimestampEntity {
+public class GameScheduleEntity extends ModificationTimestampEntity {
 	@Column(nullable = false)
 	private UUID homeTeamId;
 
@@ -45,24 +43,12 @@ public class BaseballGameEntity extends ModificationTimestampEntity {
 	@Column(nullable = false)
 	private LeagueType leagueType;
 
-	@Enumerated(EnumType.STRING)
-	@Column(nullable = false)
-	private ReservationAvailableStatus reservationAvailableStatus;
-
-	@Column(nullable = false)
-	private LocalDateTime reservationOpenedAt;
-
-	@Column(nullable = false)
-	private LocalDateTime reservationClosedAt;
-
-	private BaseballGameEntity(
+	private GameScheduleEntity(
 		UUID homeTeamId,
 		UUID awayTeamId,
 		UUID stadiumId,
 		LocalDate playDate,
-		LocalTime startAt,
-		LocalDateTime reservationOpenedAt,
-		LocalDateTime reservationClosedAt
+		LocalTime startAt
 	) {
 		this.homeTeamId = homeTeamId;
 		this.awayTeamId = awayTeamId;
@@ -70,35 +56,24 @@ public class BaseballGameEntity extends ModificationTimestampEntity {
 		this.playDate = playDate;
 		this.startAt = startAt;
 		this.leagueType = LeagueType.REGULAR;
-		this.reservationAvailableStatus = ReservationAvailableStatus.PENDING;
-		this.reservationOpenedAt = reservationOpenedAt;
-		this.reservationClosedAt = reservationClosedAt;
 	}
 
-	public static BaseballGameEntity create(
+	public static GameScheduleEntity create(
 		UUID homeTeamId,
 		UUID awayTeamId,
 		UUID stadiumId,
 		LocalDate playDate,
-		LocalTime startAt,
-		LocalDateTime reservationOpenedAt,
-		LocalDateTime reservationClosedAt
+		LocalTime startAt
 	) {
 
-		validate(
-			homeTeamId, awayTeamId, stadiumId,
-			playDate, startAt,
-			reservationOpenedAt, reservationClosedAt
-		);
+		validate(homeTeamId, awayTeamId, stadiumId, playDate, startAt);
 
-		return new BaseballGameEntity(
+		return new GameScheduleEntity(
 			homeTeamId,
 			awayTeamId,
 			stadiumId,
 			playDate,
-			startAt,
-			reservationOpenedAt,
-			reservationClosedAt
+			startAt
 		);
 	}
 
@@ -107,9 +82,7 @@ public class BaseballGameEntity extends ModificationTimestampEntity {
 		UUID awayTeamId,
 		UUID stadiumId,
 		LocalDate playDate,
-		LocalTime startAt,
-		LocalDateTime reservationOpenedAt,
-		LocalDateTime reservationClosedAt
+		LocalTime startAt
 	) {
 
 		Preconditions.domainValidate(
@@ -137,20 +110,6 @@ public class BaseballGameEntity extends ModificationTimestampEntity {
 		Preconditions.domainValidate(
 			startAt != null,
 			"경기 시작 시간은 필수입니다."
-		);
-
-		Preconditions.domainValidate(
-			reservationOpenedAt != null,
-			"예매 오픈 일시는 필수입니다."
-		);
-		Preconditions.domainValidate(
-			reservationClosedAt != null,
-			"예매 종료 일시는 필수입니다."
-		);
-
-		Preconditions.domainValidate(
-			!reservationOpenedAt.isAfter(reservationClosedAt),
-			"예매 오픈 일시는 종료 일시보다 늦을 수 없습니다."
 		);
 	}
 }

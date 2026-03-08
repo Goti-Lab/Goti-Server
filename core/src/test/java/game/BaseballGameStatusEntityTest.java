@@ -4,7 +4,6 @@ import static org.assertj.core.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.UUID;
 
@@ -14,7 +13,7 @@ import org.springframework.test.context.ActiveProfiles;
 
 import com.goti.constants.GameResult;
 import com.goti.constants.GameStatus;
-import com.goti.domain.entity.game.BaseballGameEntity;
+import com.goti.domain.entity.game.GameScheduleEntity;
 import com.goti.domain.entity.game.BaseballGameStatusEntity;
 
 import lombok.extern.slf4j.Slf4j;
@@ -23,18 +22,16 @@ import lombok.extern.slf4j.Slf4j;
 @ActiveProfiles("test")
 public class BaseballGameStatusEntityTest {
 
-	BaseballGameEntity baseballGame;
+	GameScheduleEntity baseballGame;
 
 	@BeforeEach
 	void setup() {
-		baseballGame = BaseballGameEntity.create(
+		baseballGame = GameScheduleEntity.create(
 			UUID.randomUUID(),
 			UUID.randomUUID(),
 			UUID.randomUUID(),
 			LocalDate.of(2026, 4, 1),
-			LocalTime.of(18, 30),
-			LocalDateTime.of(2026, 3, 25, 14, 0),
-			LocalDateTime.of(2026, 4, 1, 17, 0)
+			LocalTime.of(18, 30)
 		);
 	}
 
@@ -43,7 +40,7 @@ public class BaseballGameStatusEntityTest {
 		BaseballGameStatusEntity gameStatus = BaseballGameStatusEntity.init(baseballGame);
 
 		assertNotNull(gameStatus);
-		assertThat(gameStatus.getBaseballGame()).isEqualTo(baseballGame);
+		assertThat(gameStatus.getGameSchedule()).isEqualTo(baseballGame);
 		assertThat(gameStatus.getGameStatus()).isEqualTo(GameStatus.SCHEDULED);
 		assertThat(gameStatus.getHomeTeamScore()).isEqualTo(0);
 		assertThat(gameStatus.getAwayTeamScore()).isEqualTo(0);

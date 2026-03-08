@@ -4,7 +4,7 @@ import static lombok.AccessLevel.*;
 
 import com.goti.constants.SeatStatus;
 import com.goti.domain.base.ModificationTimestampEntity;
-import com.goti.domain.entity.game.BaseballGameEntity;
+import com.goti.domain.entity.game.GameScheduleEntity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -35,7 +35,7 @@ public class SeatStatusEntity extends ModificationTimestampEntity {
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "game_id", nullable = false)
-	private BaseballGameEntity game;
+	private GameScheduleEntity game;
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "seat_id", nullable = false)
@@ -46,7 +46,7 @@ public class SeatStatusEntity extends ModificationTimestampEntity {
 	private SeatStatus status;
 
 	private SeatStatusEntity(
-		BaseballGameEntity game,
+		GameScheduleEntity game,
 		SeatEntity seat
 	) {
 		this.game = game;
@@ -55,7 +55,7 @@ public class SeatStatusEntity extends ModificationTimestampEntity {
 	}
 
 	public static SeatStatusEntity create(
-		BaseballGameEntity game,
+		GameScheduleEntity game,
 		SeatEntity seat
 	) {
 		return new SeatStatusEntity(game, seat);

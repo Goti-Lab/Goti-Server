@@ -9,7 +9,7 @@ import org.springframework.util.StringUtils;
 
 import com.goti.constants.SeatHoldStatus;
 import com.goti.domain.base.ModificationTimestampEntity;
-import com.goti.domain.entity.game.BaseballGameEntity;
+import com.goti.domain.entity.game.GameScheduleEntity;
 import com.goti.global.validation.Preconditions;
 
 import jakarta.persistence.Column;
@@ -41,8 +41,8 @@ public class SeatHoldEntity extends ModificationTimestampEntity {
 	private SeatEntity seat;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "game_id", nullable = false)
-	private BaseballGameEntity game;
+	@JoinColumn(name = "game_schedule_id", nullable = false)
+	private GameScheduleEntity gameSchedule;
 
 	@Column(nullable = false)
 	private UUID userId;
@@ -61,13 +61,13 @@ public class SeatHoldEntity extends ModificationTimestampEntity {
 
 	private SeatHoldEntity(
 		SeatEntity seat,
-		BaseballGameEntity game,
+		GameScheduleEntity gameSchedule,
 		UUID userId,
 		String queueTokenJti,
 		Instant expiredAt
 	) {
 		this.seat = seat;
-		this.game = game;
+		this.gameSchedule = gameSchedule;
 		this.userId = userId;
 		this.queueTokenJti = queueTokenJti;
 		this.status = SeatHoldStatus.HOLDING;
@@ -77,7 +77,7 @@ public class SeatHoldEntity extends ModificationTimestampEntity {
 
 	public static SeatHoldEntity create(
 		SeatEntity seat,
-		BaseballGameEntity game,
+		GameScheduleEntity game,
 		UUID userId,
 		String queueTokenJti,
 		Instant expiredAt

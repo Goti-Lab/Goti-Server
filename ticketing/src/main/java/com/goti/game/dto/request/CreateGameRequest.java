@@ -30,15 +30,7 @@ public record CreateGameRequest(
 	LocalTime startAt,
 
 	@NotNull(message = "리그 종류는 필수입니다.")
-	LeagueType leagueType,
-
-	@NotNull(message = "예매 오픈 일시는 필수입니다.")
-	@JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-	LocalDateTime reservationOpenedAt,
-
-	@NotNull(message = "예매 종료 일시는 필수입니다.")
-	@JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-	LocalDateTime reservationClosedAt
+	LeagueType leagueType
 
 ) {
 	public CreateGameCommand toCommand() {
@@ -48,9 +40,7 @@ public record CreateGameRequest(
 			stadiumId,
 			playDate,
 			startAt,
-			leagueType,
-			reservationOpenedAt,
-			reservationClosedAt
+			leagueType
 		);
 	}
 }

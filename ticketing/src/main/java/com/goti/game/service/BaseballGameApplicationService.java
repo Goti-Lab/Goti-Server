@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.goti.constants.messages.ErrorCode;
-import com.goti.domain.entity.game.BaseballGameEntity;
+import com.goti.domain.entity.game.GameScheduleEntity;
 import com.goti.domain.entity.game.BaseballGameStatusEntity;
 import com.goti.game.dto.response.GameResponse;
 import com.goti.game.repository.BaseballGameRepository;
@@ -37,16 +37,14 @@ public class BaseballGameApplicationService {
 
 		Preconditions.validate(!exists, ErrorCode.GAME_ALREADY_EXISTS);
 
-		BaseballGameEntity game = BaseballGameEntity.create(
+		GameScheduleEntity game = GameScheduleEntity.create(
 			cmd.homeTeamId(),
 			cmd.awayTeamId(),
 			cmd.stadiumId(),
 			cmd.playDate(),
-			cmd.startAt(),
-			cmd.reservationOpenedAt(),
-			cmd.reservationClosedAt()
+			cmd.startAt()
 		);
-		BaseballGameEntity savedGame = baseballGameRepository.save(game);
+		GameScheduleEntity savedGame = baseballGameRepository.save(game);
 
 		BaseballGameStatusEntity gameStatus = BaseballGameStatusEntity.init(savedGame);
 		baseballGameStatusRepository.save(gameStatus);
@@ -57,20 +55,20 @@ public class BaseballGameApplicationService {
 	@Transactional(readOnly = true)
 	public Page<GameResponse> getGames(Pageable pageable) {
 		return baseballGameRepository.findAll(pageable)
-			.map(game -> baseballGameStatusRepository.findByBaseballGame_Id(game.getId())
-				.map(status -> GameResponse.from(game, status))
+			.map(gameSchedule -> baseballGameStatusRepository.findByGameSchedule(gameSchedule)
+				.map(status -> GameResponse.from(gameSchedule, status))
 				.orElseThrow(() -> new CustomException(ErrorCode.GAME_NOT_FOUND)));
 	}
 
 	@Transactional(readOnly = true)
-	public GameResponse getGame(UUID gameId) {
-		BaseballGameEntity game = baseballGameRepository.findById(gameId)
+	public GameResponse getGame(UUID gameScheduleId) {
+		GameScheduleEntity gameSchedule = baseballGameRepository.findById(gameScheduleId)
 			.orElseThrow(() -> new CustomException(ErrorCode.GAME_NOT_FOUND));
 
 		BaseballGameStatusEntity status = baseballGameStatusRepository
-			.findByBaseballGame_Id(gameId)
+			.findByGameSchedule(gameSchedule)
 			.orElseThrow(() -> new CustomException(ErrorCode.GAME_NOT_FOUND));
 
-		return GameResponse.from(game, status);
+		return GameResponse.from(gameSchedule, status);
 	}
 }

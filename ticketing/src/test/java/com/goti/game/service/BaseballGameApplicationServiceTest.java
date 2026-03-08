@@ -3,11 +3,10 @@ package com.goti.game.service;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.*;
-import static org.mockito.Mockito.*;
 
 import com.goti.constants.LeagueType;
 import com.goti.constants.messages.ErrorCode;
-import com.goti.domain.entity.game.BaseballGameEntity;
+import com.goti.domain.entity.game.GameScheduleEntity;
 import com.goti.domain.entity.game.BaseballGameStatusEntity;
 import com.goti.exception.CustomException;
 import com.goti.game.dto.response.GameResponse;
@@ -26,7 +25,6 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.UUID;
 
@@ -53,9 +51,7 @@ class BaseballGameApplicationServiceTest {
 			UUID.randomUUID(),
 			LocalDate.of(2026, 4, 10),
 			LocalTime.of(18, 30),
-			LeagueType.REGULAR,
-			LocalDateTime.of(2026, 4, 1, 14, 0),
-			LocalDateTime.of(2026, 4, 10, 17, 0)
+			LeagueType.REGULAR
 		);
 	}
 
@@ -66,18 +62,16 @@ class BaseballGameApplicationServiceTest {
 			any(UUID.class), any(UUID.class), any(LocalDate.class), any(LocalTime.class)
 		)).willReturn(false);
 
-		BaseballGameEntity savedGame = BaseballGameEntity.create(
+		GameScheduleEntity savedGame = GameScheduleEntity.create(
 			createGameCommand.homeTeamId(),
 			createGameCommand.awayTeamId(),
 			createGameCommand.stadiumId(),
 			createGameCommand.playDate(),
-			createGameCommand.startAt(),
-			createGameCommand.reservationOpenedAt(),
-			createGameCommand.reservationClosedAt()
+			createGameCommand.startAt()
 		);
 		ReflectionTestUtils.setField(savedGame, "id", UUID.randomUUID());
 
-		given(baseballGameRepository.save(any(BaseballGameEntity.class))).willReturn(savedGame);
+		given(baseballGameRepository.save(any(GameScheduleEntity.class))).willReturn(savedGame);
 		given(baseballGameStatusRepository.save(any(BaseballGameStatusEntity.class)))
 			.willAnswer(invocation -> invocation.getArgument(0));
 
@@ -88,7 +82,7 @@ class BaseballGameApplicationServiceTest {
 		assertThat(response.awayTeamId()).isEqualTo(createGameCommand.awayTeamId());
 		assertThat(response.stadiumId()).isEqualTo(createGameCommand.stadiumId());
 
-		verify(baseballGameRepository, times(1)).save(any(BaseballGameEntity.class));
+		verify(baseballGameRepository, times(1)).save(any(GameScheduleEntity.class));
 		verify(baseballGameStatusRepository, times(1)).save(any(BaseballGameStatusEntity.class));
 	}
 
@@ -103,7 +97,7 @@ class BaseballGameApplicationServiceTest {
 			.isInstanceOf(CustomException.class)
 			.hasMessageContaining(ErrorCode.GAME_ALREADY_EXISTS.getMessage());
 
-		verify(baseballGameRepository, never()).save(any(BaseballGameEntity.class));
+		verify(baseballGameRepository, never()).save(any(GameScheduleEntity.class));
 		verify(baseballGameStatusRepository, never()).save(any(BaseballGameStatusEntity.class));
 	}
 }
