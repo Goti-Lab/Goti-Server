@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.goti.global.api.ApiSuccessResponse;
 import com.goti.seat.dto.request.CreateSeatGradeRequest;
 import com.goti.seat.dto.response.SeatGradeResponse;
-import com.goti.seat.service.application.SeatGradeService;
+import com.goti.seat.service.domain.SeatGradeService;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -53,7 +53,7 @@ public class SeatGradeController {
 		description = "구장별 좌석 등급을 조회하는 API"
 	)
 	@GetMapping
-	public ResponseEntity<ApiSuccessResponse<List<SeatGradeResponse>>> get( // TODO: 유저 인증 추가
+	public ResponseEntity<ApiSuccessResponse<List<SeatGradeResponse>>> list( // TODO: 유저 인증 추가
 		@RequestParam UUID stadiumId
 	) {
 		return wrap(seatGradeService.get(stadiumId));

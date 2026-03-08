@@ -30,12 +30,8 @@ public class SeatGradeServiceImpl implements SeatGradeService {
 		);
 
 		SeatGradeEntity seatGrade = SeatGradeEntity.create(stadiumId, name, displayColorHex);
-		try {
-			SeatGradeEntity savedSeatGrade = seatGradeRepository.save(seatGrade);
-			return SeatGradeResponse.from(savedSeatGrade);
-		} catch (DataIntegrityViolationException e) {
-			throw new CustomException(ErrorCode.SEAT_GRADE_ALREADY_EXISTS);
-		}
+		seatGradeRepository.save(seatGrade);
+		return SeatGradeResponse.from(seatGrade);
 	}
 
 	@Override

@@ -22,7 +22,7 @@ public record CreateSeatSectionRequest(
 
 	@Schema(description = "수용 인원", example = "120")
 	@NotNull(message = "수용 인원은 필수입니다.")
-	@Positive(message = "수용 인원은 1 이상이어야 합니다.")
+	@Positive(message = "수용 인원은 0보다 커야 합니다")
 	Integer capacity
 ) {
 }
