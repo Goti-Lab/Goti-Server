@@ -46,6 +46,9 @@ public enum ErrorCode {
 	GAME_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 경기입니다."),
 
 	SEAT_GRADE_ALREADY_EXISTS(HttpStatus.CONFLICT, "이미 동일한 좌석 등급이 존재합니다."),
+	SEAT_GRADE_NOT_FOUND(HttpStatus.NOT_FOUND, "좌석 등급 정보를 찾을 수 없습니다."),
+	SEAT_GRADE_STADIUM_MISMATCH(HttpStatus.BAD_REQUEST, "좌석 등급이 요청한 구장 정보와 일치하지 않습니다."),
+	SEAT_SECTION_ALREADY_EXISTS(HttpStatus.CONFLICT, "이미 동일한 좌석 구역이 존재합니다."),
 
 	MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 회원입니다."),
 	SOCIAL_PROVIDER_ALREADY_LINKED(HttpStatus.BAD_REQUEST, "해당 소셜 계정은 이미 다른 회원과 연동되어 있습니다."),

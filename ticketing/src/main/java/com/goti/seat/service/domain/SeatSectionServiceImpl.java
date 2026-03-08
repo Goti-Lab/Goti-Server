@@ -1,0 +1,52 @@
+package com.goti.seat.service.domain;
+
+import java.util.List;
+import java.util.UUID;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.goti.constants.messages.ErrorCode;
+import com.goti.domain.entity.seat.SeatGradeEntity;
+import com.goti.domain.entity.seat.SeatSectionEntity;
+import com.goti.exception.CustomException;
+import com.goti.global.validation.Preconditions;
+import com.goti.seat.dto.response.SeatSectionResponse;
+import com.goti.seat.repository.SeatGradeRepository;
+import com.goti.seat.repository.SeatSectionRepository;
+
+import lombok.RequiredArgsConstructor;
+
+@Service
+@RequiredArgsConstructor
+public class SeatSectionServiceImpl implements SeatSectionService {
+	private final SeatGradeRepository seatGradeRepository;
+	private final SeatSectionRepository seatSectionRepository;
+
+	@Override
+	@Transactional
+	public SeatSectionResponse create(
+		UUID gradeId,
+		UUID stadiumId,
+		String sectionCode,
+		Integer capacity
+	) {
+		SeatGradeEntity seatGrade = seatGradeRepository.findById(gradeId)
+			.orElseThrow(() -> new CustomException(ErrorCode.SEAT_GRADE_NOT_FOUND));
+
+		Preconditions.validate(
+			seatGrade.getStadiumId().equals(stadiumId),
+			ErrorCode.SEAT_GRADE_STADIUM_MISMATCH
+		);
+
+		Preconditions.validate(
+			!seatSectionRepository.existsByStadiumIdAndSectionCode(stadiumId, sectionCode),
+			ErrorCode.SEAT_SECTION_ALREADY_EXISTS
+		);
+
+		SeatSectionEntity seatSection = SeatSectionEntity.create(seatGrade, stadiumId, sectionCode, capacity);
+		seatSectionRepository.save(seatSection);
+
+		return SeatSectionResponse.from(seatSection);
+	}
+}
