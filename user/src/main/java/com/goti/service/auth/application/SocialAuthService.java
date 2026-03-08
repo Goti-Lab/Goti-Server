@@ -45,6 +45,7 @@ public class SocialAuthService {
 	private static final String KEY_SEPARATOR = ":";
 	private static final String PROVIDER_ID_KEY = "provider_id";
 	private static final String PROVIDER_TYPE_KEY = "provider_type";
+	private static final String PROVIDER_EMAIL_KEY = "provider_email";
 
 	public SocialStateResponse issueState(OAuthProvider provider) {
 		if (provider == OAuthProvider.KAKAO) {
@@ -63,13 +64,14 @@ public class SocialAuthService {
 		SocialApiClient apiClient = socialClientProvider.getClient(provider);
 		String socialAccessToken = apiClient.getAccessToken(authCode, state);
 		SocialUserInfoResponse socialUserInfo = apiClient.getSocialUserInfo(socialAccessToken);
+		String email = socialUserInfo.email();
 		String providerId = socialUserInfo.providerId();
 		boolean isRegistered = socialProviderService.findByProviderIdAndProvider(
 			providerId, provider
 		).isPresent();
 
 		String socialVerifyToken = jwtTokenProvider.createSocialVerifyToken(
-			provider, providerId
+			provider, providerId, email
 		);
 		return SocialVerifyResponse.of(isRegistered, socialVerifyToken);
 	}
@@ -98,7 +100,6 @@ public class SocialAuthService {
 
 	public Pair<String, String> signup(
 		String socialVerifyToken,
-		String email,
 		String name,
 		String mobile,
 		Gender gender,
@@ -107,7 +108,7 @@ public class SocialAuthService {
 		SocialInfo verifiedSocialInfo = getSocialInfoByToken(socialVerifyToken);
 		MemberEntity member = getOrCreateMember(name, mobile, gender, birthDate);
 
-		createSocialProvider(member, verifiedSocialInfo, email);
+		createSocialProvider(member, verifiedSocialInfo);
 
 		String accessToken = jwtTokenProvider.create(
 			member.getId(),
@@ -134,14 +135,15 @@ public class SocialAuthService {
 		}
 	}
 
-	private record SocialInfo(String providerId, OAuthProvider provider) {}
+	private record SocialInfo(String providerId, OAuthProvider provider, String email) {}
 
 	private SocialInfo getSocialInfoByToken(String socialVerifyToken) {
 		Claims claims = jwtTokenProvider.getSocialVerifyClaims(socialVerifyToken);
 
 		return new SocialInfo(
 			claims.get(PROVIDER_ID_KEY, String.class),
-			OAuthProvider.valueOf(claims.get(PROVIDER_TYPE_KEY, String.class))
+			OAuthProvider.valueOf(claims.get(PROVIDER_TYPE_KEY, String.class)),
+			claims.get(PROVIDER_EMAIL_KEY, String.class)
 		);
 	}
 
@@ -161,7 +163,7 @@ public class SocialAuthService {
 	}
 
 	private void createSocialProvider(
-		MemberEntity member, SocialInfo socialInfo, String email
+		MemberEntity member, SocialInfo socialInfo
 	) {
 		socialProviderService.findByProviderIdAndProvider(
 			socialInfo.providerId(),
@@ -179,11 +181,11 @@ public class SocialAuthService {
 			() -> {
 				try {
 					socialProviderService.save(
-						member, socialInfo.provider(), socialInfo.providerId, email
+						member, socialInfo.provider(), socialInfo.providerId(), socialInfo.email()
 					);
 				} catch(DataIntegrityViolationException e) {
 					log.warn(
-						"소셜 정보 중복 생성 시도 Skip - 소셜ID: {}",
+						"소셜 정보 중복 생성 시도 skip - 소셜ID: {}",
 						socialInfo.providerId()
 					);
 				}

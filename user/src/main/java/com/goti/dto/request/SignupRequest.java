@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.goti.config.validator.ValidMobile;
 import com.goti.constants.Gender;
 
-import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Past;
@@ -15,10 +14,6 @@ public record SignupRequest(
 
 	@NotBlank(message = "소셜 검증 토큰은 필수 항목입니다.")
 	String socialVerifyToken,
-
-	@Email
-	@NotBlank(message = "이메일은 필수 항목입니다.")
-	String email,
 
 	@NotBlank(message = "이름은 필수 항목입니다.")
 	String name,

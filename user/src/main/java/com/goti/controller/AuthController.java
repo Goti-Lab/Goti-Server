@@ -86,7 +86,6 @@ public class AuthController {
 	) {
 		String accessToken = socialAuthService.signup(
 			request.socialVerifyToken(),
-			request.email(),
 			request.name(),
 			request.mobile(),
 			request.gender(),

@@ -42,6 +42,7 @@ public class JwtTokenProvider {
 
 	private static final String PROVIDER_TYPE_KEY = "provider_type";
 	private static final String PROVIDER_ID_KEY = "provider_id";
+	private static final String PROVIDER_EMAIL_KEY = "provider_email";
 	static final String SOCIAL_VERIFY_SUBJECT = "social_verify";
 
 	public String create(UUID id, String mobile, UserRole role) {
@@ -59,15 +60,14 @@ public class JwtTokenProvider {
 			.compact();
 	}
 
-	// todo: Duration.ofMinutes(10) 하드코딩 기입 부분 -> user module application.yml 파일 읽지 못하는 부분 수정 예정
-	// todo: 추가로 create method 도 같은 error 날것으로 예상됨
-	public String createSocialVerifyToken(OAuthProvider provider, String providerId) {
+	public String createSocialVerifyToken(OAuthProvider provider, String providerId, String email) {
 		Date issuedAt = new Date();
 		Date expireAt = new Date(issuedAt.getTime() + Duration.ofMinutes(10).toMillis());
 		String jwtId = getJwtId();
 		return Jwts.builder()
 			.subject(SOCIAL_VERIFY_SUBJECT)
 			.id(jwtId)
+			.claim(PROVIDER_EMAIL_KEY, email)
 			.claim(PROVIDER_TYPE_KEY, provider)
 			.claim(PROVIDER_ID_KEY, providerId)
 			.issuedAt(issuedAt)
