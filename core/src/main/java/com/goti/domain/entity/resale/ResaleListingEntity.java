@@ -16,7 +16,6 @@ import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Index;
 import jakarta.persistence.Table;
-import jakarta.persistence.Version;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -24,7 +23,7 @@ import lombok.NoArgsConstructor;
 @Entity
 @Table(name = "resale_listings",
 	indexes = {
-		@Index(name = "unique_idx_ticket_id", columnList = "ticket_id", unique = true),
+		@Index(name = "idx_ticket_id", columnList = "ticket_id"),
 		@Index(name = "idx_seller_id", columnList = "seller_id"),
 		@Index(name = "idx_game_id", columnList = "game_id")
 	})
@@ -38,6 +37,12 @@ public class ResaleListingEntity extends ModificationTimestampEntity {
 
 	@Column(nullable = false)
 	private UUID gameId;
+
+	@Column(nullable = false)
+	private UUID seatId;
+
+	@Column(nullable = false)
+	private UUID gradeId;
 
 	@Column(nullable = false)
 	private String seatInfo;
@@ -65,13 +70,12 @@ public class ResaleListingEntity extends ModificationTimestampEntity {
 
 	private LocalDateTime canceledAt;
 
-	@Version
-	private Long version; // TODO: 낙관적 락 구현, Redis TTL 10min
-
 	public ResaleListingEntity(
 		UUID ticketId,
 		UUID sellerId,
 		UUID gameId,
+		UUID seatId,
+		UUID gradeId,
 		String seatInfo,
 		Integer dailyBasePrice,
 		Integer listingPrice
@@ -79,6 +83,8 @@ public class ResaleListingEntity extends ModificationTimestampEntity {
 		this.ticketId = ticketId;
 		this.sellerId = sellerId;
 		this.gameId = gameId;
+		this.seatId = seatId;
+		this.gradeId = gradeId;
 		this.seatInfo = seatInfo;
 		this.dailyBasePrice = dailyBasePrice;
 		this.listingPrice = listingPrice;
@@ -94,16 +100,20 @@ public class ResaleListingEntity extends ModificationTimestampEntity {
 		UUID ticketId,
 		UUID sellerId,
 		UUID gameId,
+		UUID seatId,
+		UUID gradeId,
 		String seatInfo,
 		Integer dailyBasePrice,
 		Integer listingPrice
 	) {
-		validate(ticketId, sellerId, gameId, seatInfo, dailyBasePrice, listingPrice);
+		validate(ticketId, sellerId, gameId, seatId, gradeId, seatInfo, dailyBasePrice, listingPrice);
 
 		return new ResaleListingEntity(
 			ticketId,
 			sellerId,
 			gameId,
+			seatId,
+			gradeId,
 			seatInfo,
 			dailyBasePrice,
 			listingPrice
@@ -114,13 +124,17 @@ public class ResaleListingEntity extends ModificationTimestampEntity {
 		UUID ticketId,
 		UUID sellerId,
 		UUID gameId,
+		UUID seatId,
+		UUID gradeId,
 		String seatInfo,
 		Integer dailyBasePrice,
 		Integer listingPrice
 	) {
 		Preconditions.domainValidate(ticketId != null, "티켓 ID는 비어 있을 수 없습니다.");
 		Preconditions.domainValidate(sellerId != null, "판매자 ID는 비어 있을 수 없습니다.");
-		Preconditions.domainValidate(gameId != null, "게임 ID는 비어 있을 수 없습니다.");
+		Preconditions.domainValidate(gameId != null, "경기 ID는 비어 있을 수 없습니다.");
+		Preconditions.domainValidate(seatId != null, "좌석 ID는 비어 있을 수 없습니다.");
+		Preconditions.domainValidate(gradeId != null, "등급 ID는 비어 있을 수 없습니다.");
 		Preconditions.domainValidate(seatInfo != null, "좌석 정보는 비어 있을 수 없습니다.");
 		Preconditions.domainValidate(dailyBasePrice != null && dailyBasePrice >= 0, "일일 기준가는 0 이상이어야 합니다.");
 		Preconditions.domainValidate(listingPrice != null && listingPrice >= 0, "판매가는 0 이상이어야 합니다.");

@@ -12,5 +12,7 @@ public interface ResaleListingRepository extends JpaRepository<ResaleListingEnti
 
 	boolean existsByTicketIdAndListingStatusIn(UUID ticketId, List<ResaleListingStatus> statuses);
 
+	List<ResaleListingEntity> findByGameIdAndListingStatusIn(UUID gameId, List<ResaleListingStatus> statuses);
+
 	List<ResaleListingEntity> findBySellerId(UUID sellerId);
 }

@@ -37,12 +37,14 @@ class ResaleTransactionEntityTest {
 			UUID.randomUUID(),
 			VALID_SELLER_ID,
 			UUID.randomUUID(),
+			UUID.randomUUID(),
+			UUID.randomUUID(),
 			"A구역 10열 5번",
 			50000,
 			50000
 		);
 	}
-	
+
 	@Test
 	void 리셀_거래_생성_성공() {
 		ResaleTransactionEntity entity = ResaleTransactionEntity.create(

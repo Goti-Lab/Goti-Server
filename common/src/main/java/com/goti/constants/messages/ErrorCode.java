@@ -29,10 +29,14 @@ public enum ErrorCode {
 	GAME_CANCEL_LIMIT_EXCEEDED(HttpStatus.TOO_MANY_REQUESTS, "이 경기에 대한 취소 가능 횟수({0}회)를 초과했습니다."),
 	INVALID_BASE_PRICE(HttpStatus.BAD_REQUEST, "시작가가 올바르지 않습니다."),
 	INVALID_LISTING_PRICE(HttpStatus.BAD_REQUEST, "판매가가 올바르지 않습니다."),
+	INVALID_PRICE(HttpStatus.BAD_REQUEST, "가격이 올바르지 않습니다."),
 	INVALID_PRICE_RANGE(HttpStatus.BAD_REQUEST, "판매가는 {0} 이내여야 합니다."),
 	ALREADY_LISTED(HttpStatus.BAD_REQUEST, "이미 등록된 티켓입니다"),
 	LISTING_NOT_FOUND(HttpStatus.NOT_FOUND, "등록된 리셀을 찾을 수 없습니다"),
 	LISTING_ALREADY_CLOSED(HttpStatus.BAD_REQUEST, "리셀 등록 가능한 시간이 지났습니다."),
+	NOT_PURCHASABLE(HttpStatus.BAD_REQUEST, "구매할 수 없는 상태입니다"),
+	NOT_MATCH_STATUS(HttpStatus.BAD_REQUEST, "{0}상태 에만 할 수 있습니다."),
+	TRANSACTION_NOT_FOUND(HttpStatus.NOT_FOUND, "등록된 리셀을 찾을 수 없습니다"),
 
 	AUTH_INVALID_ACCESS_PATH(HttpStatus.UNAUTHORIZED, "올바르지 않은 접근 경로입니다."),
 	AUTH_PERMISSION_DENIED(HttpStatus.FORBIDDEN, "접근 권한이 없습니다."),
@@ -53,9 +57,7 @@ public enum ErrorCode {
 	MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 회원입니다."),
 	SOCIAL_PROVIDER_ALREADY_LINKED(HttpStatus.BAD_REQUEST, "해당 소셜 계정은 이미 다른 회원과 연동되어 있습니다."),
 
-	INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "서버 내부 오류가 발생하였습니다. 잠시 후 다시 시도해주세요.")
-	;
-
+	INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "서버 내부 오류가 발생하였습니다. 잠시 후 다시 시도해주세요.");
 
 	private final HttpStatus status;
 	private final String message;

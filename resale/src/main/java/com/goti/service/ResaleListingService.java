@@ -54,6 +54,8 @@ public class ResaleListingService {
 			ticketInfo.ticketId(),
 			sellerId,
 			ticketInfo.gameId(),
+			ticketInfo.seatId(),
+			ticketInfo.gradeId(),
 			ticketInfo.seatInfo(),
 			ticketInfo.ticketPrice(),
 			request.listingPrice()
@@ -103,6 +105,24 @@ public class ResaleListingService {
 			.toList();
 	}
 
+	@Transactional
+	public void cancelListingCauseGameStart(UUID gameId) {
+		List<ResaleListingEntity> listings = listingRepository.findByGameIdAndListingStatusIn(
+			gameId,
+			List.of(ResaleListingStatus.LISTING, ResaleListingStatus.HOLD)
+		);
+
+		for (ResaleListingEntity listing : listings) {
+			listing.cancelByGameStart();
+			listingRepository.save(listing);
+
+			ResaleRestrictionEntity restriction = getOrCreateRestriction(listing.getSellerId());
+
+			restrictionHandler.handleAfterCancel(restriction, listing.getGameId());
+			restrictionRepository.save(restriction);
+		}
+	}
+
 	private void validateTicketOwner(ResaleTicketResponse ticketResponse, UUID sellerId) {
 		Preconditions.validate(ticketResponse.ownerId().equals(sellerId), ErrorCode.AUTH_PERMISSION_DENIED);
 	}
@@ -116,7 +136,7 @@ public class ResaleListingService {
 		Preconditions.validate(
 			!listingRepository.existsByTicketIdAndListingStatusIn(
 				ticketId,
-				List.of(ResaleListingStatus.LISTING, ResaleListingStatus.HOLD)
+				List.of(ResaleListingStatus.LISTING, ResaleListingStatus.HOLD, ResaleListingStatus.SOLD)
 			), ErrorCode.ALREADY_LISTED);
 	}
 

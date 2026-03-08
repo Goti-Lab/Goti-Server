@@ -14,6 +14,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
+import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
@@ -22,7 +23,12 @@ import lombok.NoArgsConstructor;
 
 @Getter
 @Entity
-@Table(name = "resale_transactions")
+@Table(name = "resale_transactions",
+	indexes = {
+		@Index(name = "idx_listing_id", columnList = "listing_id"),
+		@Index(name = "idx_buyer_id", columnList = "buyer_id"),
+		@Index(name = "idx_seller_id", columnList = "seller_id")
+	})
 @NoArgsConstructor(access = PROTECTED)
 public class ResaleTransactionEntity extends CreationTimestampEntity {
 
@@ -57,6 +63,8 @@ public class ResaleTransactionEntity extends CreationTimestampEntity {
 
 	private LocalDateTime confirmedAt;
 
+	private UUID escrowId;
+
 	private ResaleTransactionEntity(
 		ResaleListingEntity listing,
 		UUID buyerId,
@@ -77,6 +85,7 @@ public class ResaleTransactionEntity extends CreationTimestampEntity {
 		this.sellerTotal = sellerTotal;
 		this.transactionStatus = ResaleTransactionStatus.PENDING;
 		this.confirmedAt = null;
+		this.escrowId = null;
 	}
 
 	public static ResaleTransactionEntity create(
@@ -127,5 +136,25 @@ public class ResaleTransactionEntity extends CreationTimestampEntity {
 		Preconditions.domainValidate(sellerTotal != null && sellerTotal >= 0, "판매자 총액은 0 이상이어야 합니다.");
 		Preconditions.domainValidate(buyerTotal.equals(transactionPrice + buyerFee), "구매자 총액이 올바르지 않습니다.");
 		Preconditions.domainValidate(sellerTotal.equals(transactionPrice - sellerFee), "판매자 총액이 올바르지 않습니다.");
+	}
+
+	public void complete(UUID escrowId) {
+		Preconditions.domainValidate(
+			this.transactionStatus == ResaleTransactionStatus.PENDING,
+			"결제 대기 상태에서만 할 수 있습니다."
+		);
+		Preconditions.domainValidate(escrowId != null && !escrowId.toString().isBlank(), "에스크로 ID는 비어 있을 수 없습니다."
+		);
+
+		this.transactionStatus = ResaleTransactionStatus.COMPLETED;
+		this.confirmedAt = LocalDateTime.now();
+		this.escrowId = escrowId;
+	}
+
+	public void cancel() {
+		Preconditions.domainValidate(
+			this.transactionStatus == ResaleTransactionStatus.PENDING,
+			"결제 대기 상태에서만 할 수 있습니다."
+		);
 	}
 }

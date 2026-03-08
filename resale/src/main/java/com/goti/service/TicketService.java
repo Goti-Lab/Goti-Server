@@ -1,6 +1,7 @@
 package com.goti.service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
@@ -25,16 +26,18 @@ public class TicketService {
 			// 경기ID 고정 (경기당 횟수 테스트 5,3)
 			// UUID.randomUUID(), // 경기아이디 랜덤 (10회 테스트)
 			ownerId,
+			UUID.fromString("8df84c70-833e-4374-85ad-fa52f92f939e"),
+			UUID.fromString("8df84c70-833e-4374-85ad-fa52f92f939d"),
 			"A구역 3열 15번",
 			50000,
 			LocalDateTime.now().plusDays(3)
 		);
 	}
 
-	public boolean ticketOwnership(UUID ticketId, UUID userId) {
-
-		ResaleTicketResponse ticket = getTicketInfo(ticketId, userId);
-
-		return ticket.ownerId().equals(userId);
+	public List<UUID> getExpiredGameIds(LocalDateTime thresholdTime) {
+		// TODO: 실제 구현 시 Ticket 도메인에서 쿼리를 이용하여 thresholdTime 이후의 게임 ID 목록을 반환
+		// 임시 더미 데이터 (테스트용 게임 ID)
+		return List.of(UUID.fromString("8df84c70-833e-4374-85ad-fa52f92f939e"));
 	}
+
 }
