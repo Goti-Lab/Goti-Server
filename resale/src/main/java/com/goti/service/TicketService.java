@@ -43,11 +43,11 @@ public class TicketService {
 
 	public List<GameInfo> getUpcomingGames() {
 		return List.of(
-			GameInfo.of(
+			new GameInfo(
 				UUID.fromString("8df84c70-833e-4374-85ad-fa52f92f939f"),
 				UUID.fromString("8df84c70-833e-4374-85ad-fa52f92f939d")
 			),
-			GameInfo.of(
+			new GameInfo(
 				UUID.fromString("8df84c70-833e-4374-85ad-fa52f92f939f"),
 				UUID.fromString("8df84c70-833e-4374-85ad-fa52f92f939c")
 			)

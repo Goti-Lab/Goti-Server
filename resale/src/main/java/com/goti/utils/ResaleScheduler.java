@@ -36,7 +36,8 @@ public class ResaleScheduler {
 			try {
 				listingService.cancelListingCauseGameStart(gameId);
 			} catch (Exception e) {
-				log.error("리셀 등록 취소 실패");
+				log.error("리셀 등록 취소 실패 - gameId: {}",
+					gameId, e);
 			}
 		}
 	}
@@ -48,8 +49,8 @@ public class ResaleScheduler {
 			try {
 				priceService.updateDailyBasePrice(info.gameId(), info.gradeId());
 			} catch (Exception e) {
-				log.error("기준가 업데이트 실패 - gameId: {}, gradeId: {}, error: {}",
-					info.gameId(), info.gradeId(), e.getMessage());
+				log.error("기준가 업데이트 실패 - gameId: {}, gradeId: {}",
+					info.gameId(), info.gradeId(), e);
 			}
 		}
 	}
