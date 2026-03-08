@@ -103,9 +103,11 @@ public class SocialAuthService {
 		String name,
 		String mobile,
 		Gender gender,
-		LocalDate birthDate
+		LocalDate birthDate,
+		String authCode
 	) {
 		SocialInfo verifiedSocialInfo = getSocialInfoByToken(socialVerifyToken);
+		authService.verifySmsCode(mobile, authCode);
 		MemberEntity member = getOrCreateMember(name, mobile, gender, birthDate);
 
 		createSocialProvider(member, verifiedSocialInfo);

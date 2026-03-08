@@ -77,8 +77,8 @@ public class AuthController {
 	}
 
 	@Operation(
-		summary = "신규 회원 가입",
-		description = "socialVerifyToken 및 추가 사용자 정보 기반 회원가입 API"
+		summary = "회원 가입 및 사용자 식별",
+		description = "사용자 정보 등록(가입) 또는 기존 계정 식별 및 인증번호 검증 API"
 	)
 	@PostMapping("/signup")
 	public ResponseEntity<ApiSuccessResponse<TokenResponse>> signup(
@@ -89,15 +89,16 @@ public class AuthController {
 			request.name(),
 			request.mobile(),
 			request.gender(),
-			request.birthDate()
+			request.birthDate(),
+			request.authCode()
 		).getFirst();
 
 		return wrap(new TokenResponse(accessToken));
 	}
 
 	@Operation(
-		summary = "회원가입 휴대폰 인증번호 발송",
-		description = "회원가입 시도 전 요청 휴대폰번호 기반 인증번호 발송 API"
+		summary = "회원가입 인증번호 발송",
+		description = "socialVerifyToken 및 휴대폰 번호 기반 인증번호 발송 API"
 	)
 	@PostMapping("/signup/sms/send")
 	public ResponseEntity<ApiSuccessResponse<Void>> sendSmsCode(

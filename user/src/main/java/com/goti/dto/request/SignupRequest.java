@@ -1,6 +1,7 @@
 package com.goti.dto.request;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.goti.config.validator.ValidAuthCode;
 import com.goti.config.validator.ValidMobile;
 import com.goti.constants.Gender;
 
@@ -28,6 +29,10 @@ public record SignupRequest(
 	@NotNull(message = "생년월일은 필수 항목입니다.")
 	@Past(message = "유효하지 않은 생년월일입니다.")
 	@JsonFormat(pattern = "yyyy-MM-dd")
-	LocalDate birthDate
+	LocalDate birthDate,
+
+	@ValidAuthCode
+	@NotBlank(message = "본인확인 인증코드는 필수 항목입니다.")
+	String authCode
 ) {
 }
