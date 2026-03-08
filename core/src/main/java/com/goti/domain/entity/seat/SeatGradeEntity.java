@@ -6,6 +6,8 @@ import com.goti.global.validation.Preconditions;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
+
 import org.springframework.util.StringUtils;
 
 import java.util.UUID;
@@ -17,7 +19,11 @@ import static lombok.AccessLevel.*;
 
 @Getter
 @Entity
-@Table(name = "seat_grades")
+@Table(name = "seat_grades",
+	uniqueConstraints = {
+		@UniqueConstraint(
+			name = "uk_stadium_seat_grade_name", columnNames = {"stadium_id", "name"})
+	})
 @NoArgsConstructor(access = PROTECTED)
 public class SeatGradeEntity extends ModificationTimestampEntity {
 	@Column(nullable = false)
