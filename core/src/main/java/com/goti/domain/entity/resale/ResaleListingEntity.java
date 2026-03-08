@@ -18,7 +18,6 @@ import jakarta.persistence.Index;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 @Getter
 @Entity
@@ -62,7 +61,6 @@ public class ResaleListingEntity extends ModificationTimestampEntity {
 	@Column(nullable = false)
 	private ResaleAvailableStatus availableStatus;
 
-	@Setter
 	private Integer lastTransactionPrice;
 
 	@Column(nullable = false)
@@ -120,6 +118,10 @@ public class ResaleListingEntity extends ModificationTimestampEntity {
 			dailyBasePrice,
 			listingPrice
 		);
+	}
+
+	public void initializeLastTransactionPrice(Integer lastTransactionPrice) {
+		this.lastTransactionPrice = lastTransactionPrice;
 	}
 
 	private static void validate(

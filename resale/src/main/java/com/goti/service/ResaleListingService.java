@@ -70,7 +70,7 @@ public class ResaleListingService {
 		);
 
 		if (lastTransactionPrice != null) {
-			listing.setLastTransactionPrice(lastTransactionPrice);
+			listing.initializeLastTransactionPrice(lastTransactionPrice);
 		}
 
 		ResaleListingEntity saved = listingRepository.save(listing);
