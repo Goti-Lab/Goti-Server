@@ -11,12 +11,12 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.goti.dto.request.ResaleListingCancelRequest;
 import com.goti.dto.request.ResaleListingCreateRequest;
 import com.goti.dto.response.ResaleListingResponse;
+import com.goti.global.annotation.LoginUserId;
 import com.goti.global.api.ApiSuccessResponse;
 import com.goti.service.ResaleListingService;
 
@@ -24,8 +24,10 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
-@Tag(name = "리셀 등록", description = "리셀 등록 API")
+@Slf4j
+@Tag(name = "Resale Listing", description = "리셀 등록 API")
 @RestController
 @RequestMapping("/api/v1/resale/listings")
 @RequiredArgsConstructor
@@ -39,7 +41,7 @@ public class ResaleListingController {
 	)
 	@PostMapping
 	public ResponseEntity<ApiSuccessResponse<ResaleListingResponse>> createListing(
-		@RequestParam(required = false) UUID sellerId, // TODO : 로그인 구현완료시 로그인으로 받아올 것
+		@LoginUserId UUID sellerId,
 		@Valid @RequestBody ResaleListingCreateRequest request
 	) {
 		ResaleListingResponse response = listingService.createListing(sellerId, request);
@@ -52,9 +54,10 @@ public class ResaleListingController {
 	)
 	@PutMapping("/cancel")
 	public ResponseEntity<ApiSuccessResponse<ResaleListingResponse>> cancelListing(
-		@RequestParam(required = false) UUID sellerId, // TODO : 로그인 구현완료시 로그인으로 받아올 것
+		@LoginUserId UUID sellerId,
 		@Valid @RequestBody ResaleListingCancelRequest request
 	) {
+		log.info(" 현재 접속 중인 판매자 UUID: {}", sellerId);
 		ResaleListingResponse response = listingService.cancelListing(sellerId, request);
 		return wrap(response);
 	}
@@ -65,7 +68,7 @@ public class ResaleListingController {
 	)
 	@GetMapping
 	public ResponseEntity<ApiSuccessResponse<List<ResaleListingResponse>>> getListingsBySellerId(
-		@RequestParam(required = false) UUID sellerId // TODO : 로그인 구현완료시 로그인으로 받아올 것
+		@LoginUserId UUID sellerId
 	) {
 		List<ResaleListingResponse> responses = listingService.getListingsBySellerId(sellerId);
 		return wrap(responses);

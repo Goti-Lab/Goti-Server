@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.goti.dto.request.ResaleTransactionRequest;
 import com.goti.dto.response.ResaleTransactionInitResponse;
 import com.goti.dto.response.ResaleTransactionSuccessResponse;
+import com.goti.global.annotation.LoginUserId;
 import com.goti.global.api.ApiSuccessResponse;
 import com.goti.service.ResaleTransactionService;
 
@@ -23,7 +24,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
-@Tag(name = "리셀 거래", description = "리셀 거래 API")
+@Tag(name = "Resale Transaction", description = "리셀 거래 API")
 @RestController
 @RequestMapping("/api/v1/resale/transactions")
 @RequiredArgsConstructor
@@ -36,7 +37,7 @@ public class ResaleTransactionController {
 	)
 	@PostMapping
 	public ResponseEntity<ApiSuccessResponse<ResaleTransactionInitResponse>> initTransaction(
-		@RequestParam(required = false) UUID buyerId, // TODO : 로그인 구현완료시 로그인으로 받아올 것
+		@LoginUserId UUID buyerId,
 		@Valid @RequestBody ResaleTransactionRequest request
 	) {
 		ResaleTransactionInitResponse response = transactionService.initTransaction(buyerId, request);
