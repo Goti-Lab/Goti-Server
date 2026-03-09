@@ -31,6 +31,7 @@ public class SecurityConfig {
 
 	public static final String[] PERMIT_PUBLIC_PATH = {
 		"/api/v1/auth/**",
+		"/api/v1/stadiums/**",
 		"/actuator/**",
 		"/swagger-ui/**",
 		"/v3/api-docs/**",
@@ -63,8 +64,8 @@ public class SecurityConfig {
 					.accessDeniedHandler(accessDeniedHandler)
 			).authorizeHttpRequests(
 				auth -> auth
-					.requestMatchers(PERMIT_MEMBER_PATH).hasRole("MEMBER")
 					.requestMatchers(PERMIT_PUBLIC_PATH).permitAll()
+					.requestMatchers(PERMIT_MEMBER_PATH).hasRole("MEMBER")
 					.anyRequest().authenticated()
 			).addFilterBefore(
 				jwtAuthenticationFilter,
