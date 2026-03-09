@@ -17,16 +17,16 @@ import lombok.RequiredArgsConstructor;
 public class ResaleListingRepositoryImpl implements ResaleListingRepositoryCustom {
 
 	private final JPAQueryFactory queryFactory;
-	private final QResaleListingEntity resaleListingEntity = QResaleListingEntity.resaleListingEntity;
+	private final QResaleListingEntity resaleListing = QResaleListingEntity.resaleListingEntity;
 
 	@Override
 	public boolean existsByTicketIdAndListingStatusIn(UUID ticketId, List<ResaleListingStatus> statuses) {
 		Integer fetchOne = queryFactory
 			.selectOne()
-			.from(resaleListingEntity)
+			.from(resaleListing)
 			.where(
-				resaleListingEntity.ticketId.eq(ticketId),
-				resaleListingEntity.listingStatus.in(statuses)
+				resaleListing.ticketId.eq(ticketId),
+				resaleListing.listingStatus.in(statuses)
 			)
 			.fetchFirst();
 		return fetchOne != null;
@@ -35,19 +35,11 @@ public class ResaleListingRepositoryImpl implements ResaleListingRepositoryCusto
 	@Override
 	public List<ResaleListingEntity> findByGameAndListingStatusIn(UUID gameId, List<ResaleListingStatus> statuses) {
 		return queryFactory
-			.selectFrom(resaleListingEntity)
+			.selectFrom(resaleListing)
 			.where(
-				resaleListingEntity.gameId.eq(gameId),
-				resaleListingEntity.listingStatus.in(statuses)
+				resaleListing.gameId.eq(gameId),
+				resaleListing.listingStatus.in(statuses)
 			)
-			.fetch();
-	}
-
-	@Override
-	public List<ResaleListingEntity> findBySeller(UUID sellerId) {
-		return queryFactory
-			.selectFrom(resaleListingEntity)
-			.where(resaleListingEntity.sellerId.eq(sellerId))
 			.fetch();
 	}
 
@@ -58,11 +50,11 @@ public class ResaleListingRepositoryImpl implements ResaleListingRepositoryCusto
 		ResaleListingStatus listingStatus
 	) {
 		return queryFactory
-			.selectFrom(resaleListingEntity)
+			.selectFrom(resaleListing)
 			.where(
-				resaleListingEntity.gameId.eq(gameId),
-				resaleListingEntity.gradeId.eq(gradeId),
-				resaleListingEntity.listingStatus.eq(listingStatus)
+				resaleListing.gameId.eq(gameId),
+				resaleListing.gradeId.eq(gradeId),
+				resaleListing.listingStatus.eq(listingStatus)
 			)
 			.fetch();
 	}

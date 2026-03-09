@@ -17,15 +17,15 @@ import lombok.RequiredArgsConstructor;
 public class ResalePriceHistoryRepositoryImpl implements ResalePriceHistoryRepositoryCustom {
 
 	private final JPAQueryFactory queryFactory;
-	private final QResalePriceHistoryEntity resalePriceHistoryEntity = QResalePriceHistoryEntity.resalePriceHistoryEntity;
+	private final QResalePriceHistoryEntity resalePriceHistory = QResalePriceHistoryEntity.resalePriceHistoryEntity;
 
 	@Override
 	public Optional<ResalePriceHistoryEntity> findLatestByGradeId(UUID gradeId) {
 		return Optional.ofNullable(
 			queryFactory
-				.selectFrom(resalePriceHistoryEntity)
-				.where(resalePriceHistoryEntity.gradeId.eq(gradeId))
-				.orderBy(resalePriceHistoryEntity.transactionTime.desc())
+				.selectFrom(resalePriceHistory)
+				.where(resalePriceHistory.gradeId.eq(gradeId))
+				.orderBy(resalePriceHistory.transactionTime.desc())
 				.fetchFirst()
 		);
 	}
@@ -38,13 +38,13 @@ public class ResalePriceHistoryRepositoryImpl implements ResalePriceHistoryRepos
 	) {
 		return Optional.ofNullable(
 			queryFactory
-				.selectFrom(resalePriceHistoryEntity)
+				.selectFrom(resalePriceHistory)
 				.where(
-					resalePriceHistoryEntity.gameId.eq(gameId),
-					resalePriceHistoryEntity.gradeId.eq(gradeId),
-					resalePriceHistoryEntity.transactionDate.eq(transactionDate)
+					resalePriceHistory.gameId.eq(gameId),
+					resalePriceHistory.gradeId.eq(gradeId),
+					resalePriceHistory.transactionDate.eq(transactionDate)
 				)
-				.orderBy(resalePriceHistoryEntity.transactionTime.desc())
+				.orderBy(resalePriceHistory.transactionTime.desc())
 				.fetchFirst()
 		);
 	}

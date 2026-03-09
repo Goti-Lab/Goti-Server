@@ -7,7 +7,7 @@ import java.util.UUID;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-import com.goti.dto.response.GameInfo;
+import com.goti.dto.response.TicketGameInfoResponse;
 import com.goti.service.ResaleListingService;
 import com.goti.service.ResalePriceService;
 import com.goti.service.TicketService;
@@ -44,8 +44,8 @@ public class ResaleScheduler {
 
 	@Scheduled(cron = "0 0 0 * * *")
 	public void updateDailyBasePrices() {
-		List<GameInfo> upcomingGames = ticketService.getUpcomingGames();
-		for (GameInfo info : upcomingGames) {
+		List<TicketGameInfoResponse> upcomingGames = ticketService.getUpcomingGames();
+		for (TicketGameInfoResponse info : upcomingGames) {
 			try {
 				priceService.updateDailyBasePrice(info.gameId(), info.gradeId());
 			} catch (Exception e) {

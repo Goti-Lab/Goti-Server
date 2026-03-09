@@ -2,7 +2,7 @@ package com.goti.dto.response;
 
 import java.util.UUID;
 
-public record GameInfo(
+public record TicketGameInfoResponse(
 	UUID gameId,
 	UUID gradeId
 ) {
