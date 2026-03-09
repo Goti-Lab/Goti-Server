@@ -2,6 +2,7 @@ package com.goti.service;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
@@ -27,8 +28,8 @@ public class ResalePriceService {
 	public void updateDailyBasePrice(UUID gameId, UUID gradeId) {
 		LocalDate yesterday = LocalDate.now().minusDays(1);
 
-		List<ResalePriceHistoryEntity> resaleHistories = priceHistoryRepository
-			.findByGameIdAndGradeIdAndTransactionDateOrderByTransactionPriceAsc(
+		Optional<ResalePriceHistoryEntity> resaleHistories = priceHistoryRepository
+			.findLastTransactionByGameIdAndGradeIdAndTransactionDate(
 				gameId, gradeId, yesterday
 			);
 
@@ -37,11 +38,7 @@ public class ResalePriceService {
 			return;
 		}
 
-		List<Integer> prices = resaleHistories.stream()
-			.map(ResalePriceHistoryEntity::getTransactionPrice)
-			.toList();
-
-		Integer medianPrice = calculateMedian(prices);
+		Integer lastPrice = resaleHistories.get().getTransactionPrice();
 
 		List<ResaleListingEntity> resaleListings = listingRepository.findByGameIdAndGradeIdAndListingStatus(
 			gameId,
@@ -50,17 +47,9 @@ public class ResalePriceService {
 		);
 
 		for (ResaleListingEntity resaleListing : resaleListings) {
-			resaleListing.updateDailyBasePrice(medianPrice);
+			resaleListing.updateDailyBasePrice(lastPrice);
 		}
 		listingRepository.saveAll(resaleListings);
 	}
 
-	private Integer calculateMedian(List<Integer> sortedPrices) {
-		int size = sortedPrices.size();
-		if (size % 2 == 0) {
-			return (sortedPrices.get(size / 2 - 1) + sortedPrices.get(size / 2)) / 2;
-		} else {
-			return sortedPrices.get(size / 2);
-		}
-	}
 }
