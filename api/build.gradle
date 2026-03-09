@@ -15,6 +15,9 @@ dependencies {
     // OpenTelemetry (metrics + traces + logs 자동 설정)
     implementation 'io.opentelemetry.instrumentation:opentelemetry-spring-boot-starter'
 
+    // Micrometer → OTel metrics bridge (HikariCP 등 Spring Boot 자동 등록 메트릭을 OTel로 전달)
+    implementation 'io.opentelemetry.instrumentation:opentelemetry-micrometer-1.5'
+
     implementation(project(":common"))
     implementation(project(":core"))
     implementation(project(":integration"))
