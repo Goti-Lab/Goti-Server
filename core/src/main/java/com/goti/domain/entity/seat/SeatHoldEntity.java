@@ -2,7 +2,7 @@ package com.goti.domain.entity.seat;
 
 import static lombok.AccessLevel.*;
 
-import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 import org.springframework.util.StringUtils;
@@ -55,16 +55,16 @@ public class SeatHoldEntity extends ModificationTimestampEntity {
 	private SeatHoldStatus status;
 
 	@Column(nullable = false)
-	private Instant expiredAt;
+	private LocalDateTime expiredAt;
 
-	private Instant releasedAt;
+	private LocalDateTime releasedAt;
 
 	private SeatHoldEntity(
 		SeatEntity seat,
 		GameScheduleEntity gameSchedule,
 		UUID userId,
 		String queueTokenJti,
-		Instant expiredAt
+		LocalDateTime expiredAt
 	) {
 		this.seat = seat;
 		this.gameSchedule = gameSchedule;
@@ -80,7 +80,7 @@ public class SeatHoldEntity extends ModificationTimestampEntity {
 		GameScheduleEntity game,
 		UUID userId,
 		String queueTokenJti,
-		Instant expiredAt
+		LocalDateTime expiredAt
 	) {
 		validate(userId, queueTokenJti, expiredAt);
 		return new SeatHoldEntity(seat, game, userId, queueTokenJti, expiredAt);
@@ -89,7 +89,7 @@ public class SeatHoldEntity extends ModificationTimestampEntity {
 	private static void validate(
 		UUID userId,
 		String queueTokenJti,
-		Instant expiredAt
+		LocalDateTime expiredAt
 	) {
 		Preconditions.domainValidate(
 			userId != null,
@@ -103,5 +103,14 @@ public class SeatHoldEntity extends ModificationTimestampEntity {
 			expiredAt != null,
 			"만료 시각은 필수입니다."
 		);
+	}
+
+	public void release() {
+		Preconditions.domainValidate(
+			this.status == SeatHoldStatus.HOLDING,
+			"HOLDING 상태에서만 RELEASED 상태로 변경할 수 있습니다."
+		);
+		this.status = SeatHoldStatus.RELEASED;
+		this.releasedAt = LocalDateTime.now();
 	}
 }

@@ -65,3 +65,13 @@ otel:
 logging:
   pattern:
     level: "%5p [${spring.application.name:},%X{trace_id:-},%X{span_id:-}]"
+
+seat:
+  hold:
+    ttl: 10m
+  lock:
+    wait-seconds: 1
+  hold-expiry:
+    enabled: true
+    fixed-delay-ms: 1000
+    batch-size: 200

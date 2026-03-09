@@ -3,7 +3,7 @@ package seat;
 import static org.assertj.core.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.*;
 
-import java.time.Instant;
+import java.time.LocalDateTime;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.UUID;
@@ -27,7 +27,7 @@ public class SeatHoldEntityTest {
 	GameScheduleEntity game;
 	UUID userId;
 	String queueTokenJti;
-	Instant expiredAt;
+	LocalDateTime expiredAt;
 
 	@BeforeEach
 	void setup() {
@@ -45,7 +45,7 @@ public class SeatHoldEntityTest {
 
 		userId = UUID.randomUUID();
 		queueTokenJti = "queue-token-jti-123";
-		expiredAt = Instant.now().plusSeconds(600);
+		expiredAt = LocalDateTime.now().plusSeconds(600);
 	}
 
 	@Test

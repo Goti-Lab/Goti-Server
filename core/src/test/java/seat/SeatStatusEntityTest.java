@@ -17,6 +17,7 @@ import com.goti.domain.entity.seat.SeatEntity;
 import com.goti.domain.entity.seat.SeatGradeEntity;
 import com.goti.domain.entity.seat.SeatSectionEntity;
 import com.goti.domain.entity.seat.SeatStatusEntity;
+import com.goti.exception.FieldValidationException;
 
 @ActiveProfiles("test")
 public class SeatStatusEntityTest {
@@ -47,5 +48,64 @@ public class SeatStatusEntityTest {
 		assertThat(seatStatus.getGame()).isEqualTo(game);
 		assertThat(seatStatus.getSeat()).isEqualTo(seat);
 		assertThat(seatStatus.getStatus()).isEqualTo(SeatStatus.AVAILABLE);
+	}
+
+	@Test
+	void 좌석상태_점유_성공_AVAILABLE_to_HELD() {
+		SeatStatusEntity seatStatus = SeatStatusEntity.create(game, seat);
+
+		seatStatus.hold();
+
+		assertThat(seatStatus.getStatus()).isEqualTo(SeatStatus.HELD);
+	}
+
+	@Test
+	void 좌석상태_해제_성공_HELD_to_AVAILABLE() {
+		SeatStatusEntity seatStatus = SeatStatusEntity.create(game, seat);
+		seatStatus.hold();
+
+		seatStatus.release();
+
+		assertThat(seatStatus.getStatus()).isEqualTo(SeatStatus.AVAILABLE);
+	}
+
+	@Test
+	void 좌석상태_판매_성공_HELD_to_SOLD() {
+		SeatStatusEntity seatStatus = SeatStatusEntity.create(game, seat);
+		seatStatus.hold();
+
+		seatStatus.sell();
+
+		assertThat(seatStatus.getStatus()).isEqualTo(SeatStatus.SOLD);
+	}
+
+	@Test
+	void 좌석상태_점유_실패_HELD에서_재점유() {
+		SeatStatusEntity seatStatus = SeatStatusEntity.create(game, seat);
+		seatStatus.hold();
+
+		assertThatThrownBy(seatStatus::hold)
+			.isInstanceOf(FieldValidationException.class)
+			.hasMessageContaining("좌석 점유 가능 상태에서만 점유 상태로 변경할 수 있습니다.");
+	}
+
+	@Test
+	void 좌석상태_판매_실패_AVAILABLE에서_직접판매() {
+		SeatStatusEntity seatStatus = SeatStatusEntity.create(game, seat);
+
+		assertThatThrownBy(seatStatus::sell)
+			.isInstanceOf(FieldValidationException.class)
+			.hasMessageContaining("점유 상태에서만 판매 완료 상태로 변경할 수 있습니다.");
+	}
+
+	@Test
+	void 좌석상태_해제_실패_SOLD에서_해제() {
+		SeatStatusEntity seatStatus = SeatStatusEntity.create(game, seat);
+		seatStatus.hold();
+		seatStatus.sell();
+
+		assertThatThrownBy(seatStatus::release)
+			.isInstanceOf(FieldValidationException.class)
+			.hasMessageContaining("점유 상태에서만 좌석 점유 가능 상태로 변경할 수 있습니다.");
 	}
 }
