@@ -95,6 +95,7 @@ public class ResaleTransactionService {
 		return paymentResponse;
 	}
 
+	// TODO : 점유상태가 끝나기 직전에 결제를 하면 오류가 발생 + 결제완료처리후 점유상태
 	@Transactional
 	public ResaleTransactionSuccessResponse completePayment(UUID transactionId, UUID escrowId) {
 		ResaleTransactionEntity resaleTransaction = resaleTransactionRepository.findById(transactionId)
