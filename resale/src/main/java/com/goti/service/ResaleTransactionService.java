@@ -18,10 +18,10 @@ import com.goti.dto.response.ResaleTransactionInitResponse;
 import com.goti.dto.response.ResaleTransactionSuccessResponse;
 import com.goti.exception.CustomException;
 import com.goti.global.validation.Preconditions;
-import com.goti.repository.listing.ResaleListingRepository;
-import com.goti.repository.history.ResalePriceHistoryRepository;
 import com.goti.repository.ResaleRestrictionRepository;
 import com.goti.repository.ResaleTransactionRepository;
+import com.goti.repository.history.ResalePriceHistoryRepository;
+import com.goti.repository.listing.ResaleListingRepository;
 import com.goti.utils.ResalePricePolicy;
 import com.goti.utils.ResaleRestrictionHandler;
 
@@ -31,7 +31,6 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-@Transactional
 public class ResaleTransactionService {
 	private final ResaleListingRepository listingRepository;
 	private final ResaleRestrictionRepository restrictionRepository;

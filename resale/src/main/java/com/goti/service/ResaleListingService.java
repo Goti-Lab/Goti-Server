@@ -28,7 +28,6 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
 public class ResaleListingService {
 	private final ResaleListingRepository listingRepository;
 	private final ResaleRestrictionRepository restrictionRepository;
@@ -92,9 +91,8 @@ public class ResaleListingService {
 
 		ResaleRestrictionEntity resaleRestriction =
 			restrictionRepository.findByUserId(sellerId)
-				.orElseThrow(() -> new CustomException(ErrorCode.INTERNAL_SERVER_ERROR,
-					"정보를 찾을 수 없습니다"
-				));
+				.orElseThrow(() -> new CustomException(ErrorCode.SELLER_NOT_FOUND)
+				);
 
 		restrictionHandler.validateCanCancel(resaleRestriction, resaleListing.getGameId());
 
@@ -110,7 +108,7 @@ public class ResaleListingService {
 
 	@Transactional
 	public List<ResaleListingResponse> getListingsBySellerId(UUID sellerId) {
-		List<ResaleListingEntity> resaleListings = listingRepository.findBySeller(sellerId);
+		List<ResaleListingEntity> resaleListings = listingRepository.findBySellerId(sellerId);
 
 		return resaleListings.stream()
 			.map(ResaleListingResponse::from)
