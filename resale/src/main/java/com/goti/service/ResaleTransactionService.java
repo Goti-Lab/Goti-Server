@@ -1,12 +1,15 @@
 package com.goti.service;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.goti.constants.ResaleHoldStatus;
 import com.goti.constants.ResaleTransactionStatus;
 import com.goti.constants.messages.ErrorCode;
+import com.goti.domain.entity.resale.ResaleHoldEntity;
 import com.goti.domain.entity.resale.ResaleListingEntity;
 import com.goti.domain.entity.resale.ResalePriceHistoryEntity;
 import com.goti.domain.entity.resale.ResaleRestrictionEntity;
@@ -16,6 +19,7 @@ import com.goti.dto.response.ResaleTransactionInitResponse;
 import com.goti.dto.response.ResaleTransactionSuccessResponse;
 import com.goti.exception.CustomException;
 import com.goti.global.validation.Preconditions;
+import com.goti.repository.ResaleHoldRepository;
 import com.goti.repository.ResaleRestrictionRepository;
 import com.goti.repository.ResaleTransactionRepository;
 import com.goti.repository.history.ResalePriceHistoryRepository;
@@ -30,12 +34,13 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 @RequiredArgsConstructor
 public class ResaleTransactionService {
-	private final ResaleListingRepository listingRepository;
-	private final ResaleRestrictionRepository restrictionRepository;
-	private final ResaleTransactionRepository transactionRepository;
-	private final ResalePriceHistoryRepository priceHistoryRepository;
-	private final ResaleRestrictionHandler restrictionHandler;
-	private final ResalePricePolicy pricePolicy;
+	private final ResaleListingRepository resaleListingRepository;
+	private final ResaleRestrictionRepository resaleRestrictionRepository;
+	private final ResaleTransactionRepository resaleTransactionRepository;
+	private final ResalePriceHistoryRepository resalePriceHistoryRepository;
+	private final ResaleHoldRepository resaleHoldRepository;
+	private final ResaleRestrictionHandler resaleRestrictionHandler;
+	private final ResalePricePolicy resalePricePolicy;
 	private final PaymentService paymentService;
 
 	@Transactional
@@ -43,25 +48,26 @@ public class ResaleTransactionService {
 		UUID buyerId,
 		ResaleTransactionRequest request
 	) {
-		ResaleListingEntity resaleListing = listingRepository.findById(request.listingId())
-			.orElseThrow(() -> new CustomException(ErrorCode.LISTING_NOT_FOUND));
+		ResaleHoldEntity resaleHold = resaleHoldRepository
+			.findByIdAndUserIdAndStatus(
+				request.holdId(),
+				buyerId,
+				ResaleHoldStatus.HOLDING
+			)
+			.orElseThrow(
+				() -> new CustomException(ErrorCode.RESALE_HOLD_NOT_FOUND)
+			);
 
-		Preconditions.validate(resaleListing.isPurchasable(), ErrorCode.NOT_PURCHASABLE);
+		Preconditions.validate(resaleHold.getExpiredAt().isAfter(LocalDateTime.now()), ErrorCode.RESALE_HOLD_EXPIRED);
+
+		ResaleListingEntity resaleListing = resaleHold.getResaleListing();
 
 		ResaleRestrictionEntity resaleRestriction = getOrCreateRestriction(buyerId);
-		restrictionHandler.validateCanBuy(resaleRestriction, resaleListing.getGameId());
+		resaleRestrictionHandler.validateCanBuy(resaleRestriction, resaleListing.getGameId());
 
-		ResalePricePolicy.FeeResult feeResult = pricePolicy.validateTransactionFee(
+		ResalePricePolicy.FeeResult feeResult = resalePricePolicy.validateTransactionFee(
 			resaleListing.getListingPrice()
 		);
-
-		// TODO: Redisson 으로 TTL 구현
-		try {
-			resaleListing.hold();
-			listingRepository.saveAndFlush(resaleListing);
-		} catch (Exception e) {
-			throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR);
-		}
 
 		ResaleTransactionEntity transaction = ResaleTransactionEntity.create(
 			resaleListing,
@@ -73,7 +79,7 @@ public class ResaleTransactionService {
 			feeResult.buyerTotal(),
 			feeResult.sellerTotal()
 		);
-		transactionRepository.save(transaction);
+		resaleTransactionRepository.save(transaction);
 
 		ResaleTransactionInitResponse paymentResponse = paymentService.createResalePayment(
 			resaleListing.getId(),
@@ -91,18 +97,18 @@ public class ResaleTransactionService {
 
 	@Transactional
 	public ResaleTransactionSuccessResponse completePayment(UUID transactionId, UUID escrowId) {
-		ResaleTransactionEntity resaleTransaction = transactionRepository.findById(transactionId)
+		ResaleTransactionEntity resaleTransaction = resaleTransactionRepository.findById(transactionId)
 			.orElseThrow(() -> new CustomException(ErrorCode.TRANSACTION_NOT_FOUND));
 
 		Preconditions.validate(resaleTransaction.getTransactionStatus() == ResaleTransactionStatus.PENDING,
 			ErrorCode.NOT_MATCH_STATUS, "결제 대기");
 
 		resaleTransaction.complete(escrowId);
-		transactionRepository.save(resaleTransaction);
+		resaleTransactionRepository.save(resaleTransaction);
 
 		ResaleListingEntity resaleListing = resaleTransaction.getListing();
 		resaleListing.SoldOut(resaleTransaction.getTransactionPrice());
-		listingRepository.save(resaleListing);
+		resaleListingRepository.save(resaleListing);
 
 		ResalePriceHistoryEntity resalePriceHistory = ResalePriceHistoryEntity.create(
 			resaleListing.getGameId(),
@@ -110,12 +116,12 @@ public class ResaleTransactionService {
 			resaleListing.getGradeId(),
 			resaleTransaction.getTransactionPrice()
 		);
-		priceHistoryRepository.save(resalePriceHistory);
+		resalePriceHistoryRepository.save(resalePriceHistory);
 
 		ResaleRestrictionEntity resaleRestriction = getOrCreateRestriction(resaleTransaction.getBuyerId());
-		restrictionHandler.handleAfterBuy(resaleRestriction, resaleListing.getGameId());
+		resaleRestrictionHandler.handleAfterBuy(resaleRestriction, resaleListing.getGameId());
 
-		restrictionRepository.save(resaleRestriction);
+		resaleRestrictionRepository.save(resaleRestriction);
 
 		publishTicketOwnershipTransfer(
 			resaleListing.getTicketId(),
@@ -133,12 +139,12 @@ public class ResaleTransactionService {
 	}
 
 	private ResaleRestrictionEntity getOrCreateRestriction(UUID userId) {
-		return restrictionRepository
+		return resaleRestrictionRepository
 			.findByUserId(userId)
 			.orElseGet(
 				() -> {
 					ResaleRestrictionEntity newRestriction = ResaleRestrictionEntity.create(userId);
-					return restrictionRepository.save(newRestriction);
+					return resaleRestrictionRepository.save(newRestriction);
 				});
 	}
 }

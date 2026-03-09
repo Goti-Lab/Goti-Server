@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.UUID;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -26,5 +27,14 @@ public interface ResaleListingRepository extends JpaRepository<ResaleListingEnti
 		@Param("gameId") UUID gameId,
 		@Param("gradeId") UUID gradeId,
 		@Param("listingStatus") ResaleListingStatus listingStatus
+	);
+
+	@Modifying(clearAutomatically = true)
+	@Query("UPDATE ResaleListingEntity r SET r.listingStatus = :newStatus " +
+		"WHERE r.id IN :listingIds AND r.listingStatus = :oldStatus")
+	void updateListingStatusByBatch(
+		@Param("listingIds") List<UUID> listingIds,
+		@Param("oldStatus") ResaleListingStatus oldStatus,
+		@Param("newStatus") ResaleListingStatus newStatus
 	);
 }
