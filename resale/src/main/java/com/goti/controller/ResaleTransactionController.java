@@ -16,17 +16,22 @@ import com.goti.dto.response.ResaleTransactionSuccessResponse;
 import com.goti.global.api.ApiSuccessResponse;
 import com.goti.service.ResaleTransactionService;
 
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
+@Tag(name = "리셀 거래", description = "리셀 거래 API")
 @RestController
 @RequestMapping("/api/v1/resale/transactions")
 @RequiredArgsConstructor
 public class ResaleTransactionController {
 	private final ResaleTransactionService transactionService;
 
-	@Tag(name = "거래 생성", description = "구매자가 결제를 요청하는 API")
+	@Operation(
+		summary = "거래 생성",
+		description = "구매자 결제 요청 API"
+	)
 	@PostMapping
 	public ResponseEntity<ApiSuccessResponse<ResaleTransactionInitResponse>> initTransaction(
 		@RequestParam(required = false) UUID buyerId, // TODO : 로그인 구현완료시 로그인으로 받아올 것
@@ -36,7 +41,10 @@ public class ResaleTransactionController {
 		return ApiSuccessResponse.wrap(response);
 	}
 
-	@Tag(name = "결제 완료후 호출", description = "결제 완료 후 호출하여 리셀 완료시키는 API")
+	@Operation(
+		summary = "리셀 완료",
+		description = "결제 완료 후 호출 리셀 완료 API"
+	)
 	@PostMapping("/{transactionId}/complete")
 	public ResponseEntity<ApiSuccessResponse<ResaleTransactionSuccessResponse>> completeTransaction(
 		@PathVariable UUID transactionId,

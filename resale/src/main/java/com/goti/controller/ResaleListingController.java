@@ -18,10 +18,12 @@ import com.goti.dto.response.ResaleListingResponse;
 import com.goti.global.api.ApiSuccessResponse;
 import com.goti.service.ResaleListingService;
 
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
+@Tag(name = "리셀 등록", description = "리셀 등록 API")
 @RestController
 @RequestMapping("/api/v1/resale/listings")
 @RequiredArgsConstructor
@@ -29,7 +31,10 @@ public class ResaleListingController {
 
 	private final ResaleListingService listingService;
 
-	@Tag(name = "리셀 등록", description = "리셀 등록 API")
+	@Operation(
+		summary = "리셀 등록",
+		description = "리셀 등록 API"
+	)
 	@PostMapping
 	public ResponseEntity<ApiSuccessResponse<ResaleListingResponse>> createListing(
 		@RequestParam(required = false) UUID sellerId, // TODO : 로그인 구현완료시 로그인으로 받아올 것
@@ -39,7 +44,10 @@ public class ResaleListingController {
 		return ApiSuccessResponse.wrap(response);
 	}
 
-	@Tag(name = "등록 취소", description = "등록된 리셀 취소 API")
+	@Operation(
+		summary = "등록 취소",
+		description = "리셀 취소 API"
+	)
 	@PutMapping("/cancel")
 	public ResponseEntity<ApiSuccessResponse<ResaleListingResponse>> cancelListing(
 		@RequestParam(required = false) UUID sellerId, // TODO : 로그인 구현완료시 로그인으로 받아올 것
@@ -49,7 +57,10 @@ public class ResaleListingController {
 		return ApiSuccessResponse.wrap(response);
 	}
 
-	@Tag(name = "목록 조회", description = "판매자 아이디로 등록된 리셀 목록 조회 API")
+	@Operation(
+		summary = "목록 조회",
+		description = "판매자의 리셀 목록 조회 API"
+	)
 	@GetMapping
 	public ResponseEntity<ApiSuccessResponse<List<ResaleListingResponse>>> getListingsBySellerId(
 		@RequestParam(required = false) UUID sellerId // TODO : 로그인 구현완료시 로그인으로 받아올 것
