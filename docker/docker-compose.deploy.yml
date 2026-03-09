@@ -7,9 +7,13 @@ services:
     env_file:
       - .env
     environment:
+      OTEL_SDK_DISABLED: "${OTEL_SDK_DISABLED:-false}"
+      OTEL_EXPORTER_ENABLED: "${OTEL_EXPORTER_ENABLED:-true}"
       OTEL_EXPORTER_OTLP_ENDPOINT: "http://goti-alloy:4318"
       OTEL_EXPORTER_OTLP_PROTOCOL: "http/protobuf"
       OTEL_RESOURCE_ATTRIBUTES: "service.namespace=goti,deployment.environment=dev"
+      # Experimental JVM metrics: buffer pool, system CPU
+      OTEL_INSTRUMENTATION_RUNTIME_TELEMETRY_EMIT_EXPERIMENTAL_TELEMETRY: "${OTEL_EMIT_EXPERIMENTAL:-true}"
     depends_on:
       postgres:
         condition: service_healthy

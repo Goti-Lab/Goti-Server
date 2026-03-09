@@ -4,6 +4,8 @@ dependencyManagement {
     imports {
         mavenBom 'io.opentelemetry:opentelemetry-bom:1.59.0'
         mavenBom 'io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom:2.25.0'
+        // alpha BOM: hikaricp-3.0 OTel 계측 전용. GA 승격 시 제거 예정
+        mavenBom 'io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:2.25.0-alpha'
     }
 }
 
@@ -14,6 +16,9 @@ dependencies {
 
     // OpenTelemetry (metrics + traces + logs 자동 설정)
     implementation 'io.opentelemetry.instrumentation:opentelemetry-spring-boot-starter'
+
+    // HikariCP 커넥션 풀 메트릭을 OTel로 직접 계측 (Micrometer 브릿지 없이 순수 OTel)
+    implementation 'io.opentelemetry.instrumentation:opentelemetry-hikaricp-3.0'
 
     implementation(project(":common"))
     implementation(project(":core"))
