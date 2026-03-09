@@ -3,6 +3,7 @@ package stadium;
 import static org.assertj.core.api.Assertions.*;
 
 import java.math.BigDecimal;
+import java.util.Map;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -318,7 +319,7 @@ public class StadiumEntityTest {
 
 	@Test
 	void 구장_생성_성공_좌석맵_설정_있음() {
-		String seatMapConfig = "{\"sections\": []}";
+		Map<String, Object> seatMapConfig = Map.of("sections", "sectionTest");
 
 		StadiumEntity stadium = StadiumEntity.create(
 			"광주기아챔피언스필드",
