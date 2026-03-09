@@ -58,17 +58,13 @@ public class TicketPriceEntity extends ModificationTimestampEntity {
 	@Column(nullable = false)
 	private Integer price;
 
-	@Column(nullable = false)
-	private UUID createdBy;
-
 	private TicketPriceEntity(
 		SeatGradeEntity grade,
 		TicketPricingPolicyEntity policy,
 		TicketType ticketType,
 		TicketPricingDayType dayType,
 		TicketPricingMatchType matchType,
-		Integer price,
-		UUID createdBy
+		Integer price
 	) {
 		this.grade = grade;
 		this.policy = policy;
@@ -76,7 +72,6 @@ public class TicketPriceEntity extends ModificationTimestampEntity {
 		this.dayType = dayType;
 		this.matchType = matchType;
 		this.price = price;
-		this.createdBy = createdBy;
 	}
 
 	public static TicketPriceEntity create(
@@ -85,18 +80,16 @@ public class TicketPriceEntity extends ModificationTimestampEntity {
 		TicketType ticketType,
 		TicketPricingDayType dayType,
 		TicketPricingMatchType matchType,
-		Integer price,
-		UUID createdBy
+		Integer price
 	) {
-		validate(ticketType, dayType, matchType, price, createdBy);
+		validate(ticketType, dayType, matchType, price);
 		return new TicketPriceEntity(
 			grade,
 			policy,
 			ticketType,
 			dayType,
 			matchType,
-			price,
-			createdBy
+			price
 		);
 	}
 
@@ -104,8 +97,7 @@ public class TicketPriceEntity extends ModificationTimestampEntity {
 		TicketType ticketType,
 		TicketPricingDayType dayType,
 		TicketPricingMatchType matchType,
-		Integer price,
-		UUID createdBy
+		Integer price
 	) {
 		Preconditions.domainValidate(
 			ticketType != null,
@@ -122,10 +114,6 @@ public class TicketPriceEntity extends ModificationTimestampEntity {
 		Preconditions.domainValidate(
 			price != null && price >= 0,
 			"가격은 0 이상이어야 합니다."
-		);
-		Preconditions.domainValidate(
-			createdBy != null,
-			"생성자 ID는 필수입니다."
 		);
 	}
 }

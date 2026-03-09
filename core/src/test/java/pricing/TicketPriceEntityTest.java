@@ -20,9 +20,8 @@ import com.goti.exception.FieldValidationException;
 @ActiveProfiles("test")
 class TicketPriceEntityTest {
 
-	private SeatGradeEntity grade;
-	private TicketPricingPolicyEntity policy;
-	private UUID createdBy;
+	SeatGradeEntity grade;
+	TicketPricingPolicyEntity policy;
 
 	@BeforeEach
 	void setup() {
@@ -30,10 +29,8 @@ class TicketPriceEntityTest {
 		policy = TicketPricingPolicyEntity.create(
 			UUID.randomUUID(),
 			LocalDate.of(2026, 3, 1),
-			LocalDate.of(2026, 10, 31),
-			UUID.randomUUID()
+			LocalDate.of(2026, 10, 31)
 		);
-		createdBy = UUID.randomUUID();
 	}
 
 	@Test
@@ -44,8 +41,7 @@ class TicketPriceEntityTest {
 			TicketType.ADULT,
 			TicketPricingDayType.WEEKDAY,
 			TicketPricingMatchType.REGULAR,
-			15000,
-			createdBy
+			15000
 		);
 
 		assertThat(ticketPrice.getGrade()).isEqualTo(grade);
@@ -54,7 +50,6 @@ class TicketPriceEntityTest {
 		assertThat(ticketPrice.getDayType()).isEqualTo(TicketPricingDayType.WEEKDAY);
 		assertThat(ticketPrice.getMatchType()).isEqualTo(TicketPricingMatchType.REGULAR);
 		assertThat(ticketPrice.getPrice()).isEqualTo(15000);
-		assertThat(ticketPrice.getCreatedBy()).isEqualTo(createdBy);
 	}
 
 	@Test
@@ -66,8 +61,7 @@ class TicketPriceEntityTest {
 				null,
 				TicketPricingDayType.WEEKDAY,
 				TicketPricingMatchType.REGULAR,
-				15000,
-				createdBy
+				15000
 			)
 		).isInstanceOf(FieldValidationException.class)
 			.hasMessageContaining("권종은 필수입니다.");
@@ -82,8 +76,7 @@ class TicketPriceEntityTest {
 				TicketType.ADULT,
 				null,
 				TicketPricingMatchType.REGULAR,
-				15000,
-				createdBy
+				15000
 			)
 		).isInstanceOf(FieldValidationException.class)
 			.hasMessageContaining("요일 유형은 필수입니다.");
@@ -98,8 +91,7 @@ class TicketPriceEntityTest {
 				TicketType.ADULT,
 				TicketPricingDayType.WEEKDAY,
 				null,
-				15000,
-				createdBy
+				15000
 			)
 		).isInstanceOf(FieldValidationException.class)
 			.hasMessageContaining("매치 유형은 필수입니다.");
@@ -114,26 +106,9 @@ class TicketPriceEntityTest {
 				TicketType.ADULT,
 				TicketPricingDayType.WEEKDAY,
 				TicketPricingMatchType.REGULAR,
-				-1,
-				createdBy
+				-1
 			)
 		).isInstanceOf(FieldValidationException.class)
 			.hasMessageContaining("가격은 0 이상이어야 합니다.");
-	}
-
-	@Test
-	void 티켓요금_생성_실패_생성자_null() {
-		assertThatThrownBy(
-			() -> TicketPriceEntity.create(
-				grade,
-				policy,
-				TicketType.ADULT,
-				TicketPricingDayType.WEEKDAY,
-				TicketPricingMatchType.REGULAR,
-				15000,
-				null
-			)
-		).isInstanceOf(FieldValidationException.class)
-			.hasMessageContaining("생성자 ID는 필수입니다.");
 	}
 }

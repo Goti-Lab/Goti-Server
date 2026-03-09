@@ -32,42 +32,34 @@ public class TicketPricingPolicyEntity extends ModificationTimestampEntity {
 	@Column(nullable = false)
 	private boolean isActive;
 
-	@Column(nullable = false)
-	private UUID createdBy;
-
 	private TicketPricingPolicyEntity(
 		UUID teamId,
 		LocalDate policyStartAt,
-		LocalDate policyEndAt,
-		UUID createdBy
+		LocalDate policyEndAt
 	) {
 		this.teamId = teamId;
 		this.policyStartAt = policyStartAt;
 		this.policyEndAt = policyEndAt;
 		this.isActive = true;
-		this.createdBy = createdBy;
 	}
 
 	public static TicketPricingPolicyEntity create(
 		UUID teamId,
 		LocalDate policyStartAt,
-		LocalDate policyEndAt,
-		UUID createdBy
+		LocalDate policyEndAt
 	) {
-		validate(teamId, policyStartAt, policyEndAt, createdBy);
+		validate(teamId, policyStartAt, policyEndAt);
 		return new TicketPricingPolicyEntity(
 			teamId,
 			policyStartAt,
-			policyEndAt,
-			createdBy
+			policyEndAt
 		);
 	}
 
 	private static void validate(
 		UUID teamId,
 		LocalDate policyStartAt,
-		LocalDate policyEndAt,
-		UUID createdBy
+		LocalDate policyEndAt
 	) {
 		Preconditions.domainValidate(
 			teamId != null,
@@ -84,10 +76,6 @@ public class TicketPricingPolicyEntity extends ModificationTimestampEntity {
 		Preconditions.domainValidate(
 			!policyEndAt.isBefore(policyStartAt),
 			"정책 종료일은 시작일보다 빠를 수 없습니다."
-		);
-		Preconditions.domainValidate(
-			createdBy != null,
-			"생성자 ID는 필수입니다."
 		);
 	}
 }

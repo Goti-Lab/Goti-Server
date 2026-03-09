@@ -15,17 +15,15 @@ import com.goti.exception.FieldValidationException;
 @ActiveProfiles("test")
 class TicketPricingPolicyEntityTest {
 
-	private UUID teamId;
-	private LocalDate policyStartAt;
-	private LocalDate policyEndAt;
-	private UUID createdBy;
+	UUID teamId;
+	LocalDate policyStartAt;
+	LocalDate policyEndAt;
 
 	@BeforeEach
 	void setup() {
 		teamId = UUID.randomUUID();
 		policyStartAt = LocalDate.of(2026, 3, 1);
 		policyEndAt = LocalDate.of(2026, 10, 31);
-		createdBy = UUID.randomUUID();
 	}
 
 	@Test
@@ -33,22 +31,20 @@ class TicketPricingPolicyEntityTest {
 		TicketPricingPolicyEntity policy = TicketPricingPolicyEntity.create(
 			teamId,
 			policyStartAt,
-			policyEndAt,
-			createdBy
+			policyEndAt
 		);
 
 		assertThat(policy.getTeamId()).isEqualTo(teamId);
 		assertThat(policy.getPolicyStartAt()).isEqualTo(policyStartAt);
 		assertThat(policy.getPolicyEndAt()).isEqualTo(policyEndAt);
 		assertThat(policy.isActive()).isTrue();
-		assertThat(policy.getCreatedBy()).isEqualTo(createdBy);
 	}
 
 
 	@Test
 	void 가격정책_생성_실패_팀ID_null() {
 		assertThatThrownBy(
-			() -> TicketPricingPolicyEntity.create(null, policyStartAt, policyEndAt, createdBy)
+			() -> TicketPricingPolicyEntity.create(null, policyStartAt, policyEndAt)
 		).isInstanceOf(FieldValidationException.class)
 			.hasMessageContaining("팀 ID는 필수입니다.");
 	}
@@ -56,7 +52,7 @@ class TicketPricingPolicyEntityTest {
 	@Test
 	void 가격정책_생성_실패_시작일_null() {
 		assertThatThrownBy(
-			() -> TicketPricingPolicyEntity.create(teamId, null, policyEndAt, createdBy)
+			() -> TicketPricingPolicyEntity.create(teamId, null, policyEndAt)
 		).isInstanceOf(FieldValidationException.class)
 			.hasMessageContaining("정책 시작일은 필수입니다.");
 	}
@@ -64,7 +60,7 @@ class TicketPricingPolicyEntityTest {
 	@Test
 	void 가격정책_생성_실패_종료일_null() {
 		assertThatThrownBy(
-			() -> TicketPricingPolicyEntity.create(teamId, policyStartAt, null, createdBy)
+			() -> TicketPricingPolicyEntity.create(teamId, policyStartAt, null)
 		).isInstanceOf(FieldValidationException.class)
 			.hasMessageContaining("정책 종료일은 필수입니다.");
 	}
@@ -75,18 +71,9 @@ class TicketPricingPolicyEntityTest {
 			() -> TicketPricingPolicyEntity.create(
 				teamId,
 				policyStartAt,
-				policyStartAt.minusDays(1),
-				createdBy
+				policyStartAt.minusDays(1)
 			)
 		).isInstanceOf(FieldValidationException.class)
 			.hasMessageContaining("정책 종료일은 시작일보다 빠를 수 없습니다.");
-	}
-
-	@Test
-	void 가격정책_생성_실패_생성자_null() {
-		assertThatThrownBy(
-			() -> TicketPricingPolicyEntity.create(teamId, policyStartAt, policyEndAt, null)
-		).isInstanceOf(FieldValidationException.class)
-			.hasMessageContaining("생성자 ID는 필수입니다.");
 	}
 }
