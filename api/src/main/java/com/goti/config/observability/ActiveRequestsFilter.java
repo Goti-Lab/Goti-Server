@@ -4,6 +4,8 @@ import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.LongUpDownCounter;
+import jakarta.servlet.AsyncEvent;
+import jakarta.servlet.AsyncListener;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -33,6 +35,7 @@ import java.util.List;
 @Order(Ordered.HIGHEST_PRECEDENCE + 10)
 public class ActiveRequestsFilter extends OncePerRequestFilter {
 
+    // MSA 전환 시 서비스별로 분리 필요 → @Value 주입으로 전환 검토
     private static final String METER_NAME = "goti-server";
     private static final String METRIC_NAME = "goti.http.server.active_requests";
     private static final AttributeKey<String> METHOD_KEY = AttributeKey.stringKey("http.request.method");
@@ -60,7 +63,11 @@ public class ActiveRequestsFilter extends OncePerRequestFilter {
         try {
             filterChain.doFilter(request, response);
         } finally {
-            activeRequests.add(-1, attrs);
+            if (request.isAsyncStarted()) {
+                request.getAsyncContext().addListener(new AsyncDecrementListener(attrs));
+            } else {
+                activeRequests.add(-1, attrs);
+            }
         }
     }
 
@@ -69,5 +76,35 @@ public class ActiveRequestsFilter extends OncePerRequestFilter {
     protected boolean shouldNotFilter(HttpServletRequest request) {
         String path = request.getRequestURI();
         return EXCLUDED_PREFIXES.stream().anyMatch(path::startsWith);
+    }
+
+    /** 비동기 요청 완료 시 active request 카운터를 감소시키는 리스너 */
+    private class AsyncDecrementListener implements AsyncListener {
+
+        private final Attributes attrs;
+
+        AsyncDecrementListener(Attributes attrs) {
+            this.attrs = attrs;
+        }
+
+        @Override
+        public void onComplete(AsyncEvent event) {
+            activeRequests.add(-1, attrs);
+        }
+
+        @Override
+        public void onTimeout(AsyncEvent event) {
+            activeRequests.add(-1, attrs);
+        }
+
+        @Override
+        public void onError(AsyncEvent event) {
+            activeRequests.add(-1, attrs);
+        }
+
+        @Override
+        public void onStartAsync(AsyncEvent event) {
+            // no-op
+        }
     }
 }

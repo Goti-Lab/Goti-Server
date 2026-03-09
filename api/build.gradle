@@ -4,6 +4,7 @@ dependencyManagement {
     imports {
         mavenBom 'io.opentelemetry:opentelemetry-bom:1.59.0'
         mavenBom 'io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom:2.25.0'
+        // alpha BOM: hikaricp-3.0 OTel 계측 전용. GA 승격 시 제거 예정
         mavenBom 'io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:2.25.0-alpha'
     }
 }
