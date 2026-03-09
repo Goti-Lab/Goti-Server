@@ -10,6 +10,6 @@ import com.goti.domain.entity.resale.ResaleListingEntity;
 public interface ResaleListingRepository
 	extends JpaRepository<ResaleListingEntity, UUID>, ResaleListingRepositoryCustom {
 
-	List<ResaleListingEntity> findBySellerId(UUID sellerId);
+	List<ResaleListingEntity> findAllBySellerId(UUID sellerId);
 
 }

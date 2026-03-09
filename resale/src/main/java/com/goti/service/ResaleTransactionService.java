@@ -75,7 +75,7 @@ public class ResaleTransactionService {
 			feeResult.buyerTotal(),
 			feeResult.sellerTotal()
 		);
-		ResaleTransactionEntity saved = transactionRepository.save(transaction);
+		transactionRepository.save(transaction);
 
 		ResaleTransactionInitResponse paymentResponse = paymentService.createResalePayment(
 			resaleListing.getId(),
@@ -86,7 +86,7 @@ public class ResaleTransactionService {
 		//TODO : 결제 요청후 받는 이벤트
 
 		log.info("리셀 완료 거래ID: {}, 구매자 비용: {}, 판매자 비용: {}"
-			, saved.getId(), feeResult.buyerTotal(), feeResult.sellerTotal());
+			, transaction.getId(), feeResult.buyerTotal(), feeResult.sellerTotal());
 
 		return paymentResponse;
 	}

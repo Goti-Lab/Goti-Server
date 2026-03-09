@@ -108,7 +108,7 @@ public class ResaleListingService {
 
 	@Transactional
 	public List<ResaleListingResponse> getListingsBySellerId(UUID sellerId) {
-		List<ResaleListingEntity> resaleListings = listingRepository.findBySellerId(sellerId);
+		List<ResaleListingEntity> resaleListings = listingRepository.findAllBySellerId(sellerId);
 
 		return resaleListings.stream()
 			.map(ResaleListingResponse::from)
