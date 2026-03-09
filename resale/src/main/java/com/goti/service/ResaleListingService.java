@@ -53,7 +53,7 @@ public class ResaleListingService {
 		pricePolicy.validatePriceRange(ticketInfo.ticketPrice(), request.listingPrice());
 
 		Integer lastTransactionPrice = priceHistoryRepository
-			.findByGrade(ticketInfo.gradeId())
+			.findByGameAndGrade(ticketInfo.gameId(), ticketInfo.gradeId())
 			.map(ResalePriceHistoryEntity::getTransactionPrice)
 			.orElse(null);
 
@@ -83,7 +83,9 @@ public class ResaleListingService {
 	@Transactional
 	public ResaleListingResponse cancelListing(UUID sellerId, ResaleListingCancelRequest request) {
 		ResaleListingEntity resaleListing = listingRepository.findById(request.listingId())
-			.orElseThrow(() -> new CustomException(ErrorCode.LISTING_NOT_FOUND));
+			.orElseThrow(
+				() -> new CustomException(ErrorCode.LISTING_NOT_FOUND)
+			);
 
 		validateListingOwnership(resaleListing, sellerId);
 
@@ -91,7 +93,8 @@ public class ResaleListingService {
 
 		ResaleRestrictionEntity resaleRestriction =
 			restrictionRepository.findByUserId(sellerId)
-				.orElseThrow(() -> new CustomException(ErrorCode.SELLER_NOT_FOUND)
+				.orElseThrow(
+					() -> new CustomException(ErrorCode.SELLER_NOT_FOUND)
 				);
 
 		restrictionHandler.validateCanCancel(resaleRestriction, resaleListing.getGameId());

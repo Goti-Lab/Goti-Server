@@ -139,9 +139,10 @@ public class ResaleTransactionService {
 	private ResaleRestrictionEntity getOrCreateRestriction(UUID userId) {
 		return restrictionRepository
 			.findByUserId(userId)
-			.orElseGet(() -> {
-				ResaleRestrictionEntity newRestriction = ResaleRestrictionEntity.create(userId);
-				return restrictionRepository.save(newRestriction);
-			});
+			.orElseGet(
+				() -> {
+					ResaleRestrictionEntity newRestriction = ResaleRestrictionEntity.create(userId);
+					return restrictionRepository.save(newRestriction);
+				});
 	}
 }

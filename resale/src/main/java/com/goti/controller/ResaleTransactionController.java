@@ -44,8 +44,8 @@ public class ResaleTransactionController {
 	}
 
 	@Operation(
-		summary = "리셀 완료",
-		description = "결제 완료 후 호출 리셀 완료 API"
+		summary = "리셀 완료 처리",
+		description = "결제 완료 전제 기반 리셀 처리 API"
 	)
 	@PostMapping("/{transactionId}/complete")
 	public ResponseEntity<ApiSuccessResponse<ResaleTransactionSuccessResponse>> completeTransaction(

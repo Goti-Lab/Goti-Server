@@ -20,11 +20,14 @@ public class ResalePriceHistoryRepositoryImpl implements ResalePriceHistoryRepos
 	private final QResalePriceHistoryEntity resalePriceHistory = QResalePriceHistoryEntity.resalePriceHistoryEntity;
 
 	@Override
-	public Optional<ResalePriceHistoryEntity> findByGrade(UUID gradeId) {
+	public Optional<ResalePriceHistoryEntity> findByGameAndGrade(UUID gameId, UUID gradeId) {
 		return Optional.ofNullable(
 			queryFactory
 				.selectFrom(resalePriceHistory)
-				.where(resalePriceHistory.gradeId.eq(gradeId))
+				.where(
+					resalePriceHistory.gameId.eq(gameId),
+					resalePriceHistory.gradeId.eq(gradeId)
+				)
 				.orderBy(resalePriceHistory.transactionTime.desc())
 				.fetchFirst()
 		);
