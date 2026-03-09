@@ -33,6 +33,7 @@ public enum ErrorCode {
 	INVALID_PRICE_RANGE(HttpStatus.BAD_REQUEST, "판매가는 {0} 이내여야 합니다."),
 	ALREADY_LISTED(HttpStatus.BAD_REQUEST, "이미 등록된 티켓입니다"),
 	LISTING_NOT_FOUND(HttpStatus.NOT_FOUND, "등록된 리셀을 찾을 수 없습니다"),
+	SELLER_NOT_FOUND(HttpStatus.NOT_FOUND, "판매자를 찾을 수 없습니다"),
 	LISTING_ALREADY_CLOSED(HttpStatus.BAD_REQUEST, "리셀 등록 가능한 시간이 지났습니다."),
 	NOT_PURCHASABLE(HttpStatus.BAD_REQUEST, "구매할 수 없는 상태입니다"),
 	NOT_MATCH_STATUS(HttpStatus.BAD_REQUEST, "{0}상태 에만 할 수 있습니다."),

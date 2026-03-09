@@ -11,8 +11,6 @@ public interface ResaleListingRepositoryCustom {
 
 	List<ResaleListingEntity> findByGameAndListingStatusIn(UUID gameId, List<ResaleListingStatus> statuses);
 
-	List<ResaleListingEntity> findBySeller(UUID sellerId);
-
 	List<ResaleListingEntity> findByGameAndGradeAndListingStatus(
 		UUID gameId,
 		UUID gradeId,

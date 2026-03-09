@@ -1,5 +1,7 @@
 package com.goti.controller;
 
+import static com.goti.global.api.ApiSuccessResponse.*;
+
 import java.util.UUID;
 
 import org.springframework.http.ResponseEntity;
@@ -38,7 +40,7 @@ public class ResaleTransactionController {
 		@Valid @RequestBody ResaleTransactionRequest request
 	) {
 		ResaleTransactionInitResponse response = transactionService.initTransaction(buyerId, request);
-		return ApiSuccessResponse.wrap(response);
+		return wrap(response);
 	}
 
 	@Operation(
@@ -52,7 +54,7 @@ public class ResaleTransactionController {
 	) {
 		ResaleTransactionSuccessResponse response = transactionService.completePayment(transactionId, escrowId);
 		System.out.println();
-		return ApiSuccessResponse.wrap(response);
+		return wrap(response);
 	}
 
 }

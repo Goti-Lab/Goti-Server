@@ -1,5 +1,7 @@
 package com.goti.controller;
 
+import static com.goti.global.api.ApiSuccessResponse.*;
+
 import java.util.List;
 import java.util.UUID;
 
@@ -41,7 +43,7 @@ public class ResaleListingController {
 		@Valid @RequestBody ResaleListingCreateRequest request
 	) {
 		ResaleListingResponse response = listingService.createListing(sellerId, request);
-		return ApiSuccessResponse.wrap(response);
+		return wrap(response);
 	}
 
 	@Operation(
@@ -54,7 +56,7 @@ public class ResaleListingController {
 		@Valid @RequestBody ResaleListingCancelRequest request
 	) {
 		ResaleListingResponse response = listingService.cancelListing(sellerId, request);
-		return ApiSuccessResponse.wrap(response);
+		return wrap(response);
 	}
 
 	@Operation(
@@ -66,7 +68,7 @@ public class ResaleListingController {
 		@RequestParam(required = false) UUID sellerId // TODO : 로그인 구현완료시 로그인으로 받아올 것
 	) {
 		List<ResaleListingResponse> responses = listingService.getListingsBySellerId(sellerId);
-		return ApiSuccessResponse.wrap(responses);
+		return wrap(responses);
 	}
 
 }
