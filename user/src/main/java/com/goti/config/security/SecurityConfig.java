@@ -38,7 +38,8 @@ public class SecurityConfig {
 
 	public static final String[] PERMIT_MEMBER_PATH = {
 		"/api/v1/resale/listings/**",
-		"/api/v1/resale/transactions/**"
+		"/api/v1/resale/transactions/**",
+		"/api/v1/resale/holds/**"
 	};
 
 	@Bean
