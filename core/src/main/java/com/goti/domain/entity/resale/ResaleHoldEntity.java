@@ -79,10 +79,15 @@ public class ResaleHoldEntity extends ModificationTimestampEntity {
 	}
 
 	private static void validate(
+		ResaleListingEntity resaleListing,
 		UUID userId,
 		String queueTokenJti,
 		LocalDateTime expiredAt
 	) {
+		Preconditions.domainValidate(
+			resaleListing != null,
+			"리셀 등록은 필수입니다."
+		);
 		Preconditions.domainValidate(
 			userId != null,
 			"유저 ID는 필수입니다."

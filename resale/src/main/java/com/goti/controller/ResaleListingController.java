@@ -57,7 +57,6 @@ public class ResaleListingController {
 		@LoginUserId UUID sellerId,
 		@Valid @RequestBody ResaleListingCancelRequest request
 	) {
-		log.info(" 현재 접속 중인 판매자 UUID: {}", sellerId);
 		ResaleListingResponse response = listingService.cancelListing(sellerId, request);
 		return wrap(response);
 	}
