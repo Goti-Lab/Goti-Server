@@ -7,6 +7,8 @@ services:
     env_file:
       - .env
     environment:
+      OTEL_SDK_DISABLED: "false"
+      OTEL_EXPORTER_ENABLED: "true"
       OTEL_EXPORTER_OTLP_ENDPOINT: "http://goti-alloy:4318"
       OTEL_EXPORTER_OTLP_PROTOCOL: "http/protobuf"
       OTEL_RESOURCE_ATTRIBUTES: "service.namespace=goti,deployment.environment=dev"
