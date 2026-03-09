@@ -29,7 +29,7 @@ public class ResalePriceService {
 		LocalDate yesterday = LocalDate.now().minusDays(1);
 
 		Optional<ResalePriceHistoryEntity> resaleHistories = priceHistoryRepository
-			.findLatestByGameIdAndGradeIdAndDate(
+			.findByGameAndGradeAndDate(
 				gameId, gradeId, yesterday
 			);
 
@@ -40,7 +40,7 @@ public class ResalePriceService {
 
 		Integer lastPrice = resaleHistories.get().getTransactionPrice();
 
-		List<ResaleListingEntity> resaleListings = listingRepository.findByGameAndGradeAndListingStatus(
+		List<ResaleListingEntity> resaleListings = listingRepository.findByGameAndGradeAndStatus(
 			gameId,
 			gradeId,
 			ResaleListingStatus.LISTING

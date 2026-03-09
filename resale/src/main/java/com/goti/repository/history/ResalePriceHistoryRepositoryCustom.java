@@ -7,9 +7,9 @@ import java.util.UUID;
 import com.goti.domain.entity.resale.ResalePriceHistoryEntity;
 
 public interface ResalePriceHistoryRepositoryCustom {
-	Optional<ResalePriceHistoryEntity> findLatestByGradeId(UUID gradeId);
+	Optional<ResalePriceHistoryEntity> findByGrade(UUID gradeId);
 
-	Optional<ResalePriceHistoryEntity> findLatestByGameIdAndGradeIdAndDate(
+	Optional<ResalePriceHistoryEntity> findByGameAndGradeAndDate(
 		UUID gameId,
 		UUID gradeId,
 		LocalDate transactionDate

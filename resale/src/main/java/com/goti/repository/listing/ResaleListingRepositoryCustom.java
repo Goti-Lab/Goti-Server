@@ -7,11 +7,11 @@ import com.goti.constants.ResaleListingStatus;
 import com.goti.domain.entity.resale.ResaleListingEntity;
 
 public interface ResaleListingRepositoryCustom {
-	boolean existsByTicketIdAndListingStatusIn(UUID ticketId, List<ResaleListingStatus> statuses);
+	boolean existsByTicketAndStatusIn(UUID ticketId, List<ResaleListingStatus> statuses);
 
-	List<ResaleListingEntity> findByGameAndListingStatusIn(UUID gameId, List<ResaleListingStatus> statuses);
+	List<ResaleListingEntity> findByGameAndStatusIn(UUID gameId, List<ResaleListingStatus> statuses);
 
-	List<ResaleListingEntity> findByGameAndGradeAndListingStatus(
+	List<ResaleListingEntity> findByGameAndGradeAndStatus(
 		UUID gameId,
 		UUID gradeId,
 		ResaleListingStatus listingStatus

@@ -53,7 +53,7 @@ public class ResaleListingService {
 		pricePolicy.validatePriceRange(ticketInfo.ticketPrice(), request.listingPrice());
 
 		Integer lastTransactionPrice = priceHistoryRepository
-			.findLatestByGradeId(ticketInfo.gradeId())
+			.findByGrade(ticketInfo.gradeId())
 			.map(ResalePriceHistoryEntity::getTransactionPrice)
 			.orElse(null);
 
@@ -117,7 +117,7 @@ public class ResaleListingService {
 
 	@Transactional
 	public void cancelListingCauseGameStart(UUID gameId) {
-		List<ResaleListingEntity> resaleListings = listingRepository.findByGameAndListingStatusIn(
+		List<ResaleListingEntity> resaleListings = listingRepository.findByGameAndStatusIn(
 			gameId,
 			List.of(ResaleListingStatus.LISTING, ResaleListingStatus.HOLD)
 		);
@@ -144,7 +144,7 @@ public class ResaleListingService {
 
 	private void validateDuplicateListing(UUID ticketId) {
 		Preconditions.validate(
-			!listingRepository.existsByTicketIdAndListingStatusIn(
+			!listingRepository.existsByTicketAndStatusIn(
 				ticketId,
 				List.of(ResaleListingStatus.LISTING, ResaleListingStatus.HOLD, ResaleListingStatus.SOLD)
 			), ErrorCode.ALREADY_LISTED);

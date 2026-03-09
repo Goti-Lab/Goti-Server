@@ -20,7 +20,7 @@ public class ResaleListingRepositoryImpl implements ResaleListingRepositoryCusto
 	private final QResaleListingEntity resaleListing = QResaleListingEntity.resaleListingEntity;
 
 	@Override
-	public boolean existsByTicketIdAndListingStatusIn(UUID ticketId, List<ResaleListingStatus> statuses) {
+	public boolean existsByTicketAndStatusIn(UUID ticketId, List<ResaleListingStatus> statuses) {
 		Integer fetchOne = queryFactory
 			.selectOne()
 			.from(resaleListing)
@@ -33,7 +33,7 @@ public class ResaleListingRepositoryImpl implements ResaleListingRepositoryCusto
 	}
 
 	@Override
-	public List<ResaleListingEntity> findByGameAndListingStatusIn(UUID gameId, List<ResaleListingStatus> statuses) {
+	public List<ResaleListingEntity> findByGameAndStatusIn(UUID gameId, List<ResaleListingStatus> statuses) {
 		return queryFactory
 			.selectFrom(resaleListing)
 			.where(
@@ -44,7 +44,7 @@ public class ResaleListingRepositoryImpl implements ResaleListingRepositoryCusto
 	}
 
 	@Override
-	public List<ResaleListingEntity> findByGameAndGradeAndListingStatus(
+	public List<ResaleListingEntity> findByGameAndGradeAndStatus(
 		UUID gameId,
 		UUID gradeId,
 		ResaleListingStatus listingStatus
