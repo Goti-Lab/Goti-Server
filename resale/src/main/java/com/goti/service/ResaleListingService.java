@@ -54,7 +54,7 @@ public class ResaleListingService {
 		pricePolicy.validatePriceRange(ticketInfo.ticketPrice(), request.listingPrice());
 
 		Integer lastTransactionPrice = priceHistoryRepository
-			.findFirstBySeatIdOrderByTransactionTimeDesc(ticketInfo.seatId())
+			.findFirstByGradeIdOrderByTransactionTimeDesc(ticketInfo.gradeId())
 			.map(ResalePriceHistoryEntity::getTransactionPrice)
 			.orElse(null);
 

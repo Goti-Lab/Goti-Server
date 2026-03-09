@@ -10,7 +10,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import com.goti.domain.entity.resale.ResalePriceHistoryEntity;
 
 public interface ResalePriceHistoryRepository extends JpaRepository<ResalePriceHistoryEntity, UUID> {
-	Optional<ResalePriceHistoryEntity> findFirstBySeatIdOrderByTransactionTimeDesc(UUID seatId);
+	Optional<ResalePriceHistoryEntity> findFirstByGradeIdOrderByTransactionTimeDesc(UUID gradeId);
 
 	List<ResalePriceHistoryEntity> findByGameIdAndGradeIdAndTransactionDateOrderByTransactionPriceAsc(
 		UUID gameId,
