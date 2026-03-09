@@ -4,15 +4,9 @@ import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.*;
 
-import com.goti.constants.LeagueType;
-import com.goti.constants.messages.ErrorCode;
-import com.goti.domain.entity.game.GameScheduleEntity;
-import com.goti.domain.entity.game.BaseballGameStatusEntity;
-import com.goti.exception.CustomException;
-import com.goti.game.dto.response.GameResponse;
-import com.goti.game.repository.BaseballGameRepository;
-import com.goti.game.repository.BaseballGameStatusRepository;
-import com.goti.game.service.command.CreateGameCommand;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.util.UUID;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -24,22 +18,28 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.util.UUID;
+import com.goti.constants.LeagueType;
+import com.goti.constants.messages.ErrorCode;
+import com.goti.domain.entity.game.BaseballGameStatusEntity;
+import com.goti.domain.entity.game.GameScheduleEntity;
+import com.goti.exception.CustomException;
+import com.goti.game.dto.response.GameResponse;
+import com.goti.game.repository.BaseballGameStatusRepository;
+import com.goti.game.repository.GameScheduleRepository;
+import com.goti.game.service.command.CreateGameCommand;
 
 @ActiveProfiles("test")
 @ExtendWith(MockitoExtension.class)
-class BaseballGameApplicationServiceTest {
+class GameScheduleApplicationServiceTest {
 
 	@Mock
-	private BaseballGameRepository baseballGameRepository;
+	private GameScheduleRepository gameScheduleRepository;
 
 	@Mock
 	private BaseballGameStatusRepository baseballGameStatusRepository;
 
 	@InjectMocks
-	private BaseballGameApplicationService baseballGameApplicationService;
+	private GameScheduleService baseballGameApplicationService;
 
 	private CreateGameCommand createGameCommand;
 
@@ -58,7 +58,7 @@ class BaseballGameApplicationServiceTest {
 	@Test
 	@DisplayName("method: create() - 경기 생성 성공")
 	void 경기_생성_성공() {
-		given(baseballGameRepository.existsByHomeTeamIdAndAwayTeamIdAndPlayDateAndStartAt(
+		given(gameScheduleRepository.existsByHomeTeamIdAndAwayTeamIdAndPlayDateAndStartAt(
 			any(UUID.class), any(UUID.class), any(LocalDate.class), any(LocalTime.class)
 		)).willReturn(false);
 
@@ -71,7 +71,7 @@ class BaseballGameApplicationServiceTest {
 		);
 		ReflectionTestUtils.setField(savedGame, "id", UUID.randomUUID());
 
-		given(baseballGameRepository.save(any(GameScheduleEntity.class))).willReturn(savedGame);
+		given(gameScheduleRepository.save(any(GameScheduleEntity.class))).willReturn(savedGame);
 		given(baseballGameStatusRepository.save(any(BaseballGameStatusEntity.class)))
 			.willAnswer(invocation -> invocation.getArgument(0));
 
@@ -82,14 +82,14 @@ class BaseballGameApplicationServiceTest {
 		assertThat(response.awayTeamId()).isEqualTo(createGameCommand.awayTeamId());
 		assertThat(response.stadiumId()).isEqualTo(createGameCommand.stadiumId());
 
-		verify(baseballGameRepository, times(1)).save(any(GameScheduleEntity.class));
+		verify(gameScheduleRepository, times(1)).save(any(GameScheduleEntity.class));
 		verify(baseballGameStatusRepository, times(1)).save(any(BaseballGameStatusEntity.class));
 	}
 
 	@Test
 	@DisplayName("method: create() - 동일 경기 일정 존재 시 생성 실패")
 	void 경기_생성_실패_중복_일정() {
-		given(baseballGameRepository.existsByHomeTeamIdAndAwayTeamIdAndPlayDateAndStartAt(
+		given(gameScheduleRepository.existsByHomeTeamIdAndAwayTeamIdAndPlayDateAndStartAt(
 			any(UUID.class), any(UUID.class), any(LocalDate.class), any(LocalTime.class)
 		)).willReturn(true);
 
@@ -97,7 +97,7 @@ class BaseballGameApplicationServiceTest {
 			.isInstanceOf(CustomException.class)
 			.hasMessageContaining(ErrorCode.GAME_ALREADY_EXISTS.getMessage());
 
-		verify(baseballGameRepository, never()).save(any(GameScheduleEntity.class));
+		verify(gameScheduleRepository, never()).save(any(GameScheduleEntity.class));
 		verify(baseballGameStatusRepository, never()).save(any(BaseballGameStatusEntity.class));
 	}
 }

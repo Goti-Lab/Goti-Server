@@ -10,7 +10,7 @@ import java.time.LocalTime;
 import java.util.UUID;
 
 @Repository
-public interface BaseballGameRepository extends JpaRepository<GameScheduleEntity, UUID> {
+public interface GameScheduleRepository extends JpaRepository<GameScheduleEntity, UUID> {
 	boolean existsByHomeTeamIdAndAwayTeamIdAndPlayDateAndStartAt(
 		UUID homeTeamId,
 		UUID awayTeamId,

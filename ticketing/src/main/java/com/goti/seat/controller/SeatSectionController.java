@@ -32,7 +32,7 @@ public class SeatSectionController {
 
 	@Operation(
 		summary = "좌석 구역 생성",
-		description = "좌석 등급에 속한 좌석 구역을 생성하는 API"
+		description = "좌석 등급에 속한 좌석 구역 생성 API"
 	)
 	@PostMapping
 	public ResponseEntity<ApiSuccessResponse<SeatSectionResponse>> create(
@@ -49,7 +49,7 @@ public class SeatSectionController {
 
 	@Operation(
 		summary = "좌석 구역 조회",
-		description = "구장별 좌석 구역 목록을 조회하는 API"
+		description = "구장별 좌석 구역 목록 조회 API"
 	)
 	@GetMapping
 	public ResponseEntity<ApiSuccessResponse<List<SeatSectionResponse>>> list( // TODO: 유저 인증 추가

@@ -34,7 +34,7 @@ public class SeatGradeController {
 
 	@Operation(
 		summary = "좌석 등급 생성",
-		description = "구장별 좌석 등급을 생성하는 API"
+		description = "구장별 좌석 등급 생성 API"
 	)
 	@PostMapping
 	public ResponseEntity<ApiSuccessResponse<SeatGradeResponse>> create(
@@ -50,7 +50,7 @@ public class SeatGradeController {
 
 	@Operation(
 		summary = "좌석 등급 조회",
-		description = "구장별 좌석 등급을 조회하는 API"
+		description = "구장별 좌석 등급 조회 API"
 	)
 	@GetMapping
 	public ResponseEntity<ApiSuccessResponse<List<SeatGradeResponse>>> list( // TODO: 유저 인증 추가
