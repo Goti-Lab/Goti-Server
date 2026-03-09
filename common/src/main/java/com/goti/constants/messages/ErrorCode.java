@@ -56,6 +56,11 @@ public enum ErrorCode {
 	SEAT_LOCK_ACQUIRE_FAILED(HttpStatus.BAD_REQUEST, "요청이 몰리고 있습니다. 잠시 후 다시 시도해주세요"),
 	SEAT_STATUS_NOT_FOUND(HttpStatus.NOT_FOUND, "좌석 상태를 확인할 수 없습니다."),
 	SEAT_HOLD_NOT_FOUND(HttpStatus.NOT_FOUND, "좌석 점유 정보를 찾을 수 없습니다."),
+	SEAT_SECTION_NOT_FOUND(HttpStatus.NOT_FOUND, "좌석 구역 정보를 찾을 수 없습니다."),
+	INVALID_SEAT_NUMBER_RANGE(HttpStatus.BAD_REQUEST, "시작 좌석 번호는 종료 좌석 번호보다 클 수 없습니다."),
+	SEAT_BULK_CREATE_LIMIT_EXCEEDED(HttpStatus.BAD_REQUEST, "한 번에 생성할 수 있는 좌석 수를 초과했습니다."),
+	SEAT_ALREADY_EXISTS(HttpStatus.CONFLICT, "이미 생성된 좌석이 포함되어 있습니다."),
+	SEAT_SECTION_CAPACITY_EXCEEDED(HttpStatus.BAD_REQUEST, "좌석 구역의 수용 인원을 초과할 수 없습니다."),
 
 	MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 회원입니다."),
 	SOCIAL_PROVIDER_ALREADY_LINKED(HttpStatus.BAD_REQUEST, "해당 소셜 계정은 이미 다른 회원과 연동되어 있습니다."),

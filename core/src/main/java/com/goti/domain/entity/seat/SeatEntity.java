@@ -8,6 +8,7 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.util.StringUtils;
@@ -16,7 +17,15 @@ import static lombok.AccessLevel.*;
 
 @Getter
 @Entity
-@Table(name = "seats")
+@Table(
+	name = "seats",
+	uniqueConstraints = {
+		@UniqueConstraint(
+			name = "uk_section_row_seat_num",
+			columnNames = {"section_id", "row_name", "seat_num"}
+		)
+	}
+)
 @NoArgsConstructor(access = PROTECTED)
 public class SeatEntity extends ModificationTimestampEntity {
 	@ManyToOne(fetch = FetchType.LAZY)
