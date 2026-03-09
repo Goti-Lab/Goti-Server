@@ -1,6 +1,6 @@
 package com.goti.game.repository;
 
-import com.goti.domain.entity.game.BaseballGameStatusEntity;
+import com.goti.domain.entity.game.GameStatusEntity;
 
 import com.goti.domain.entity.game.GameScheduleEntity;
 
@@ -11,6 +11,6 @@ import java.util.UUID;
 import java.util.Optional;
 
 @Repository
-public interface BaseballGameStatusRepository extends JpaRepository<BaseballGameStatusEntity, UUID> {
-	Optional<BaseballGameStatusEntity> findByGameSchedule(GameScheduleEntity gameSchedule);
+public interface GameStatusRepository extends JpaRepository<GameStatusEntity, UUID> {
+	Optional<GameStatusEntity> findByGameSchedule(GameScheduleEntity gameSchedule);
 }
