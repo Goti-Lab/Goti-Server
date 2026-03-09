@@ -7,6 +7,7 @@ import java.util.UUID;
 import org.springframework.stereotype.Service;
 
 import com.goti.dto.response.ResaleTicketResponse;
+import com.goti.dto.response.TicketGameInfoResponse;
 
 import lombok.RequiredArgsConstructor;
 
@@ -40,4 +41,16 @@ public class TicketService {
 		return List.of(UUID.fromString("8df84c70-833e-4374-85ad-fa52f92f939e"));
 	}
 
+	public List<TicketGameInfoResponse> getUpcomingGames() {
+		return List.of(
+			new TicketGameInfoResponse(
+				UUID.fromString("8df84c70-833e-4374-85ad-fa52f92f939f"),
+				UUID.fromString("8df84c70-833e-4374-85ad-fa52f92f939d")
+			),
+			new TicketGameInfoResponse(
+				UUID.fromString("8df84c70-833e-4374-85ad-fa52f92f939f"),
+				UUID.fromString("8df84c70-833e-4374-85ad-fa52f92f939c")
+			)
+		);
+	}
 }

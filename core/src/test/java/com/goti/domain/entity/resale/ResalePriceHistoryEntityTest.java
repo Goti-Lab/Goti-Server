@@ -34,18 +34,14 @@ class ResalePriceHistoryEntityTest {
 			VALID_GAME_ID,
 			VALID_SEAT_ID,
 			VALID_GRADE_ID,
-			VALID_TRANSACTION_PRICE,
-			VALID_TRANSACTION_DATE,
-			VALID_TRANSACTION_TIME
+			VALID_TRANSACTION_PRICE
 		);
 
 		assertAll(
 			() -> assertThat(entity.getGameId()).isEqualTo(VALID_GAME_ID),
 			() -> assertThat(entity.getSeatId()).isEqualTo(VALID_SEAT_ID),
 			() -> assertThat(entity.getGradeId()).isEqualTo(VALID_GRADE_ID),
-			() -> assertThat(entity.getTransactionPrice()).isEqualTo(VALID_TRANSACTION_PRICE),
-			() -> assertThat(entity.getTransactionDate()).isEqualTo(VALID_TRANSACTION_DATE),
-			() -> assertThat(entity.getTransactionTime()).isEqualTo(VALID_TRANSACTION_TIME)
+			() -> assertThat(entity.getTransactionPrice()).isEqualTo(VALID_TRANSACTION_PRICE)
 		);
 	}
 
@@ -55,32 +51,10 @@ class ResalePriceHistoryEntityTest {
 			VALID_GAME_ID,
 			VALID_SEAT_ID,
 			VALID_GRADE_ID,
-			0,
-			VALID_TRANSACTION_DATE,
-			VALID_TRANSACTION_TIME
+			0
 		);
 
 		assertThat(entity.getTransactionPrice()).isZero();
-	}
-
-	@Test
-	void 과거_날짜_성공() {
-		LocalDate pastDate = LocalDate.now().minusYears(1);
-		LocalDateTime pastDateTime = LocalDateTime.now().minusMonths(6);
-
-		ResalePriceHistoryEntity entity = ResalePriceHistoryEntity.create(
-			VALID_GAME_ID,
-			VALID_SEAT_ID,
-			VALID_GRADE_ID,
-			VALID_TRANSACTION_PRICE,
-			pastDate,
-			pastDateTime
-		);
-
-		assertAll(
-			() -> assertThat(entity.getTransactionDate()).isEqualTo(pastDate),
-			() -> assertThat(entity.getTransactionTime()).isEqualTo(pastDateTime)
-		);
 	}
 
 	@Test
@@ -90,9 +64,7 @@ class ResalePriceHistoryEntityTest {
 			null,
 			VALID_SEAT_ID,
 			VALID_GRADE_ID,
-			VALID_TRANSACTION_PRICE,
-			VALID_TRANSACTION_DATE,
-			VALID_TRANSACTION_TIME
+			VALID_TRANSACTION_PRICE
 		))
 			.isInstanceOf(FieldValidationException.class)
 			.hasMessageContaining("게임 ID는 비어 있을 수 없습니다");
@@ -104,9 +76,7 @@ class ResalePriceHistoryEntityTest {
 			VALID_GAME_ID,
 			null,
 			VALID_GRADE_ID,
-			VALID_TRANSACTION_PRICE,
-			VALID_TRANSACTION_DATE,
-			VALID_TRANSACTION_TIME
+			VALID_TRANSACTION_PRICE
 		))
 			.isInstanceOf(FieldValidationException.class)
 			.hasMessageContaining("좌석 ID는 비어 있을 수 없습니다");
@@ -118,9 +88,7 @@ class ResalePriceHistoryEntityTest {
 			VALID_GAME_ID,
 			VALID_SEAT_ID,
 			null,
-			VALID_TRANSACTION_PRICE,
-			VALID_TRANSACTION_DATE,
-			VALID_TRANSACTION_TIME
+			VALID_TRANSACTION_PRICE
 		))
 			.isInstanceOf(FieldValidationException.class)
 			.hasMessageContaining("등급 ID는 비어 있을 수 없습니다");
@@ -133,9 +101,7 @@ class ResalePriceHistoryEntityTest {
 			VALID_GAME_ID,
 			VALID_SEAT_ID,
 			VALID_GRADE_ID,
-			transactionPrice,
-			VALID_TRANSACTION_DATE,
-			VALID_TRANSACTION_TIME
+			transactionPrice
 		))
 			.isInstanceOf(FieldValidationException.class)
 			.hasMessageContaining("거래 가격은 0 이상이어야 합니다");
@@ -148,87 +114,9 @@ class ResalePriceHistoryEntityTest {
 			VALID_GAME_ID,
 			VALID_SEAT_ID,
 			VALID_GRADE_ID,
-			transactionPrice,
-			VALID_TRANSACTION_DATE,
-			VALID_TRANSACTION_TIME
+			transactionPrice
 		))
 			.isInstanceOf(FieldValidationException.class)
 			.hasMessageContaining("거래 가격은 0 이상이어야 합니다");
-	}
-
-	@Test
-	void 체결_날짜가_null_실패() {
-		assertThatThrownBy(() -> ResalePriceHistoryEntity.create(
-			VALID_GAME_ID,
-			VALID_SEAT_ID,
-			VALID_GRADE_ID,
-			VALID_TRANSACTION_PRICE,
-			null,
-			VALID_TRANSACTION_TIME
-		))
-			.isInstanceOf(FieldValidationException.class)
-			.hasMessageContaining("체결 날짜는 비어 있을 수 없습니다");
-	}
-
-	@Test
-	void 체결_날짜가_오늘_실패() {
-		LocalDate today = LocalDate.now();
-
-		assertThatThrownBy(() -> ResalePriceHistoryEntity.create(
-			VALID_GAME_ID,
-			VALID_SEAT_ID,
-			VALID_GRADE_ID,
-			VALID_TRANSACTION_PRICE,
-			today,
-			VALID_TRANSACTION_TIME
-		))
-			.isInstanceOf(FieldValidationException.class)
-			.hasMessageContaining("체결 날짜는 과거 날짜여야 합니다");
-	}
-
-	@Test
-	void 체결_날짜가_미래_실패() {
-		LocalDate futureDate = LocalDate.now().plusDays(1);
-
-		assertThatThrownBy(() -> ResalePriceHistoryEntity.create(
-			VALID_GAME_ID,
-			VALID_SEAT_ID,
-			VALID_GRADE_ID,
-			VALID_TRANSACTION_PRICE,
-			futureDate,
-			VALID_TRANSACTION_TIME
-		))
-			.isInstanceOf(FieldValidationException.class)
-			.hasMessageContaining("체결 날짜는 과거 날짜여야 합니다");
-	}
-
-	@Test
-	void 체결_일시가_null_실패() {
-		assertThatThrownBy(() -> ResalePriceHistoryEntity.create(
-			VALID_GAME_ID,
-			VALID_SEAT_ID,
-			VALID_GRADE_ID,
-			VALID_TRANSACTION_PRICE,
-			VALID_TRANSACTION_DATE,
-			null
-		))
-			.isInstanceOf(FieldValidationException.class)
-			.hasMessageContaining("체결 일시는 비어 있을 수 없습니다");
-	}
-
-	@Test
-	void 체결_일시가_미래_실패() {
-		LocalDateTime futureTime = LocalDateTime.now().plusHours(1);
-
-		assertThatThrownBy(() -> ResalePriceHistoryEntity.create(
-			VALID_GAME_ID,
-			VALID_SEAT_ID,
-			VALID_GRADE_ID,
-			VALID_TRANSACTION_PRICE,
-			VALID_TRANSACTION_DATE,
-			futureTime
-		))
-			.isInstanceOf(FieldValidationException.class)
-			.hasMessageContaining("체결 일시는 과거여야합니다");
 	}
 }

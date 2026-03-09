@@ -120,6 +120,10 @@ public class ResaleListingEntity extends ModificationTimestampEntity {
 		);
 	}
 
+	public void initializeLastTransactionPrice(Integer lastTransactionPrice) {
+		this.lastTransactionPrice = lastTransactionPrice;
+	}
+
 	private static void validate(
 		UUID ticketId,
 		UUID sellerId,
