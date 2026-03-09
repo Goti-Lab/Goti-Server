@@ -1,6 +1,8 @@
 package com.goti.service;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -24,13 +26,18 @@ public class ResalePriceService {
 	private final ResalePriceHistoryRepository priceHistoryRepository;
 	private final ResaleListingRepository listingRepository;
 
+	private static final ZoneId ZONE_ID = ZoneId.of("Asia/Seoul");
+
 	@Transactional
 	public void updateDailyBasePrice(UUID gameId, UUID gradeId) {
 		LocalDate yesterday = LocalDate.now().minusDays(1);
 
+		var startOfDay = yesterday.atStartOfDay(ZONE_ID).toInstant();
+		var endOfDay = yesterday.atTime(LocalTime.MAX).atZone(ZONE_ID).toInstant();
+
 		Optional<ResalePriceHistoryEntity> resaleHistories = priceHistoryRepository
 			.findByGameAndGradeAndDate(
-				gameId, gradeId, yesterday
+				gameId, gradeId, startOfDay, endOfDay
 			);
 
 		if (resaleHistories.isEmpty()) {

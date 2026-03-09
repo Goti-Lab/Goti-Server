@@ -1,7 +1,5 @@
 package com.goti.service;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
@@ -110,9 +108,7 @@ public class ResaleTransactionService {
 			resaleListing.getGameId(),
 			resaleListing.getSeatId(),
 			resaleListing.getGradeId(),
-			resaleTransaction.getTransactionPrice(),
-			LocalDate.now(),
-			LocalDateTime.now()
+			resaleTransaction.getTransactionPrice()
 		);
 		priceHistoryRepository.save(resalePriceHistory);
 
