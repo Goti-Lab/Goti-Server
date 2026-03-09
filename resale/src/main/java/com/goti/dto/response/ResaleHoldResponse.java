@@ -5,7 +5,7 @@ import java.util.UUID;
 public record ResaleHoldResponse(
 	UUID holdId
 ) {
-	public ResaleHoldResponse from(UUID holdId){
+	public static ResaleHoldResponse from(UUID holdId) {
 		return new ResaleHoldResponse(holdId);
 	}
 }
