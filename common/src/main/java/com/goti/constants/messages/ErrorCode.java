@@ -38,6 +38,8 @@ public enum ErrorCode {
 	NOT_PURCHASABLE(HttpStatus.BAD_REQUEST, "구매할 수 없는 상태입니다"),
 	NOT_MATCH_STATUS(HttpStatus.BAD_REQUEST, "{0}상태 에만 할 수 있습니다."),
 	TRANSACTION_NOT_FOUND(HttpStatus.NOT_FOUND, "등록된 리셀을 찾을 수 없습니다"),
+	RESALE_HOLD_NOT_FOUND(HttpStatus.NOT_FOUND, "리셀 점유 정보를 찾을 수 없습니다."),
+	RESALE_HOLD_EXPIRED(HttpStatus.BAD_REQUEST, "리셀 점유 시간이 만료되었습니다."),
 
 	AUTH_INVALID_ACCESS_PATH(HttpStatus.UNAUTHORIZED, "올바르지 않은 접근 경로입니다."),
 	AUTH_PERMISSION_DENIED(HttpStatus.FORBIDDEN, "접근 권한이 없습니다."),
