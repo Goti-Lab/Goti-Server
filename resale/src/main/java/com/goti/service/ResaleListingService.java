@@ -47,9 +47,9 @@ public class ResaleListingService {
 
 		validateDuplicateListing(ticketInfo.ticketId());
 
-		ResaleRestrictionEntity restriction = getOrCreateRestriction(sellerId);
+		ResaleRestrictionEntity resaleRestriction = getOrCreateRestriction(sellerId);
 
-		restrictionHandler.validateCanSell(restriction, ticketInfo.gameId());
+		restrictionHandler.validateCanSell(resaleRestriction, ticketInfo.gameId());
 
 		pricePolicy.validatePriceRange(ticketInfo.ticketPrice(), request.listingPrice());
 
@@ -58,7 +58,7 @@ public class ResaleListingService {
 			.map(ResalePriceHistoryEntity::getTransactionPrice)
 			.orElse(null);
 
-		ResaleListingEntity listing = ResaleListingEntity.create(
+		ResaleListingEntity resaleListing = ResaleListingEntity.create(
 			ticketInfo.ticketId(),
 			sellerId,
 			ticketInfo.gameId(),
@@ -70,68 +70,68 @@ public class ResaleListingService {
 		);
 
 		if (lastTransactionPrice != null) {
-			listing.initializeLastTransactionPrice(lastTransactionPrice);
+			resaleListing.initializeLastTransactionPrice(lastTransactionPrice);
 		}
 
-		ResaleListingEntity saved = listingRepository.save(listing);
+		listingRepository.save(resaleListing);
 
-		restrictionHandler.handleAfterSell(restriction, ticketInfo.gameId());
-		restrictionRepository.save(restriction);
+		restrictionHandler.handleAfterSell(resaleRestriction, ticketInfo.gameId());
+		restrictionRepository.save(resaleRestriction);
 
-		return ResaleListingResponse.from(saved);
+		return ResaleListingResponse.from(resaleListing);
 	}
 
 	@Transactional
 	public ResaleListingResponse cancelListing(UUID sellerId, ResaleListingCancelRequest request) {
-		ResaleListingEntity listing = listingRepository.findById(request.listingId())
+		ResaleListingEntity resaleListing = listingRepository.findById(request.listingId())
 			.orElseThrow(() -> new CustomException(ErrorCode.LISTING_NOT_FOUND));
 
-		validateListingOwnership(listing, sellerId);
+		validateListingOwnership(resaleListing, sellerId);
 
-		validateCancelable(listing);
+		validateCancelable(resaleListing);
 
-		ResaleRestrictionEntity restriction =
+		ResaleRestrictionEntity resaleRestriction =
 			restrictionRepository.findByUserId(sellerId)
 				.orElseThrow(() -> new CustomException(ErrorCode.INTERNAL_SERVER_ERROR,
 					"정보를 찾을 수 없습니다"
 				));
 
-		restrictionHandler.validateCanCancel(restriction, listing.getGameId());
+		restrictionHandler.validateCanCancel(resaleRestriction, resaleListing.getGameId());
 
-		listing.cancel();
+		resaleListing.cancel();
 
-		ResaleListingEntity saved = listingRepository.save(listing);
+		listingRepository.save(resaleListing);
 
-		restrictionHandler.handleAfterCancel(restriction, listing.getGameId());
-		restrictionRepository.save(restriction);
+		restrictionHandler.handleAfterCancel(resaleRestriction, resaleListing.getGameId());
+		restrictionRepository.save(resaleRestriction);
 
-		return ResaleListingResponse.from(saved);
+		return ResaleListingResponse.from(resaleListing);
 	}
 
 	@Transactional
 	public List<ResaleListingResponse> getListingsBySellerId(UUID sellerId) {
-		List<ResaleListingEntity> listings = listingRepository.findBySellerId(sellerId);
+		List<ResaleListingEntity> resaleListings = listingRepository.findBySellerId(sellerId);
 
-		return listings.stream()
+		return resaleListings.stream()
 			.map(ResaleListingResponse::from)
 			.toList();
 	}
 
 	@Transactional
 	public void cancelListingCauseGameStart(UUID gameId) {
-		List<ResaleListingEntity> listings = listingRepository.findByGameIdAndListingStatusIn(
+		List<ResaleListingEntity> resaleListings = listingRepository.findByGameIdAndListingStatusIn(
 			gameId,
 			List.of(ResaleListingStatus.LISTING, ResaleListingStatus.HOLD)
 		);
 
-		for (ResaleListingEntity listing : listings) {
+		for (ResaleListingEntity listing : resaleListings) {
 			listing.cancelByGameStart();
 			listingRepository.save(listing);
 
-			ResaleRestrictionEntity restriction = getOrCreateRestriction(listing.getSellerId());
+			ResaleRestrictionEntity resaleRestriction = getOrCreateRestriction(listing.getSellerId());
 
-			restrictionHandler.handleAfterCancel(restriction, listing.getGameId());
-			restrictionRepository.save(restriction);
+			restrictionHandler.handleAfterCancel(resaleRestriction, listing.getGameId());
+			restrictionRepository.save(resaleRestriction);
 		}
 	}
 

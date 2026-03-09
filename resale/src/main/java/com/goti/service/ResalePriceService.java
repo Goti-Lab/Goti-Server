@@ -27,32 +27,32 @@ public class ResalePriceService {
 	public void updateDailyBasePrice(UUID gameId, UUID gradeId) {
 		LocalDate yesterday = LocalDate.now().minusDays(1);
 
-		List<ResalePriceHistoryEntity> histories = priceHistoryRepository
+		List<ResalePriceHistoryEntity> resaleHistories = priceHistoryRepository
 			.findByGameIdAndGradeIdAndTransactionDateOrderByTransactionPriceAsc(
 				gameId, gradeId, yesterday
 			);
 
-		if (histories.isEmpty()) {
+		if (resaleHistories.isEmpty()) {
 			log.info("거래내역이 없습니다., gameId : {}, gradeId: {}", gameId, gradeId);
 			return;
 		}
 
-		List<Integer> prices = histories.stream()
+		List<Integer> prices = resaleHistories.stream()
 			.map(ResalePriceHistoryEntity::getTransactionPrice)
 			.toList();
 
 		Integer medianPrice = calculateMedian(prices);
 
-		List<ResaleListingEntity> listings = listingRepository.findByGameIdAndGradeIdAndListingStatus(
+		List<ResaleListingEntity> resaleListings = listingRepository.findByGameIdAndGradeIdAndListingStatus(
 			gameId,
 			gradeId,
 			ResaleListingStatus.LISTING
 		);
 
-		for (ResaleListingEntity listing : listings) {
-			listing.updateDailyBasePrice(medianPrice);
+		for (ResaleListingEntity resaleListing : resaleListings) {
+			resaleListing.updateDailyBasePrice(medianPrice);
 		}
-		listingRepository.saveAll(listings);
+		listingRepository.saveAll(resaleListings);
 	}
 
 	private Integer calculateMedian(List<Integer> sortedPrices) {

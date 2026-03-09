@@ -46,31 +46,31 @@ public class ResaleTransactionService {
 		UUID buyerId,
 		ResaleTransactionRequest request
 	) {
-		ResaleListingEntity listing = listingRepository.findById(request.listingId())
+		ResaleListingEntity resaleListing = listingRepository.findById(request.listingId())
 			.orElseThrow(() -> new CustomException(ErrorCode.LISTING_NOT_FOUND));
 
-		Preconditions.validate(listing.isPurchasable(), ErrorCode.NOT_PURCHASABLE);
+		Preconditions.validate(resaleListing.isPurchasable(), ErrorCode.NOT_PURCHASABLE);
 
-		ResaleRestrictionEntity restriction = getOrCreateRestriction(buyerId);
-		restrictionHandler.validateCanBuy(restriction, listing.getGameId());
+		ResaleRestrictionEntity resaleRestriction = getOrCreateRestriction(buyerId);
+		restrictionHandler.validateCanBuy(resaleRestriction, resaleListing.getGameId());
 
 		ResalePricePolicy.FeeResult feeResult = pricePolicy.validateTransactionFee(
-			listing.getListingPrice()
+			resaleListing.getListingPrice()
 		);
 
 		// TODO: Redisson 으로 TTL 구현
 		try {
-			listing.hold();
-			listingRepository.saveAndFlush(listing);
+			resaleListing.hold();
+			listingRepository.saveAndFlush(resaleListing);
 		} catch (Exception e) {
 			throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR);
 		}
 
 		ResaleTransactionEntity transaction = ResaleTransactionEntity.create(
-			listing,
+			resaleListing,
 			buyerId,
-			listing.getSellerId(),
-			listing.getListingPrice(),
+			resaleListing.getSellerId(),
+			resaleListing.getListingPrice(),
 			feeResult.buyerFee(),
 			feeResult.sellerFee(),
 			feeResult.buyerTotal(),
@@ -79,7 +79,7 @@ public class ResaleTransactionService {
 		ResaleTransactionEntity saved = transactionRepository.save(transaction);
 
 		ResaleTransactionInitResponse paymentResponse = paymentService.createResalePayment(
-			listing.getId(),
+			resaleListing.getId(),
 			transaction.getId(),
 			buyerId,
 			feeResult.buyerTotal());
@@ -94,41 +94,41 @@ public class ResaleTransactionService {
 
 	@Transactional
 	public ResaleTransactionSuccessResponse completePayment(UUID transactionId, UUID escrowId) {
-		ResaleTransactionEntity transaction = transactionRepository.findById(transactionId)
+		ResaleTransactionEntity resaleTransaction = transactionRepository.findById(transactionId)
 			.orElseThrow(() -> new CustomException(ErrorCode.TRANSACTION_NOT_FOUND));
 
-		Preconditions.validate(transaction.getTransactionStatus() == ResaleTransactionStatus.PENDING,
+		Preconditions.validate(resaleTransaction.getTransactionStatus() == ResaleTransactionStatus.PENDING,
 			ErrorCode.NOT_MATCH_STATUS, "결제 대기");
 
-		transaction.complete(escrowId);
-		transactionRepository.save(transaction);
+		resaleTransaction.complete(escrowId);
+		transactionRepository.save(resaleTransaction);
 
-		ResaleListingEntity listing = transaction.getListing();
-		listing.SoldOut(transaction.getTransactionPrice());
-		listingRepository.save(listing);
+		ResaleListingEntity resaleListing = resaleTransaction.getListing();
+		resaleListing.SoldOut(resaleTransaction.getTransactionPrice());
+		listingRepository.save(resaleListing);
 
-		ResalePriceHistoryEntity priceHistory = ResalePriceHistoryEntity.create(
-			listing.getGameId(),
-			listing.getSeatId(),
-			listing.getGradeId(),
-			transaction.getTransactionPrice(),
+		ResalePriceHistoryEntity resalePriceHistory = ResalePriceHistoryEntity.create(
+			resaleListing.getGameId(),
+			resaleListing.getSeatId(),
+			resaleListing.getGradeId(),
+			resaleTransaction.getTransactionPrice(),
 			LocalDate.now(),
 			LocalDateTime.now()
 		);
-		priceHistoryRepository.save(priceHistory);
+		priceHistoryRepository.save(resalePriceHistory);
 
-		ResaleRestrictionEntity restriction = getOrCreateRestriction(transaction.getBuyerId());
-		restrictionHandler.handleAfterBuy(restriction, listing.getGameId());
+		ResaleRestrictionEntity resaleRestriction = getOrCreateRestriction(resaleTransaction.getBuyerId());
+		restrictionHandler.handleAfterBuy(resaleRestriction, resaleListing.getGameId());
 
-		restrictionRepository.save(restriction);
+		restrictionRepository.save(resaleRestriction);
 
 		publishTicketOwnershipTransfer(
-			listing.getTicketId(),
-			listing.getSellerId(),
-			transaction.getBuyerId()
+			resaleListing.getTicketId(),
+			resaleListing.getSellerId(),
+			resaleTransaction.getBuyerId()
 		);
 
-		return ResaleTransactionSuccessResponse.result(transaction);
+		return ResaleTransactionSuccessResponse.result(resaleTransaction);
 	}
 
 	private void publishTicketOwnershipTransfer(UUID ticketId, UUID sellerId, UUID buyerId) {
