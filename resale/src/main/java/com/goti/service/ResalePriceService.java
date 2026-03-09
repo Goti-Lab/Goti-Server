@@ -11,8 +11,8 @@ import org.springframework.transaction.annotation.Transactional;
 import com.goti.constants.ResaleListingStatus;
 import com.goti.domain.entity.resale.ResaleListingEntity;
 import com.goti.domain.entity.resale.ResalePriceHistoryEntity;
-import com.goti.repository.ResaleListingRepository;
-import com.goti.repository.ResalePriceHistoryRepository;
+import com.goti.repository.history.ResalePriceHistoryRepository;
+import com.goti.repository.listing.ResaleListingRepository;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -29,7 +29,7 @@ public class ResalePriceService {
 		LocalDate yesterday = LocalDate.now().minusDays(1);
 
 		Optional<ResalePriceHistoryEntity> resaleHistories = priceHistoryRepository
-			.findLastTransactionByGameIdAndGradeIdAndTransactionDate(
+			.findLatestByGameIdAndGradeIdAndDate(
 				gameId, gradeId, yesterday
 			);
 
@@ -40,7 +40,7 @@ public class ResalePriceService {
 
 		Integer lastPrice = resaleHistories.get().getTransactionPrice();
 
-		List<ResaleListingEntity> resaleListings = listingRepository.findByGameIdAndGradeIdAndListingStatus(
+		List<ResaleListingEntity> resaleListings = listingRepository.findByGameAndGradeAndListingStatus(
 			gameId,
 			gradeId,
 			ResaleListingStatus.LISTING
