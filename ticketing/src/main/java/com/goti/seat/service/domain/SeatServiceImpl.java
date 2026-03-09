@@ -13,6 +13,7 @@ import com.goti.domain.entity.seat.SeatSectionEntity;
 import com.goti.exception.CustomException;
 import com.goti.global.validation.Preconditions;
 import com.goti.seat.dto.response.BulkCreateSeatsResponse;
+import com.goti.seat.dto.response.SeatResponse;
 import com.goti.seat.repository.SeatRepository;
 import com.goti.seat.repository.SeatSectionRepository;
 
@@ -82,5 +83,13 @@ public class SeatServiceImpl implements SeatService {
 			startSeatNumber,
 			endSeatNumber
 		);
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public List<SeatResponse> get(UUID sectionId) {
+		return seatRepository.findAllBySection(sectionId).stream()
+			.map(SeatResponse::from)
+			.toList();
 	}
 }

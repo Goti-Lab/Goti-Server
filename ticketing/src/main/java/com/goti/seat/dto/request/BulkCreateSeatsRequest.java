@@ -14,11 +14,11 @@ public record BulkCreateSeatsRequest(
 	String rowName,
 
 	@NotNull(message = "시작 좌석 번호는 필수입니다.")
-	@Positive(message = "시작 좌석 번호는 1 이상이어야 합니다.")
+	@Positive(message = "시작 좌석 번호는 0보다 커야합니다.")
 	Integer startSeatNumber,
 
 	@NotNull(message = "종료 좌석 번호는 필수입니다.")
-	@Positive(message = "종료 좌석 번호는 1 이상이어야 합니다.")
+	@Positive(message = "종료 좌석 번호는 0보다 커야합니다.")
 	Integer endSeatNumber
 ) {
 }
