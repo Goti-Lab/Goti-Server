@@ -35,7 +35,7 @@ import java.util.List;
 @Order(Ordered.HIGHEST_PRECEDENCE + 10)
 public class ActiveRequestsFilter extends OncePerRequestFilter {
 
-    // MSA 전환 시 서비스별로 분리 필요 → @Value 주입으로 전환 검토
+    // TODO: MSA 전환 시 서비스별로 분리 필요 → @Value 주입으로 전환 검토
     private static final String METER_NAME = "goti-server";
     private static final String METRIC_NAME = "goti.http.server.active_requests";
     private static final AttributeKey<String> METHOD_KEY = AttributeKey.stringKey("http.request.method");
