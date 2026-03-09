@@ -18,9 +18,9 @@ import com.goti.dto.response.ResaleListingResponse;
 import com.goti.dto.response.ResaleTicketResponse;
 import com.goti.exception.CustomException;
 import com.goti.global.validation.Preconditions;
-import com.goti.repository.ResaleListingRepository;
-import com.goti.repository.ResalePriceHistoryRepository;
 import com.goti.repository.ResaleRestrictionRepository;
+import com.goti.repository.history.ResalePriceHistoryRepository;
+import com.goti.repository.listing.ResaleListingRepository;
 import com.goti.utils.ResalePricePolicy;
 import com.goti.utils.ResaleRestrictionHandler;
 
@@ -54,7 +54,7 @@ public class ResaleListingService {
 		pricePolicy.validatePriceRange(ticketInfo.ticketPrice(), request.listingPrice());
 
 		Integer lastTransactionPrice = priceHistoryRepository
-			.findFirstByGradeIdOrderByTransactionTimeDesc(ticketInfo.gradeId())
+			.findLatestByGradeId(ticketInfo.gradeId())
 			.map(ResalePriceHistoryEntity::getTransactionPrice)
 			.orElse(null);
 
@@ -110,7 +110,7 @@ public class ResaleListingService {
 
 	@Transactional
 	public List<ResaleListingResponse> getListingsBySellerId(UUID sellerId) {
-		List<ResaleListingEntity> resaleListings = listingRepository.findBySellerId(sellerId);
+		List<ResaleListingEntity> resaleListings = listingRepository.findBySeller(sellerId);
 
 		return resaleListings.stream()
 			.map(ResaleListingResponse::from)
@@ -119,7 +119,7 @@ public class ResaleListingService {
 
 	@Transactional
 	public void cancelListingCauseGameStart(UUID gameId) {
-		List<ResaleListingEntity> resaleListings = listingRepository.findByGameIdAndListingStatusIn(
+		List<ResaleListingEntity> resaleListings = listingRepository.findByGameAndListingStatusIn(
 			gameId,
 			List.of(ResaleListingStatus.LISTING, ResaleListingStatus.HOLD)
 		);
