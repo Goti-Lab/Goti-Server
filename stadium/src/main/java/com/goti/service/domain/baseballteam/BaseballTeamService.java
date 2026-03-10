@@ -1,7 +1,13 @@
 package com.goti.service.domain.baseballteam;
 
 import com.goti.constants.TeamCode;
+import com.goti.domain.entity.team.BaseballTeamEntity;
 import com.goti.dto.response.BaseballTeamCreateResponse;
+
+import javax.swing.text.html.Option;
+
+import java.util.Optional;
+import java.util.UUID;
 
 public interface BaseballTeamService {
 
@@ -22,4 +28,6 @@ public interface BaseballTeamService {
 		String director,
 		String logoUrl
 	);
+
+	BaseballTeamEntity getById(UUID teamId);
 }

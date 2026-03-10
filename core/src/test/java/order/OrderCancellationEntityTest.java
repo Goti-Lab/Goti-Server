@@ -3,8 +3,11 @@ package order;
 import static org.assertj.core.api.Assertions.*;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.UUID;
+
+import com.goti.constants.LeagueType;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -35,8 +38,8 @@ class OrderCancellationEntityTest {
 			UUID.randomUUID(),
 			UUID.randomUUID(),
 			UUID.randomUUID(),
-			LocalDate.of(2026, 4, 1),
-			LocalTime.of(18, 30)
+			LocalDateTime.now().plusDays(3),
+			LeagueType.REGULAR
 		);
 		order = OrderEntity.create("ORD-20260309-0001", UUID.randomUUID(), gameSchedule, 2, 24000);
 		requestedBy = UUID.randomUUID();

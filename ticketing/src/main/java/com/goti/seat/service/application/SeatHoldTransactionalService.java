@@ -10,7 +10,7 @@ import com.goti.constants.messages.ErrorCode;
 import com.goti.domain.entity.seat.SeatHoldEntity;
 import com.goti.domain.entity.seat.SeatStatusEntity;
 import com.goti.exception.CustomException;
-import com.goti.game.repository.GameScheduleRepository;
+import com.goti.game.repository.gameschedule.GameScheduleRepository;
 import com.goti.global.validation.Preconditions;
 import com.goti.seat.config.properties.SeatHoldProperties;
 import com.goti.seat.repository.SeatHoldRepository;

@@ -9,7 +9,7 @@ import com.goti.constants.messages.ErrorCode;
 import com.goti.domain.entity.game.GameScheduleEntity;
 import com.goti.domain.entity.order.OrderEntity;
 import com.goti.exception.CustomException;
-import com.goti.game.repository.GameScheduleRepository;
+import com.goti.game.repository.gameschedule.GameScheduleRepository;
 import com.goti.order.dto.request.OrderCreateRequest;
 import com.goti.order.dto.response.OrderCreateResponse;
 import com.goti.order.service.domain.OrderHistoryService;

@@ -2,9 +2,10 @@ package order;
 
 import static org.assertj.core.api.Assertions.*;
 
-import java.time.LocalDate;
-import java.time.LocalTime;
+import java.time.LocalDateTime;
 import java.util.UUID;
+
+import com.goti.constants.LeagueType;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -35,8 +36,8 @@ class OrderEntityTest {
 			UUID.randomUUID(),
 			UUID.randomUUID(),
 			UUID.randomUUID(),
-			LocalDate.of(2026, 4, 1),
-			LocalTime.of(18, 30)
+			LocalDateTime.now().plusDays(3),
+			LeagueType.REGULAR
 		);
 		totalQuantity = 2;
 		totalAmount = 24000;

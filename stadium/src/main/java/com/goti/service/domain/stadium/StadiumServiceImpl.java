@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.Map;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -45,5 +46,10 @@ public class StadiumServiceImpl implements StadiumService {
 		stadiumRepository.save(stadium);
 
 		return StadiumCreateResponse.from(stadium);
+	}
+
+	@Override
+	public StadiumEntity getById(UUID stadiumId) {
+		return stadiumRepository.findByIdOrThrow(stadiumId);
 	}
 }

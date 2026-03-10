@@ -3,10 +3,10 @@ package game;
 import static org.assertj.core.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.*;
 
-import java.time.LocalDate;
-import java.time.LocalTime;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
+import com.goti.constants.LeagueType;
 import com.goti.exception.FieldValidationException;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -26,14 +26,17 @@ public class GameStatusEntityTest {
 
 	GameScheduleEntity gameSchedule;
 
+	static final LocalDateTime START_AT = LocalDateTime.now().plusDays(3);
+	static final LeagueType LEAGUE_TYPE = LeagueType.REGULAR;
+
 	@BeforeEach
 	void setup() {
 		gameSchedule = GameScheduleEntity.create(
 			UUID.randomUUID(),
 			UUID.randomUUID(),
 			UUID.randomUUID(),
-			LocalDate.of(2026, 4, 1),
-			LocalTime.of(18, 30)
+			START_AT,
+			LEAGUE_TYPE
 		);
 	}
 

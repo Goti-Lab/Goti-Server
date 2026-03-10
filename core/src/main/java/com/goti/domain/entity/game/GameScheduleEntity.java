@@ -14,6 +14,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.UUID;
 
@@ -34,10 +35,7 @@ public class GameScheduleEntity extends ModificationTimestampEntity {
 	private UUID stadiumId;
 
 	@Column(nullable = false)
-	private LocalDate playDate;
-
-	@Column(nullable = false)
-	private LocalTime startAt;
+	private LocalDateTime startAt;
 
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false)
@@ -47,33 +45,32 @@ public class GameScheduleEntity extends ModificationTimestampEntity {
 		UUID homeTeamId,
 		UUID awayTeamId,
 		UUID stadiumId,
-		LocalDate playDate,
-		LocalTime startAt
+		LocalDateTime startAt,
+		LeagueType leagueType
 	) {
 		this.homeTeamId = homeTeamId;
 		this.awayTeamId = awayTeamId;
 		this.stadiumId = stadiumId;
-		this.playDate = playDate;
 		this.startAt = startAt;
-		this.leagueType = LeagueType.REGULAR;
+		this.leagueType = leagueType;
 	}
 
 	public static GameScheduleEntity create(
 		UUID homeTeamId,
 		UUID awayTeamId,
 		UUID stadiumId,
-		LocalDate playDate,
-		LocalTime startAt
+		LocalDateTime startAt,
+		LeagueType leagueType
 	) {
 
-		validate(homeTeamId, awayTeamId, stadiumId, playDate, startAt);
+		validate(homeTeamId, awayTeamId, stadiumId, startAt, leagueType);
 
 		return new GameScheduleEntity(
 			homeTeamId,
 			awayTeamId,
 			stadiumId,
-			playDate,
-			startAt
+			startAt,
+			leagueType
 		);
 	}
 
@@ -81,8 +78,8 @@ public class GameScheduleEntity extends ModificationTimestampEntity {
 		UUID homeTeamId,
 		UUID awayTeamId,
 		UUID stadiumId,
-		LocalDate playDate,
-		LocalTime startAt
+		LocalDateTime startAt,
+		LeagueType leagueType
 	) {
 
 		Preconditions.domainValidate(
@@ -104,12 +101,15 @@ public class GameScheduleEntity extends ModificationTimestampEntity {
 		);
 
 		Preconditions.domainValidate(
-			playDate != null,
-			"경기 날짜는 필수입니다."
-		);
-		Preconditions.domainValidate(
 			startAt != null,
 			"경기 시작 시간은 필수입니다."
 		);
+
+		Preconditions.domainValidate(
+			leagueType != null,
+			"경기 타입은 필수입니다."
+		);
+
+
 	}
 }

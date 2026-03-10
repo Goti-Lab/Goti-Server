@@ -4,9 +4,9 @@ import static org.assertj.core.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.time.LocalDateTime;
-import java.time.LocalDate;
-import java.time.LocalTime;
 import java.util.UUID;
+
+import com.goti.constants.LeagueType;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -29,6 +29,9 @@ public class SeatHoldEntityTest {
 	String queueTokenJti;
 	LocalDateTime expiredAt;
 
+	static final LocalDateTime START_AT = LocalDateTime.now().plusDays(3);
+	static final LeagueType LEAGUE_TYPE = LeagueType.REGULAR;
+
 	@BeforeEach
 	void setup() {
 		SeatGradeEntity seatGrade = SeatGradeEntity.create(UUID.randomUUID(), "VIP", "#FFAA00");
@@ -39,8 +42,8 @@ public class SeatHoldEntityTest {
 			UUID.randomUUID(),
 			UUID.randomUUID(),
 			UUID.randomUUID(),
-			LocalDate.of(2026, 4, 1),
-			LocalTime.of(18, 30)
+			START_AT,
+			LEAGUE_TYPE
 		);
 
 		userId = UUID.randomUUID();

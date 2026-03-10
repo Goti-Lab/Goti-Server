@@ -3,10 +3,13 @@ package order;
 import static org.assertj.core.api.Assertions.*;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.UUID;
 
 import com.goti.domain.entity.order.OrderHistoryEntity;
+import com.goti.constants.LeagueType;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -25,6 +28,8 @@ class OrderHistoryEntityTest {
 	String name;
 	String mobile;
 	String email;
+	static final LocalDateTime START_AT = LocalDateTime.now().plusDays(3);
+	static final LeagueType LEAGUE_TYPE = LeagueType.REGULAR;
 
 	@BeforeEach
 	void setup() {
@@ -32,8 +37,8 @@ class OrderHistoryEntityTest {
 			UUID.randomUUID(),
 			UUID.randomUUID(),
 			UUID.randomUUID(),
-			LocalDate.of(2026, 4, 1),
-			LocalTime.of(18, 30)
+			START_AT,
+			LEAGUE_TYPE
 		);
 
 		order = OrderEntity.create(

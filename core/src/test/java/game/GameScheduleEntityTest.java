@@ -3,9 +3,7 @@ package game;
 import static org.assertj.core.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.*;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.UUID;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -25,20 +23,15 @@ public class GameScheduleEntityTest {
 	UUID homeTeamId;
 	UUID awayTeamId;
 	UUID stadiumId;
-	LocalDate playDate;
-	LocalTime startAt;
-	LocalDateTime reservationOpenedAt;
-	LocalDateTime reservationClosedAt;
+
+	static final LocalDateTime START_AT = LocalDateTime.now().plusDays(3);
+	static final LeagueType LEAGUE_TYPE = LeagueType.REGULAR;
 
 	@BeforeEach
 	void setup() {
 		homeTeamId = UUID.randomUUID();
 		awayTeamId = UUID.randomUUID();
 		stadiumId = UUID.randomUUID();
-		playDate = LocalDate.of(2026, 4, 1);
-		startAt = LocalTime.of(18, 30);
-		reservationOpenedAt = LocalDateTime.of(2026, 3, 25, 14, 0);
-		reservationClosedAt = LocalDateTime.of(2026, 4, 1, 17, 0);
 	}
 
 	@Test
@@ -47,19 +40,18 @@ public class GameScheduleEntityTest {
 			homeTeamId,
 			awayTeamId,
 			stadiumId,
-			playDate,
-			startAt
+			START_AT,
+			LEAGUE_TYPE
 		);
 
 		assertNotNull(game);
 		assertThat(game.getHomeTeamId()).isEqualTo(homeTeamId);
 		assertThat(game.getAwayTeamId()).isEqualTo(awayTeamId);
 		assertThat(game.getStadiumId()).isEqualTo(stadiumId);
-		assertThat(game.getPlayDate()).isEqualTo(playDate);
-		assertThat(game.getStartAt()).isEqualTo(startAt);
+		assertThat(game.getStartAt()).isEqualTo(START_AT);
 		assertThat(game.getLeagueType()).isEqualTo(LeagueType.REGULAR);
 
-		log.info("game playDate: {}", game.getPlayDate());
+		log.info("game startAt: {}", game.getStartAt());
 	}
 
 	@Test
@@ -68,8 +60,8 @@ public class GameScheduleEntityTest {
 			homeTeamId,
 			awayTeamId,
 			stadiumId,
-			playDate,
-			startAt
+			START_AT,
+			LEAGUE_TYPE
 		);
 
 		assertThat(game.getLeagueType()).isEqualTo(LeagueType.REGULAR);
@@ -82,8 +74,8 @@ public class GameScheduleEntityTest {
 				null,
 				awayTeamId,
 				stadiumId,
-				playDate,
-				startAt
+				START_AT,
+				LEAGUE_TYPE
 			)
 		).isInstanceOf(FieldValidationException.class)
 			.hasMessageContaining("홈팀 ID는 필수입니다.");
@@ -96,8 +88,8 @@ public class GameScheduleEntityTest {
 				homeTeamId,
 				null,
 				stadiumId,
-				playDate,
-				startAt
+				START_AT,
+				LEAGUE_TYPE
 			)
 		).isInstanceOf(FieldValidationException.class)
 			.hasMessageContaining("원정팀 ID는 필수입니다.");
@@ -110,8 +102,8 @@ public class GameScheduleEntityTest {
 				homeTeamId,
 				awayTeamId,
 				null,
-				playDate,
-				startAt
+				START_AT,
+				LEAGUE_TYPE
 			)
 		).isInstanceOf(FieldValidationException.class)
 			.hasMessageContaining("구장 ID는 필수입니다.");
@@ -124,25 +116,11 @@ public class GameScheduleEntityTest {
 				homeTeamId,
 				homeTeamId,
 				stadiumId,
-				playDate,
-				startAt
+				START_AT,
+				LEAGUE_TYPE
 			)
 		).isInstanceOf(FieldValidationException.class)
 			.hasMessageContaining("홈팀과 원정팀은 같을 수 없습니다.");
-	}
-
-	@Test
-	void 경기_생성_실패_경기날짜_null() {
-		assertThatThrownBy(
-			() -> GameScheduleEntity.create(
-				homeTeamId,
-				awayTeamId,
-				stadiumId,
-				null,
-				startAt
-			)
-		).isInstanceOf(FieldValidationException.class)
-			.hasMessageContaining("경기 날짜는 필수입니다.");
 	}
 
 	@Test
@@ -152,11 +130,29 @@ public class GameScheduleEntityTest {
 				homeTeamId,
 				awayTeamId,
 				stadiumId,
-				playDate,
-				null
+				null,
+				LEAGUE_TYPE
 			)
 		).isInstanceOf(FieldValidationException.class)
 			.hasMessageContaining("경기 시작 시간은 필수입니다.");
+	}
+
+	@Test
+	void 경기_생성_실패_경기타입_null() {
+		assertThatThrownBy(
+			() -> GameScheduleEntity.create(
+				homeTeamId,
+				awayTeamId,
+				stadiumId,
+				START_AT,
+				null
+			)
+		).isInstanceOfSatisfying(
+			FieldValidationException.class, ex -> {
+				log.info("경기생성실패_경기타입 null : {}", ex.getMessage());
+				assertEquals("도메인 필드 오류 : 경기 타입은 필수입니다.", ex.getMessage());
+			}
+		);
 	}
 
 }
