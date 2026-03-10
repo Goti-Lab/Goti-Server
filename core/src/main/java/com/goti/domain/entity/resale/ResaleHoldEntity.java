@@ -74,7 +74,7 @@ public class ResaleHoldEntity extends ModificationTimestampEntity {
 		String queueTokenJti,
 		LocalDateTime expiredAt
 	) {
-		validate(userId, queueTokenJti, expiredAt);
+		validate(resaleListing, userId, queueTokenJti, expiredAt);
 		return new ResaleHoldEntity(resaleListing, userId, queueTokenJti, expiredAt);
 	}
 
