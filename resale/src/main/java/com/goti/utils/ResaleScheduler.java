@@ -8,9 +8,9 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import com.goti.dto.response.TicketGameInfoResponse;
-import com.goti.service.ResaleListingService;
-import com.goti.service.ResalePriceService;
 import com.goti.service.TicketService;
+import com.goti.service.application.ResaleListingService;
+import com.goti.service.application.ResalePriceService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,16 +28,13 @@ public class ResaleScheduler {
 	@Scheduled(cron = "0 30 19 * * *")
 	public void autoCancelExpiredListings() {
 		LocalDateTime threshold = LocalDateTime.now().minusHours(1);
-
 		List<UUID> expiredGameIds = ticketService.getExpiredGameIds(threshold);
 
-		// TODO : 아래 for문을 batch 나 event로 변경할 것
-		for (UUID gameId : expiredGameIds) {
+		if (!expiredGameIds.isEmpty()) {
 			try {
-				listingService.cancelListingCauseGameStart(gameId);
+				listingService.cancelListingsByGameIds(expiredGameIds);
 			} catch (Exception e) {
-				log.error("리셀 등록 취소 실패 - gameId: {}",
-					gameId, e);
+				log.error("경기 시작에 따른 리셀 일괄 취소 실패", e);
 			}
 		}
 	}
