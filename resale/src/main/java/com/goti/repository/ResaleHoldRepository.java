@@ -19,6 +19,7 @@ public interface ResaleHoldRepository extends JpaRepository<ResaleHoldEntity, UU
 	Optional<ResaleHoldEntity> findByIdAndUserIdAndStatus(UUID id, UUID userId, ResaleHoldStatus status);
 
 	@Query("SELECT r FROM ResaleHoldEntity r "
+		+ "JOIN FETCH r.resaleListing "
 		+ "WHERE r.status = :status "
 		+ "AND r.expiredAt < :now "
 		+ "ORDER BY r.expiredAt ASC")

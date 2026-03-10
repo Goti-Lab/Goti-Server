@@ -1,22 +1,13 @@
 package com.goti.utils;
 
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.UUID;
-
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
 import com.goti.config.properties.ResaleHoldExpiryProperties;
-import com.goti.constants.ResaleHoldStatus;
-import com.goti.constants.ResaleListingStatus;
-import com.goti.domain.entity.resale.ResaleHoldEntity;
-import com.goti.repository.ResaleHoldRepository;
-import com.goti.repository.listing.ResaleListingRepository;
+import com.goti.infra.lock.DistributedLockManager;
+import com.goti.service.application.ResaleHoldExpiryBatchResult;
+import com.goti.service.application.ResaleHoldExpiryService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -31,44 +22,43 @@ import lombok.extern.slf4j.Slf4j;
 	matchIfMissing = true
 )
 public class ResaleHoldScheduler {
+	private static final String EXPIRY_JOB_LOCK_KEY = "lock:resale-expiry-job";
 
-	private final ResaleListingRepository resaleListingRepository;
-	private final ResaleHoldRepository resaleHoldRepository;
+	private final ResaleHoldExpiryService resaleHoldExpiryService;
+	private final DistributedLockManager distributedLockManager;
 	private final ResaleHoldExpiryProperties resaleHoldExpiryProperties;
 
 	@Scheduled(fixedDelayString = "${seat.hold-expiry.fixed-delay-ms}")
-	@Transactional
-	public void expireResaleHolds() {
-		LocalDateTime now = LocalDateTime.now();
-		Pageable pageable = PageRequest.of(0, resaleHoldExpiryProperties.batchSize());
+	public void expireHolds() {
+		boolean acquired = distributedLockManager.withLockIfAvailable(
+			EXPIRY_JOB_LOCK_KEY,
+			() -> {
+				ResaleHoldExpiryBatchResult result = resaleHoldExpiryService.expireHolds(
+					resaleHoldExpiryProperties.batchSize()
+				);
 
-		List<ResaleHoldEntity> expiredHolds = resaleHoldRepository
-			.findExpiredResaleHolds(
-				ResaleHoldStatus.HOLDING,
-				now,
-				pageable
-			);
-		if (expiredHolds.isEmpty()) {
-			return;
+				if (result.attempted() > 0) {
+					log.info(
+						"리셀 점유 만료 처리 완료. attempted={}, succeeded={}, failed={}",
+						result.attempted(),
+						result.succeeded(),
+						result.failed()
+					);
+				}
+
+				if (result.failed() > 0) {
+					log.warn(
+						"리셀 점유 만료 처리 중 실패 발생. attempted={}, succeeded={}, failed={}",
+						result.attempted(),
+						result.succeeded(),
+						result.failed()
+					);
+				}
+			}
+		);
+
+		if (!acquired) {
+			log.debug("리셀 만료 스케줄러 락을 획득하지 못해 이번 실행을 건너뜁니다. (다른 서버에서 실행 중)");
 		}
-		List<UUID> holdIds = expiredHolds.stream()
-			.map(ResaleHoldEntity::getId)
-			.toList();
-
-		List<UUID> listingIds = expiredHolds.stream()
-			.map(hold -> hold.getResaleListing().getId())
-			.toList();
-
-		resaleListingRepository.updateListingStatusByBatch(
-			listingIds,
-			ResaleListingStatus.HOLD,
-			ResaleListingStatus.LISTING
-		);
-
-		resaleHoldRepository.updateStatusToReleased(
-			holdIds,
-			ResaleHoldStatus.RELEASED,
-			now
-		);
 	}
 }
