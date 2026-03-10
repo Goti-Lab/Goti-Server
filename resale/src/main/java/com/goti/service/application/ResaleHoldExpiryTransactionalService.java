@@ -10,7 +10,7 @@ import com.goti.constants.messages.ErrorCode;
 import com.goti.domain.entity.resale.ResaleHoldEntity;
 import com.goti.domain.entity.resale.ResaleListingEntity;
 import com.goti.exception.CustomException;
-import com.goti.repository.ResaleHoldRepository;
+import com.goti.repository.hold.ResaleHoldRepository;
 import com.goti.repository.listing.ResaleListingRepository;
 import com.goti.service.domain.ResaleHoldExpiryDomainService;
 

@@ -15,7 +15,7 @@ import com.goti.dto.response.ResaleHoldResponse;
 import com.goti.dto.response.ResaleReleaseResponse;
 import com.goti.exception.CustomException;
 import com.goti.global.validation.Preconditions;
-import com.goti.repository.ResaleHoldRepository;
+import com.goti.repository.hold.ResaleHoldRepository;
 import com.goti.repository.listing.ResaleListingRepository;
 
 import lombok.RequiredArgsConstructor;

@@ -12,7 +12,7 @@ import com.goti.dto.response.ResaleReleaseResponse;
 import com.goti.exception.CustomException;
 import com.goti.global.validation.Preconditions;
 import com.goti.infra.lock.DistributedLockManager;
-import com.goti.repository.ResaleHoldRepository;
+import com.goti.repository.hold.ResaleHoldRepository;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

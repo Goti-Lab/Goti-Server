@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service;
 import com.goti.constants.ResaleHoldStatus;
 import com.goti.domain.entity.resale.ResaleHoldEntity;
 import com.goti.infra.lock.DistributedLockManager;
-import com.goti.repository.ResaleHoldRepository;
+import com.goti.repository.hold.ResaleHoldRepository;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
