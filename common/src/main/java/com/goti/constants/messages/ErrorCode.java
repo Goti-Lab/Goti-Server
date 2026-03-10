@@ -36,6 +36,7 @@ public enum ErrorCode {
 	SELLER_NOT_FOUND(HttpStatus.NOT_FOUND, "판매자를 찾을 수 없습니다"),
 	LISTING_ALREADY_CLOSED(HttpStatus.BAD_REQUEST, "리셀 등록 가능한 시간이 지났습니다."),
 	NOT_PURCHASABLE(HttpStatus.BAD_REQUEST, "구매할 수 없는 상태입니다"),
+	NOT_PURCHASABLE_SELF(HttpStatus.BAD_REQUEST, "본인의 티켓은 구매할 수 없습니다."),
 	NOT_MATCH_STATUS(HttpStatus.BAD_REQUEST, "{0}상태 에만 할 수 있습니다."),
 	TRANSACTION_NOT_FOUND(HttpStatus.NOT_FOUND, "등록된 리셀을 찾을 수 없습니다"),
 	RESALE_HOLD_NOT_FOUND(HttpStatus.NOT_FOUND, "리셀 점유 정보를 찾을 수 없습니다."),

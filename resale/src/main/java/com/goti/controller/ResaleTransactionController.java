@@ -20,7 +20,6 @@ import com.goti.dto.response.ResaleReleaseResponse;
 import com.goti.dto.response.ResaleTransactionInitResponse;
 import com.goti.dto.response.ResaleTransactionSuccessResponse;
 import com.goti.global.api.ApiSuccessResponse;
-import com.goti.security.ExtendedUserDetails;
 import com.goti.service.application.ResaleHoldService;
 import com.goti.service.application.ResaleTransactionService;
 
@@ -43,10 +42,9 @@ public class ResaleTransactionController {
 	)
 	@PostMapping("/transactions")
 	public ResponseEntity<ApiSuccessResponse<ResaleTransactionInitResponse>> initTransaction(
-		@AuthenticationPrincipal ExtendedUserDetails userDetails,
+		@AuthenticationPrincipal(expression = "id") UUID buyerId,
 		@Valid @RequestBody ResaleTransactionRequest request
 	) {
-		UUID buyerId = userDetails.getId();
 		ResaleTransactionInitResponse response = transactionService.initTransaction(buyerId, request);
 		return wrap(response);
 	}
@@ -70,10 +68,9 @@ public class ResaleTransactionController {
 	)
 	@PostMapping("/holds")
 	public ResponseEntity<ApiSuccessResponse<ResaleHoldResponse>> holdResale(
-		@AuthenticationPrincipal ExtendedUserDetails userDetails,
+		@AuthenticationPrincipal(expression = "id") UUID buyerId,
 		@Valid @RequestBody ResaleHoldRequest request
 	) {
-		UUID buyerId = userDetails.getId();
 		ResaleHoldResponse response = resaleHoldService.holdResale(buyerId, request);
 		return wrap(response);
 	}
@@ -84,10 +81,9 @@ public class ResaleTransactionController {
 	)
 	@PostMapping("/holds/{holdId}/release")
 	public ResponseEntity<ApiSuccessResponse<ResaleReleaseResponse>> releaseResale(
-		@AuthenticationPrincipal ExtendedUserDetails userDetails,
+		@AuthenticationPrincipal(expression = "id") UUID buyerId,
 		@PathVariable UUID holdId
 	) {
-		UUID buyerId = userDetails.getId();
 		ResaleReleaseResponse response = resaleHoldService.releaseResaleHold(buyerId, holdId);
 		return wrap(response);
 	}

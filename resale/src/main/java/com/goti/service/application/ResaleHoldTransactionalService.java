@@ -38,8 +38,7 @@ public class ResaleHoldTransactionalService {
 
 		Preconditions.validate(
 			!resaleListing.getSellerId().equals(buyerId),
-			ErrorCode.NOT_PURCHASABLE,
-			"본인의 티켓은 구매할 수 없습니다."
+			ErrorCode.NOT_PURCHASABLE_SELF
 		);
 
 		resaleListing.hold();
