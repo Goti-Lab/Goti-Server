@@ -10,9 +10,11 @@ import com.goti.constants.messages.ErrorCode;
 import com.goti.domain.entity.seat.SeatHoldEntity;
 import com.goti.domain.entity.seat.SeatStatusEntity;
 import com.goti.exception.CustomException;
+import com.goti.game.repository.GameScheduleRepository;
 import com.goti.global.validation.Preconditions;
 import com.goti.seat.config.properties.SeatHoldProperties;
 import com.goti.seat.repository.SeatHoldRepository;
+import com.goti.seat.repository.SeatRepository;
 import com.goti.seat.repository.SeatStatusRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -20,13 +22,18 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 public class SeatHoldTransactionalService {
+	private final GameScheduleRepository gameScheduleRepository;
+	private final SeatRepository seatRepository;
 	private final SeatStatusRepository seatStatusRepository;
 	private final SeatHoldRepository seatHoldRepository;
 	private final SeatHoldProperties seatHoldProperties;
 
 	@Transactional
 	public UUID hold(UUID gameId, UUID seatId, UUID userId, String queueTokenJti) {
-		SeatStatusEntity seatStatus = seatStatusRepository.findByGame_IdAndSeat_Id(gameId, seatId)
+		SeatStatusEntity seatStatus = seatStatusRepository.findByGameAndSeat(
+				gameScheduleRepository.getReferenceById(gameId),
+				seatRepository.getReferenceById(seatId)
+			)
 			.orElseThrow(() -> new CustomException(ErrorCode.SEAT_STATUS_NOT_FOUND));
 
 		seatStatus.hold();
@@ -54,9 +61,9 @@ public class SeatHoldTransactionalService {
 			ErrorCode.AUTH_PERMISSION_DENIED
 		);
 
-		SeatStatusEntity seatStatus = seatStatusRepository.findByGame_IdAndSeat_Id(
-			seatHold.getGameSchedule().getId(),
-			seatHold.getSeat().getId()
+		SeatStatusEntity seatStatus = seatStatusRepository.findByGameAndSeat(
+			seatHold.getGameSchedule(),
+			seatHold.getSeat()
 		).orElseThrow(() -> new CustomException(ErrorCode.SEAT_STATUS_NOT_FOUND));
 
 		seatStatus.release();

@@ -8,6 +8,7 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.UUID;
 
+import com.goti.domain.entity.game.GameStatusEntity;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -20,11 +21,10 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 import com.goti.constants.LeagueType;
 import com.goti.constants.messages.ErrorCode;
-import com.goti.domain.entity.game.BaseballGameStatusEntity;
 import com.goti.domain.entity.game.GameScheduleEntity;
 import com.goti.exception.CustomException;
 import com.goti.game.dto.response.GameResponse;
-import com.goti.game.repository.BaseballGameStatusRepository;
+import com.goti.game.repository.GameStatusRepository;
 import com.goti.game.repository.GameScheduleRepository;
 import com.goti.game.service.command.CreateGameCommand;
 
@@ -36,7 +36,7 @@ class GameScheduleApplicationServiceTest {
 	private GameScheduleRepository gameScheduleRepository;
 
 	@Mock
-	private BaseballGameStatusRepository baseballGameStatusRepository;
+	private GameStatusRepository gameStatusRepository;
 
 	@InjectMocks
 	private GameScheduleService baseballGameApplicationService;
@@ -72,7 +72,7 @@ class GameScheduleApplicationServiceTest {
 		ReflectionTestUtils.setField(savedGame, "id", UUID.randomUUID());
 
 		given(gameScheduleRepository.save(any(GameScheduleEntity.class))).willReturn(savedGame);
-		given(baseballGameStatusRepository.save(any(BaseballGameStatusEntity.class)))
+		given(gameStatusRepository.save(any(GameStatusEntity.class)))
 			.willAnswer(invocation -> invocation.getArgument(0));
 
 		GameResponse response = baseballGameApplicationService.create(createGameCommand);
@@ -83,7 +83,7 @@ class GameScheduleApplicationServiceTest {
 		assertThat(response.stadiumId()).isEqualTo(createGameCommand.stadiumId());
 
 		verify(gameScheduleRepository, times(1)).save(any(GameScheduleEntity.class));
-		verify(baseballGameStatusRepository, times(1)).save(any(BaseballGameStatusEntity.class));
+		verify(gameStatusRepository, times(1)).save(any(GameStatusEntity.class));
 	}
 
 	@Test
@@ -98,6 +98,6 @@ class GameScheduleApplicationServiceTest {
 			.hasMessageContaining(ErrorCode.GAME_ALREADY_EXISTS.getMessage());
 
 		verify(gameScheduleRepository, never()).save(any(GameScheduleEntity.class));
-		verify(baseballGameStatusRepository, never()).save(any(BaseballGameStatusEntity.class));
+		verify(gameStatusRepository, never()).save(any(GameStatusEntity.class));
 	}
 }

@@ -25,17 +25,17 @@ import lombok.NoArgsConstructor;
 @Table(
 	name = "seat_statuses",
 	uniqueConstraints = {
-		@UniqueConstraint(name = "uk_game_seat", columnNames = {"game_id", "seat_id"})
+		@UniqueConstraint(name = "uk_game_seat", columnNames = {"game_schedule_id", "seat_id"})
 	},
 	indexes = {
-		@Index(name = "idx_game_status", columnList = "game_id, status")
+		@Index(name = "idx_game_status", columnList = "game_schedule_id, status")
 	}
 )
 @NoArgsConstructor(access = PROTECTED)
 public class SeatStatusEntity extends ModificationTimestampEntity {
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "game_id", nullable = false)
+	@JoinColumn(name = "game_schedule_id", nullable = false)
 	private GameScheduleEntity game;
 
 	@ManyToOne(fetch = FetchType.LAZY)
