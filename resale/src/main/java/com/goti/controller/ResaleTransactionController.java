@@ -5,6 +5,7 @@ import static com.goti.global.api.ApiSuccessResponse.*;
 import java.util.UUID;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -18,7 +19,6 @@ import com.goti.dto.response.ResaleHoldResponse;
 import com.goti.dto.response.ResaleReleaseResponse;
 import com.goti.dto.response.ResaleTransactionInitResponse;
 import com.goti.dto.response.ResaleTransactionSuccessResponse;
-import com.goti.global.annotation.LoginUserId;
 import com.goti.global.api.ApiSuccessResponse;
 import com.goti.service.application.ResaleHoldService;
 import com.goti.service.application.ResaleTransactionService;
@@ -42,7 +42,7 @@ public class ResaleTransactionController {
 	)
 	@PostMapping("/transactions")
 	public ResponseEntity<ApiSuccessResponse<ResaleTransactionInitResponse>> initTransaction(
-		@LoginUserId UUID buyerId,
+		@AuthenticationPrincipal(expression = "id") UUID buyerId,
 		@Valid @RequestBody ResaleTransactionRequest request
 	) {
 		ResaleTransactionInitResponse response = transactionService.initTransaction(buyerId, request);
@@ -68,7 +68,7 @@ public class ResaleTransactionController {
 	)
 	@PostMapping("/holds")
 	public ResponseEntity<ApiSuccessResponse<ResaleHoldResponse>> holdResale(
-		@LoginUserId UUID buyerId,
+		@AuthenticationPrincipal(expression = "id") UUID buyerId,
 		@Valid @RequestBody ResaleHoldRequest request
 	) {
 		ResaleHoldResponse response = resaleHoldService.holdResale(buyerId, request);
@@ -81,7 +81,7 @@ public class ResaleTransactionController {
 	)
 	@PostMapping("/holds/{holdId}/release")
 	public ResponseEntity<ApiSuccessResponse<ResaleReleaseResponse>> releaseResale(
-		@LoginUserId UUID buyerId,
+		@AuthenticationPrincipal(expression = "id") UUID buyerId,
 		@PathVariable UUID holdId
 	) {
 		ResaleReleaseResponse response = resaleHoldService.releaseResaleHold(buyerId, holdId);

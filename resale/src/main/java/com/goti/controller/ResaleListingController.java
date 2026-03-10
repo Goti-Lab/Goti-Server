@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.UUID;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -16,7 +17,6 @@ import org.springframework.web.bind.annotation.RestController;
 import com.goti.dto.request.ResaleListingCancelRequest;
 import com.goti.dto.request.ResaleListingCreateRequest;
 import com.goti.dto.response.ResaleListingResponse;
-import com.goti.global.annotation.LoginUserId;
 import com.goti.global.api.ApiSuccessResponse;
 import com.goti.service.application.ResaleListingService;
 
@@ -41,7 +41,7 @@ public class ResaleListingController {
 	)
 	@PostMapping
 	public ResponseEntity<ApiSuccessResponse<ResaleListingResponse>> createListing(
-		@LoginUserId UUID sellerId,
+		@AuthenticationPrincipal(expression = "id") UUID sellerId,
 		@Valid @RequestBody ResaleListingCreateRequest request
 	) {
 		ResaleListingResponse response = listingService.createListing(sellerId, request);
@@ -54,7 +54,7 @@ public class ResaleListingController {
 	)
 	@PutMapping("/cancel")
 	public ResponseEntity<ApiSuccessResponse<ResaleListingResponse>> cancelListing(
-		@LoginUserId UUID sellerId,
+		@AuthenticationPrincipal(expression = "id") UUID sellerId,
 		@Valid @RequestBody ResaleListingCancelRequest request
 	) {
 		ResaleListingResponse response = listingService.cancelListing(sellerId, request);
@@ -67,7 +67,7 @@ public class ResaleListingController {
 	)
 	@GetMapping
 	public ResponseEntity<ApiSuccessResponse<List<ResaleListingResponse>>> getListingsBySellerId(
-		@LoginUserId UUID sellerId
+		@AuthenticationPrincipal(expression = "id") UUID sellerId
 	) {
 		List<ResaleListingResponse> responses = listingService.getListingsBySellerId(sellerId);
 		return wrap(responses);
