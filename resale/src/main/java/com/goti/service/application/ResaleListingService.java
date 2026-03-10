@@ -1,8 +1,10 @@
-package com.goti.service;
+package com.goti.service.application;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,6 +23,7 @@ import com.goti.global.validation.Preconditions;
 import com.goti.repository.ResaleRestrictionRepository;
 import com.goti.repository.history.ResalePriceHistoryRepository;
 import com.goti.repository.listing.ResaleListingRepository;
+import com.goti.service.TicketService;
 import com.goti.utils.ResalePricePolicy;
 import com.goti.utils.ResaleRestrictionHandler;
 
@@ -119,21 +122,41 @@ public class ResaleListingService {
 	}
 
 	@Transactional
-	public void cancelListingCauseGameStart(UUID gameId) {
-		List<ResaleListingEntity> resaleListings = listingRepository.findByGameIdAndListingStatusIn(
-			gameId,
+	public void cancelListingsByGameIds(List<UUID> gameIds) {
+		if (gameIds == null || gameIds.isEmpty()) {
+			return;
+		}
+
+		List<ResaleListingEntity> listings = listingRepository.findByGameIdInAndListingStatusIn(
+			gameIds,
 			List.of(ResaleListingStatus.LISTING, ResaleListingStatus.HOLD)
 		);
 
-		for (ResaleListingEntity listing : resaleListings) {
-			listing.cancelByGameStart();
-			listingRepository.save(listing);
-
-			ResaleRestrictionEntity resaleRestriction = getOrCreateRestriction(listing.getSellerId());
-
-			restrictionHandler.handleAfterCancel(resaleRestriction, listing.getGameId());
-			restrictionRepository.save(resaleRestriction);
+		if (listings.isEmpty()) {
+			return;
 		}
+
+		List<UUID> sellerIds = listings.stream()
+			.map(ResaleListingEntity::getSellerId)
+			.distinct()
+			.toList();
+
+		Map<UUID, ResaleRestrictionEntity> restrictionMap = restrictionRepository.findByUserIdIn(sellerIds).stream()
+			.collect(Collectors.toMap(ResaleRestrictionEntity::getUserId, r -> r));
+
+		for (ResaleListingEntity listing : listings) {
+			listing.cancelByGameStart();
+
+			ResaleRestrictionEntity restriction = restrictionMap.computeIfAbsent(
+				listing.getSellerId(),
+				ResaleRestrictionEntity::create
+			);
+
+			restrictionHandler.handleAfterCancel(restriction, listing.getGameId());
+		}
+
+		listingRepository.saveAll(listings);
+		restrictionRepository.saveAll(restrictionMap.values());
 	}
 
 	private void validateTicketOwner(ResaleTicketResponse ticketResponse, UUID sellerId) {

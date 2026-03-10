@@ -28,6 +28,10 @@ spring:
         format_sql: true
         show_sql: true
         dialect: org.hibernate.dialect.PostgreSQLDialect
+        jdbc: #리셀 배치
+          batch_size: 500       #리셀 배치
+        order-inserts: true     #리셀 배치
+        order_updates: true     #리셀 배치
   data:
     redis:
       host: ${REDIS_HOST:localhost}
