@@ -1,0 +1,86 @@
+package order;
+
+import static org.assertj.core.api.Assertions.*;
+
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.util.UUID;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.test.context.ActiveProfiles;
+
+import com.goti.constants.OrderCancellationRequestType;
+import com.goti.domain.entity.game.GameScheduleEntity;
+import com.goti.domain.entity.order.OrderCancellationEntity;
+import com.goti.domain.entity.order.OrderCancellationItemEntity;
+import com.goti.domain.entity.order.OrderEntity;
+import com.goti.domain.entity.order.OrderItemEntity;
+import com.goti.domain.entity.seat.SeatEntity;
+import com.goti.domain.entity.seat.SeatGradeEntity;
+import com.goti.domain.entity.seat.SeatSectionEntity;
+import com.goti.exception.FieldValidationException;
+
+@ActiveProfiles("test")
+class OrderCancellationItemEntityTest {
+
+	private OrderCancellationEntity cancellation;
+	private OrderItemEntity item;
+
+	@BeforeEach
+	void setup() {
+		GameScheduleEntity gameSchedule = GameScheduleEntity.create(
+			UUID.randomUUID(),
+			UUID.randomUUID(),
+			UUID.randomUUID(),
+			LocalDate.of(2026, 4, 1),
+			LocalTime.of(18, 30)
+		);
+		OrderEntity order = OrderEntity.create("ORD-20260309-0001", UUID.randomUUID(), gameSchedule, 2, 24000);
+		cancellation = OrderCancellationEntity.create(
+			order,
+			OrderCancellationRequestType.USER_PARTIAL,
+			UUID.randomUUID(),
+			12000,
+			1000,
+			"cancel-idempotency-key"
+		);
+
+		SeatGradeEntity seatGrade = SeatGradeEntity.create(UUID.randomUUID(), "VIP", "#FFAA00");
+		SeatSectionEntity seatSection = SeatSectionEntity.create(seatGrade, UUID.randomUUID(), "101", 120);
+		SeatEntity seat = SeatEntity.create(seatSection, "A", 1);
+		item = OrderItemEntity.create(order, seat, com.goti.constants.TicketType.ADULT, 12000);
+	}
+
+	@Test
+	void 주문취소상세_생성_성공() {
+		OrderCancellationItemEntity cancellationItem = OrderCancellationItemEntity.create(
+			cancellation,
+			item,
+			11000,
+			1000
+		);
+
+		assertThat(cancellationItem.getCancellation()).isEqualTo(cancellation);
+		assertThat(cancellationItem.getItem()).isEqualTo(item);
+		assertThat(cancellationItem.getRefundAmount()).isEqualTo(11000);
+		assertThat(cancellationItem.getFeeAmount()).isEqualTo(1000);
+		assertThat(cancellationItem.getCancelledAt()).isNull();
+	}
+
+	@Test
+	void 주문취소상세_생성_실패_환불액_음수() {
+		assertThatThrownBy(
+			() -> OrderCancellationItemEntity.create(cancellation, item, -1, 1000)
+		).isInstanceOf(FieldValidationException.class)
+			.hasMessageContaining("환불액은 0 이상이어야 합니다.");
+	}
+
+	@Test
+	void 주문취소상세_생성_실패_수수료_음수() {
+		assertThatThrownBy(
+			() -> OrderCancellationItemEntity.create(cancellation, item, 11000, -1)
+		).isInstanceOf(FieldValidationException.class)
+			.hasMessageContaining("수수료는 0 이상이어야 합니다.");
+	}
+}

@@ -7,7 +7,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum GameResult {
 
-	PENDING("경기 미종료"),
+	NONE("결과 없음"),
 	HOME_WIN("홈팀 승리"),
 	AWAY_WIN("원정팀 승리"),
 	DRAW("무승부"),

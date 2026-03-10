@@ -28,10 +28,10 @@ public class SeatHoldExpiryTransactionalService {
 		SeatHoldEntity seatHold = seatHoldRepository.findById(holdId)
 			.orElseThrow(() -> new CustomException(ErrorCode.SEAT_HOLD_NOT_FOUND));
 
-		UUID gameId = seatHold.getGameSchedule().getId();
-		UUID seatId = seatHold.getSeat().getId();
-
-		SeatStatusEntity seatStatus = seatStatusRepository.findByGame_IdAndSeat_Id(gameId, seatId)
+		SeatStatusEntity seatStatus = seatStatusRepository.findByGameAndSeat(
+			seatHold.getGameSchedule(),
+			seatHold.getSeat()
+		)
 			.orElseThrow(() -> new CustomException(ErrorCode.SEAT_STATUS_NOT_FOUND));
 
 		seatHoldExpiryService.expire(seatStatus, seatHold, now);

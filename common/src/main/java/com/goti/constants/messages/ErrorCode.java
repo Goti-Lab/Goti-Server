@@ -65,6 +65,7 @@ public enum ErrorCode {
 	SEAT_BULK_CREATE_LIMIT_EXCEEDED(HttpStatus.BAD_REQUEST, "한 번에 생성할 수 있는 좌석 수를 초과했습니다."),
 	SEAT_ALREADY_EXISTS(HttpStatus.CONFLICT, "이미 생성된 좌석이 포함되어 있습니다."),
 	SEAT_SECTION_CAPACITY_EXCEEDED(HttpStatus.BAD_REQUEST, "좌석 구역의 수용 인원을 초과할 수 없습니다."),
+	TICKET_PRICE_CONDITION_ALREADY_EXISTS(HttpStatus.CONFLICT, "이미 동일한 티켓 가격 조건이 존재합니다."),
 
 	MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 회원입니다."),
 	SOCIAL_PROVIDER_ALREADY_LINKED(HttpStatus.BAD_REQUEST, "해당 소셜 계정은 이미 다른 회원과 연동되어 있습니다."),

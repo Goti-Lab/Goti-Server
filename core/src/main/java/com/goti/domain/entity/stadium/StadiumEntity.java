@@ -3,6 +3,7 @@ package com.goti.domain.entity.stadium;
 import static lombok.AccessLevel.*;
 
 import java.math.BigDecimal;
+import java.util.Map;
 
 import jakarta.persistence.Table;
 
@@ -49,7 +50,7 @@ public class StadiumEntity extends ModificationTimestampEntity {
 
 	@JdbcTypeCode(SqlTypes.JSON)
 	@Column(columnDefinition = "jsonb")
-	private String seatMapConfig;
+	private Map<String, Object> seatMapConfig;
 
 	private StadiumEntity(
 		String stadiumName,
@@ -60,7 +61,7 @@ public class StadiumEntity extends ModificationTimestampEntity {
 		BigDecimal latitude,
 		BigDecimal longitude,
 		Integer totalSeats,
-		String seatMapConfig
+		Map<String, Object> seatMapConfig
 	) {
 		this.stadiumName = stadiumName;
 		this.location = location;
@@ -82,7 +83,7 @@ public class StadiumEntity extends ModificationTimestampEntity {
 		BigDecimal latitude,
 		BigDecimal longitude,
 		Integer totalSeats,
-		String seatMapConfig
+		Map<String, Object> seatMapConfig
 	) {
 
 		validate(
@@ -93,7 +94,8 @@ public class StadiumEntity extends ModificationTimestampEntity {
 			roadAddress,
 			latitude,
 			longitude,
-			totalSeats);
+			totalSeats
+		);
 
 		return new StadiumEntity(
 			stadiumName,

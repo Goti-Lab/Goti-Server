@@ -4,7 +4,7 @@ import com.goti.constants.GameResult;
 import com.goti.constants.GameStatus;
 import com.goti.constants.LeagueType;
 import com.goti.domain.entity.game.GameScheduleEntity;
-import com.goti.domain.entity.game.BaseballGameStatusEntity;
+import com.goti.domain.entity.game.GameStatusEntity;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
@@ -37,7 +37,7 @@ public record GameResponse(
 	@Schema(description = "경기 결과", example = "PENDING")
 	GameResult gameResult
 ) {
-	public static GameResponse from(GameScheduleEntity game, BaseballGameStatusEntity status) {
+	public static GameResponse from(GameScheduleEntity game, GameStatusEntity status) {
 		return new GameResponse(
 			game.getId(),
 			game.getHomeTeamId(),

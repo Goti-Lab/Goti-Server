@@ -85,7 +85,7 @@ class GameScheduleControllerTest {
 			GameStatus.SCHEDULED,
 			0,
 			0,
-			GameResult.PENDING
+			GameResult.NONE
 		);
 		given(gameScheduleService.create(any())).willReturn(response);
 
@@ -141,7 +141,7 @@ class GameScheduleControllerTest {
 			GameStatus.SCHEDULED,
 			0,
 			0,
-			GameResult.PENDING
+			GameResult.NONE
 		);
 		Page<GameResponse> page = new PageImpl<>(
 			java.util.List.of(response),
@@ -179,7 +179,7 @@ class GameScheduleControllerTest {
 			GameStatus.SCHEDULED,
 			0,
 			0,
-			GameResult.PENDING
+			GameResult.NONE
 		);
 		given(gameScheduleService.getGame(gameId)).willReturn(response);
 
