@@ -1,4 +1,4 @@
-package com.goti.service;
+package com.goti.service.application;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -21,6 +21,7 @@ import com.goti.global.validation.Preconditions;
 import com.goti.repository.ResaleRestrictionRepository;
 import com.goti.repository.history.ResalePriceHistoryRepository;
 import com.goti.repository.listing.ResaleListingRepository;
+import com.goti.service.TicketService;
 import com.goti.utils.ResalePricePolicy;
 import com.goti.utils.ResaleRestrictionHandler;
 

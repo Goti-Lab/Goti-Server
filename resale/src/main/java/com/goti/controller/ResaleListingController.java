@@ -18,7 +18,7 @@ import com.goti.dto.request.ResaleListingCreateRequest;
 import com.goti.dto.response.ResaleListingResponse;
 import com.goti.global.annotation.LoginUserId;
 import com.goti.global.api.ApiSuccessResponse;
-import com.goti.service.ResaleListingService;
+import com.goti.service.application.ResaleListingService;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;

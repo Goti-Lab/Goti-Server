@@ -21,8 +21,8 @@ import com.goti.dto.response.ResaleTransactionInitResponse;
 import com.goti.dto.response.ResaleTransactionSuccessResponse;
 import com.goti.global.annotation.LoginUserId;
 import com.goti.global.api.ApiSuccessResponse;
-import com.goti.service.ResaleTransactionService;
 import com.goti.service.application.ResaleHoldService;
+import com.goti.service.application.ResaleTransactionService;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
