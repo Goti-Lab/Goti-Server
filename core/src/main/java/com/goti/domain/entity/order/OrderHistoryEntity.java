@@ -26,7 +26,7 @@ import lombok.NoArgsConstructor;
 	}
 )
 @NoArgsConstructor(access = PROTECTED)
-public class OrdererEntity extends ModificationTimestampEntity {
+public class OrderHistoryEntity extends ModificationTimestampEntity {
 
 	@OneToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "order_id", nullable = false)
@@ -41,7 +41,7 @@ public class OrdererEntity extends ModificationTimestampEntity {
 	@Column(nullable = false)
 	private String email;
 
-	private OrdererEntity(
+	private OrderHistoryEntity(
 		OrderEntity order,
 		String name,
 		String mobile,
@@ -53,14 +53,14 @@ public class OrdererEntity extends ModificationTimestampEntity {
 		this.email = email;
 	}
 
-	public static OrdererEntity create(
+	public static OrderHistoryEntity create(
 		OrderEntity order,
 		String name,
 		String mobile,
 		String email
 	) {
 		validate(name, mobile, email);
-		return new OrdererEntity(order, name, mobile, email);
+		return new OrderHistoryEntity(order, name, mobile, email);
 	}
 
 	private static void validate(

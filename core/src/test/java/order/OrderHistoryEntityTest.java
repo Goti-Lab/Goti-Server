@@ -6,6 +6,7 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.UUID;
 
+import com.goti.domain.entity.order.OrderHistoryEntity;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -15,11 +16,10 @@ import org.springframework.test.context.ActiveProfiles;
 
 import com.goti.domain.entity.game.GameScheduleEntity;
 import com.goti.domain.entity.order.OrderEntity;
-import com.goti.domain.entity.order.OrdererEntity;
 import com.goti.exception.FieldValidationException;
 
 @ActiveProfiles("test")
-class OrdererEntityTest {
+class OrderHistoryEntityTest {
 
 	OrderEntity order;
 	String name;
@@ -50,7 +50,7 @@ class OrdererEntityTest {
 
 	@Test
 	void 구매자정보_생성_성공() {
-		OrdererEntity orderer = OrdererEntity.create(order, name, mobile, email);
+		OrderHistoryEntity orderer = OrderHistoryEntity.create(order, name, mobile, email);
 
 		assertThat(orderer.getOrder()).isEqualTo(order);
 		assertThat(orderer.getName()).isEqualTo(name);
@@ -63,7 +63,7 @@ class OrdererEntityTest {
 	@ValueSource(strings = {" ", "   "})
 	void 구매자정보_생성_실패_이름_빈값(String invalidName) {
 		assertThatThrownBy(
-			() -> OrdererEntity.create(order, invalidName, mobile, email)
+			() -> OrderHistoryEntity.create(order, invalidName, mobile, email)
 		).isInstanceOf(FieldValidationException.class)
 			.hasMessageContaining("구매자 이름은 비어 있을 수 없습니다.");
 	}
@@ -73,7 +73,7 @@ class OrdererEntityTest {
 	@ValueSource(strings = {" ", "   "})
 	void 구매자정보_생성_실패_연락처_빈값(String invalidMobile) {
 		assertThatThrownBy(
-			() -> OrdererEntity.create(order, name, invalidMobile, email)
+			() -> OrderHistoryEntity.create(order, name, invalidMobile, email)
 		).isInstanceOf(FieldValidationException.class)
 			.hasMessageContaining("구매자 연락처는 비어 있을 수 없습니다.");
 	}
@@ -83,7 +83,7 @@ class OrdererEntityTest {
 	@ValueSource(strings = {" ", "   "})
 	void 구매자정보_생성_실패_이메일_빈값(String invalidEmail) {
 		assertThatThrownBy(
-			() -> OrdererEntity.create(order, name, mobile, invalidEmail)
+			() -> OrderHistoryEntity.create(order, name, mobile, invalidEmail)
 		).isInstanceOf(FieldValidationException.class)
 			.hasMessageContaining("구매자 이메일은 비어 있을 수 없습니다.");
 	}

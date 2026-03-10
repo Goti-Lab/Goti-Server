@@ -4,9 +4,6 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
-import com.goti.constants.TicketPricingDayType;
-import com.goti.constants.TicketPricingMatchType;
-import com.goti.constants.TicketType;
 import com.goti.domain.entity.pricing.TicketPriceEntity;
 import com.goti.domain.entity.pricing.TicketPricingPolicyEntity;
 
@@ -29,7 +26,7 @@ public record TicketPricingPolicyCreateResponse(
 	boolean isActive,
 
 	@Schema(description = "가격 정책 상세 목록")
-	List<TicketPriceResponse> prices
+	List<TicketPriceCreateResponse> prices
 ) {
 	public static TicketPricingPolicyCreateResponse from(
 		TicketPricingPolicyEntity policy,
@@ -42,39 +39,8 @@ public record TicketPricingPolicyCreateResponse(
 			policy.getPolicyEndAt(),
 			policy.isActive(),
 			prices.stream()
-				.map(TicketPriceResponse::from)
+				.map(TicketPriceCreateResponse::from)
 				.toList()
 		);
-	}
-
-	public record TicketPriceResponse(
-		@Schema(description = "티켓 가격 ID", example = "33333333-3333-3333-3333-333333333333")
-		UUID priceId,
-
-		@Schema(description = "좌석 등급 ID", example = "22222222-2222-2222-2222-222222222222")
-		UUID gradeId,
-
-		@Schema(description = "권종", example = "ADULT")
-		TicketType ticketType,
-
-		@Schema(description = "요일 유형", example = "WEEKDAY")
-		TicketPricingDayType dayType,
-
-		@Schema(description = "매치 유형", example = "REGULAR")
-		TicketPricingMatchType matchType,
-
-		@Schema(description = "가격", example = "15000")
-		Integer price
-	) {
-		public static TicketPriceResponse from(TicketPriceEntity ticketPrice) {
-			return new TicketPriceResponse(
-				ticketPrice.getId(),
-				ticketPrice.getGrade().getId(),
-				ticketPrice.getTicketType(),
-				ticketPrice.getDayType(),
-				ticketPrice.getMatchType(),
-				ticketPrice.getPrice()
-			);
-		}
 	}
 }

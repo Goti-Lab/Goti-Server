@@ -54,7 +54,7 @@ public class SeatReservationController {
 		summary = "좌석 점유 해제",
 		description = "좌석 점유 해제 API"
 	)
-	@DeleteMapping("/{holdId}")
+	@PostMapping("/{holdId}")
 	public ResponseEntity<ApiSuccessResponse<ReleaseSeatResponse>> release(
 		@PathVariable UUID holdId,
 		@RequestParam(required = false) UUID userId // TODO: 로그인 구현 완료 시 인증 컨텍스트에서 조회
