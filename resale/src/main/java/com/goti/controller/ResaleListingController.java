@@ -18,6 +18,7 @@ import com.goti.dto.request.ResaleListingCancelRequest;
 import com.goti.dto.request.ResaleListingCreateRequest;
 import com.goti.dto.response.ResaleListingResponse;
 import com.goti.global.api.ApiSuccessResponse;
+import com.goti.security.ExtendedUserDetails;
 import com.goti.service.application.ResaleListingService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -41,9 +42,11 @@ public class ResaleListingController {
 	)
 	@PostMapping
 	public ResponseEntity<ApiSuccessResponse<ResaleListingResponse>> createListing(
-		@AuthenticationPrincipal(expression = "id") UUID sellerId,
+		@AuthenticationPrincipal ExtendedUserDetails userDetails,
 		@Valid @RequestBody ResaleListingCreateRequest request
 	) {
+		UUID sellerId = userDetails.getId();
+
 		ResaleListingResponse response = listingService.createListing(sellerId, request);
 		return wrap(response);
 	}
@@ -54,9 +57,11 @@ public class ResaleListingController {
 	)
 	@PutMapping("/cancel")
 	public ResponseEntity<ApiSuccessResponse<ResaleListingResponse>> cancelListing(
-		@AuthenticationPrincipal(expression = "id") UUID sellerId,
+		@AuthenticationPrincipal ExtendedUserDetails userDetails,
 		@Valid @RequestBody ResaleListingCancelRequest request
 	) {
+		UUID sellerId = userDetails.getId();
+
 		ResaleListingResponse response = listingService.cancelListing(sellerId, request);
 		return wrap(response);
 	}
@@ -67,8 +72,10 @@ public class ResaleListingController {
 	)
 	@GetMapping
 	public ResponseEntity<ApiSuccessResponse<List<ResaleListingResponse>>> getListingsBySellerId(
-		@AuthenticationPrincipal(expression = "id") UUID sellerId
+		@AuthenticationPrincipal ExtendedUserDetails userDetails
 	) {
+		UUID sellerId = userDetails.getId();
+
 		List<ResaleListingResponse> responses = listingService.getListingsBySellerId(sellerId);
 		return wrap(responses);
 	}

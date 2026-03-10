@@ -1,21 +1,24 @@
 package com.goti.service.domain.user;
 
-import com.goti.domain.entity.user.UserEntity;
-
-import lombok.RequiredArgsConstructor;
+import java.util.Optional;
+import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
-import java.util.UUID;
+import com.goti.domain.entity.user.UserEntity;
+import com.goti.repository.MemberRepository;
+
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
 
+	private final MemberRepository memberRepository;
+
 	@Override
 	public Optional<UserEntity> findUserById(UUID userId) {
-		return Optional.empty();
+		return memberRepository.findById(userId).map(member -> (UserEntity)member);
 	}
 
 	@Override
