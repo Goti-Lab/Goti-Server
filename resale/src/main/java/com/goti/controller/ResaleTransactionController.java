@@ -5,7 +5,6 @@ import static com.goti.global.api.ApiSuccessResponse.*;
 import java.util.UUID;
 
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -60,7 +59,6 @@ public class ResaleTransactionController {
 		@RequestParam UUID escrowId
 	) {
 		ResaleTransactionSuccessResponse response = transactionService.completePayment(transactionId, escrowId);
-		System.out.println();
 		return wrap(response);
 	}
 
@@ -81,7 +79,7 @@ public class ResaleTransactionController {
 		summary = "리셀 점유 해제",
 		description = "리셀 점유 해제 API"
 	)
-	@DeleteMapping("/holds/{holdId}")
+	@PostMapping("/holds/{holdId}/release")
 	public ResponseEntity<ApiSuccessResponse<ResaleReleaseResponse>> releaseResale(
 		@LoginUserId UUID buyerId,
 		@PathVariable UUID holdId

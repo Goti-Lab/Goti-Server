@@ -105,7 +105,7 @@ public class ResaleHoldEntity extends ModificationTimestampEntity {
 	public void release() {
 		Preconditions.domainValidate(
 			this.status == ResaleHoldStatus.HOLDING,
-			"HOLDING 상태에서만 RELEASED 상태로 변경할 수 있습니다."
+			"점유 상태에서만 점유해제 상태로 변경할 수 있습니다."
 		);
 		this.status = ResaleHoldStatus.RELEASED;
 		this.releasedAt = LocalDateTime.now();
