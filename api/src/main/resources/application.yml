@@ -65,6 +65,8 @@ otel:
       endpoint: ${OTEL_EXPORTER_ENDPOINT:http://localhost:4318}
   sdk:
     disabled: ${OTEL_SDK_DISABLED:true}
+  metrics:
+    exporter: otlp
 
 logging:
   pattern:
