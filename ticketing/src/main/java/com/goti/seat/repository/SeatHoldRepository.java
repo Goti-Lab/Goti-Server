@@ -12,7 +12,7 @@ import com.goti.constants.SeatHoldStatus;
 import com.goti.domain.entity.seat.SeatHoldEntity;
 
 @Repository
-public interface SeatHoldRepository extends JpaRepository<SeatHoldEntity, UUID> {
+public interface SeatHoldRepository extends JpaRepository<SeatHoldEntity, UUID>, SeatHoldRepositoryCustom {
 	List<SeatHoldEntity> findByStatusAndExpiredAtBeforeOrderByExpiredAtAsc(
 		SeatHoldStatus status,
 		LocalDateTime now,

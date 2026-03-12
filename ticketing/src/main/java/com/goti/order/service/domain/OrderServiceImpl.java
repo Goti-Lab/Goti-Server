@@ -1,6 +1,6 @@
 package com.goti.order.service.domain;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.UUID;
 
@@ -17,7 +17,7 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 public class OrderServiceImpl implements OrderService {
-	private static final DateTimeFormatter ORDER_NUMBER_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
+	private static final DateTimeFormatter ORDER_NUMBER_FORMATTER = DateTimeFormatter.ofPattern("yyMMdd");
 
 	private final OrderRepository orderRepository;
 
@@ -41,10 +41,10 @@ public class OrderServiceImpl implements OrderService {
 	}
 
 	private String generateOrderNumber() {
-		return "ORD-" +
-			LocalDateTime.now().format(ORDER_NUMBER_FORMATTER) +
-			"-" +
-			TsidCreator.getTsid().toString();
+		String tsidSuffix = TsidCreator.getTsid().toString();
+		return "ORD" + "-" +
+			LocalDate.now().format(ORDER_NUMBER_FORMATTER) +
+			tsidSuffix.substring(tsidSuffix.length() - 6);
 	}
 
 }
