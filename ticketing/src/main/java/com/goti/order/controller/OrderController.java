@@ -8,7 +8,6 @@ import com.goti.order.dto.response.OrderCreateResponse;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -26,7 +25,7 @@ import lombok.RequiredArgsConstructor;
 @Tag(name = "Order", description = "주문 API")
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/games")
+@RequestMapping("/api/v1/orders")
 public class OrderController {
 	private final OrderCreateService orderCreateService;
 
@@ -34,12 +33,11 @@ public class OrderController {
 		summary = "주문 생성",
 		description = "주문 생성 API"
 	)
-	@PostMapping("/{gameId}/orders")
+	@PostMapping
 	public ResponseEntity<ApiSuccessResponse<OrderCreateResponse>> create(
-		@PathVariable UUID gameId,
 		@AuthenticationPrincipal(expression = "id") UUID memberId,
 		@Valid @RequestBody OrderCreateRequest request
 	) {
-		return wrap(orderCreateService.create(request.toCommand(gameId, memberId)));
+		return wrap(orderCreateService.create(request.toCommand(memberId)));
 	}
 }

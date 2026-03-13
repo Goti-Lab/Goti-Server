@@ -12,6 +12,10 @@ import jakarta.validation.constraints.NotNull;
 
 @Schema(description = "점유 좌석 기반 주문 생성 요청")
 public record OrderCreateRequest(
+	@Schema(description = "경기 ID")
+	@NotNull(message = "경기 ID는 필수입니다.")
+	UUID gameId,
+
 	@Schema(description = "주문 생성 대상 hold ID 목록")
 	@NotEmpty(message = "hold ID 목록은 필수입니다.")
 	List<@NotNull(message = "hold ID는 필수입니다.") UUID> holdIds,
@@ -29,7 +33,6 @@ public record OrderCreateRequest(
 	String ordererEmail
 ) {
 	public OrderCreateCommand toCommand(
-		UUID gameId,
 		UUID memberId
 	) {
 		return new OrderCreateCommand(

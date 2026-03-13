@@ -43,7 +43,7 @@ public class SecurityConfig {
 		"/api/v1/resale/transactions/**",
 		"/api/v1/resale/holds/**",
 		"/api/v1/resale/transactions/**",
-		"/api/v1/games/**"
+		"/api/v1/orders/**"
 	};
 
 	@Bean
