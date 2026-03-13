@@ -94,6 +94,15 @@ public class OrderEntity extends ModificationTimestampEntity {
 		);
 	}
 
+	public void confirm() {
+		Preconditions.domainValidate(
+			this.orderStatus == OrderStatus.PENDING,
+			"PENDING 상태에서만 주문 확정이 가능합니다."
+		);
+		this.orderStatus = OrderStatus.CONFIRMED;
+		this.confirmedAt = LocalDateTime.now();
+	}
+
 	private static void validate(
 		String orderNumber,
 		UUID userId,

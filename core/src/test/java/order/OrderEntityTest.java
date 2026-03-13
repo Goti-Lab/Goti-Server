@@ -63,6 +63,22 @@ class OrderEntityTest {
 		assertThat(order.getCanceledAt()).isNull();
 	}
 
+	@Test
+	void 주문_확정_성공() {
+		OrderEntity order = OrderEntity.create(
+			orderNumber,
+			userId,
+			gameSchedule,
+			totalQuantity,
+			totalAmount
+		);
+
+		order.confirm();
+
+		assertThat(order.getOrderStatus()).isEqualTo(OrderStatus.CONFIRMED);
+		assertThat(order.getConfirmedAt()).isNotNull();
+	}
+
 	@ParameterizedTest
 	@NullAndEmptySource
 	@ValueSource(strings = {" ", "   "})

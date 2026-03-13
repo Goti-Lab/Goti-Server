@@ -78,6 +78,14 @@ public class OrderItemEntity extends ModificationTimestampEntity {
 		return new OrderItemEntity(order, seat, ticketType, ticketPrice);
 	}
 
+	public void pay() {
+		Preconditions.domainValidate(
+			this.itemStatus == OrderItemStatus.RESERVED,
+			"RESERVED 상태에서만 결제 완료 처리할 수 있습니다."
+		);
+		this.itemStatus = OrderItemStatus.PAID;
+	}
+
 	private static void validate(
 		TicketType ticketType,
 		Integer ticketPrice

@@ -2,12 +2,8 @@ package payment;
 
 import static org.assertj.core.api.Assertions.*;
 
-import java.time.LocalDateTime;
 import java.util.UUID;
 
-import com.goti.constants.LeagueType;
-
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.NullAndEmptySource;
@@ -17,28 +13,18 @@ import org.springframework.test.context.ActiveProfiles;
 import com.goti.constants.PaymentMethod;
 import com.goti.constants.PaymentStatus;
 import com.goti.constants.PaymentType;
-import com.goti.domain.entity.game.GameScheduleEntity;
-import com.goti.domain.entity.order.OrderEntity;
 import com.goti.domain.entity.payment.PaymentEntity;
 import com.goti.exception.FieldValidationException;
 
 @ActiveProfiles("test")
 class PaymentEntityTest {
 
-	private OrderEntity order;
-	private Integer paymentAmount;
-	private String idempotencyKey;
+	UUID orderId;
+	Integer paymentAmount;
+	String idempotencyKey;
 
-	@BeforeEach
-	void setup() {
-		GameScheduleEntity gameSchedule = GameScheduleEntity.create(
-			UUID.randomUUID(),
-			UUID.randomUUID(),
-			UUID.randomUUID(),
-			LocalDateTime.of(2026, 4, 1, 18, 30),
-			LeagueType.REGULAR
-		);
-		order = OrderEntity.create("ORD-20260310-0001", UUID.randomUUID(), gameSchedule, 2, 24000);
+	{
+		orderId = UUID.randomUUID();
 		paymentAmount = 24000;
 		idempotencyKey = "payment-idempotency-key";
 	}
@@ -46,7 +32,7 @@ class PaymentEntityTest {
 	@Test
 	void 결제_생성_성공() {
 		PaymentEntity payment = PaymentEntity.create(
-			order,
+			orderId,
 			null,
 			PaymentType.PAYMENT,
 			PaymentMethod.CARD,
@@ -56,8 +42,8 @@ class PaymentEntityTest {
 			idempotencyKey
 		);
 
-		assertThat(payment.getOrder()).isEqualTo(order);
-		assertThat(payment.getCancellation()).isNull();
+		assertThat(payment.getOrderId()).isEqualTo(orderId);
+		assertThat(payment.getCancellationId()).isNull();
 		assertThat(payment.getPaymentType()).isEqualTo(PaymentType.PAYMENT);
 		assertThat(payment.getPaymentMethod()).isEqualTo(PaymentMethod.CARD);
 		assertThat(payment.getPaymentAmount()).isEqualTo(paymentAmount);
@@ -65,14 +51,56 @@ class PaymentEntityTest {
 		assertThat(payment.getPgTid()).isEqualTo("pg-tid-001");
 		assertThat(payment.getPaymentStatus()).isEqualTo(PaymentStatus.PENDING);
 		assertThat(payment.getPaidAt()).isNull();
+		assertThat(payment.getFailedReason()).isNull();
 		assertThat(payment.getIdempotencyKey()).isEqualTo(idempotencyKey);
+	}
+
+	@Test
+	void 결제_성공_처리() {
+		PaymentEntity payment = PaymentEntity.create(
+			orderId,
+			null,
+			PaymentType.PAYMENT,
+			PaymentMethod.CARD,
+			paymentAmount,
+			"MOCK",
+			null,
+			idempotencyKey
+		);
+
+		payment.succeed("mock-tid-001");
+
+		assertThat(payment.getPaymentStatus()).isEqualTo(PaymentStatus.SUCCESS);
+		assertThat(payment.getPgTid()).isEqualTo("mock-tid-001");
+		assertThat(payment.getPaidAt()).isNotNull();
+		assertThat(payment.getFailedReason()).isNull();
+	}
+
+	@Test
+	void 결제_실패_처리() {
+		PaymentEntity payment = PaymentEntity.create(
+			orderId,
+			null,
+			PaymentType.PAYMENT,
+			PaymentMethod.CARD,
+			paymentAmount,
+			"MOCK",
+			null,
+			idempotencyKey
+		);
+
+		payment.fail("mock 결제 실패");
+
+		assertThat(payment.getPaymentStatus()).isEqualTo(PaymentStatus.FAILED);
+		assertThat(payment.getPaidAt()).isNull();
+		assertThat(payment.getFailedReason()).isEqualTo("mock 결제 실패");
 	}
 
 	@Test
 	void 결제_생성_실패_결제처리유형_null() {
 		assertThatThrownBy(
 			() -> PaymentEntity.create(
-				order,
+				orderId,
 				null,
 				null,
 				PaymentMethod.CARD,
@@ -89,7 +117,7 @@ class PaymentEntityTest {
 	void 결제_생성_실패_결제금액_0이하() {
 		assertThatThrownBy(
 			() -> PaymentEntity.create(
-				order,
+				orderId,
 				null,
 				PaymentType.PAYMENT,
 				PaymentMethod.CARD,
@@ -108,7 +136,7 @@ class PaymentEntityTest {
 	void 결제_생성_실패_멱등키_공백(String invalidIdempotencyKey) {
 		assertThatThrownBy(
 			() -> PaymentEntity.create(
-				order,
+				orderId,
 				null,
 				PaymentType.PAYMENT,
 				PaymentMethod.CARD,
@@ -119,5 +147,22 @@ class PaymentEntityTest {
 			)
 		).isInstanceOf(FieldValidationException.class)
 			.hasMessageContaining("멱등 키는 비어 있을 수 없습니다.");
+	}
+
+	@Test
+	void 결제_생성_실패_주문아이디_null() {
+		assertThatThrownBy(
+			() -> PaymentEntity.create(
+				null,
+				null,
+				PaymentType.PAYMENT,
+				PaymentMethod.CARD,
+				paymentAmount,
+				"MOCK",
+				"pg-tid-001",
+				idempotencyKey
+			)
+		).isInstanceOf(FieldValidationException.class)
+			.hasMessageContaining("주문 ID는 필수입니다.");
 	}
 }

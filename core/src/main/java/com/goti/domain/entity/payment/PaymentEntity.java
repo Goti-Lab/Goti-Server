@@ -3,6 +3,7 @@ package com.goti.domain.entity.payment;
 import static lombok.AccessLevel.*;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 import org.springframework.util.StringUtils;
 
@@ -10,18 +11,13 @@ import com.goti.constants.PaymentMethod;
 import com.goti.constants.PaymentStatus;
 import com.goti.constants.PaymentType;
 import com.goti.domain.base.ModificationTimestampEntity;
-import com.goti.domain.entity.order.OrderCancellationEntity;
-import com.goti.domain.entity.order.OrderEntity;
 import com.goti.global.validation.Preconditions;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.Index;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -38,13 +34,11 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = PROTECTED)
 public class PaymentEntity extends ModificationTimestampEntity {
 
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "order_id", nullable = false)
-	private OrderEntity order;
+	@Column(name = "order_id", nullable = false)
+	private UUID orderId;
 
-	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "cancellation_id")
-	private OrderCancellationEntity cancellation;
+	@Column(name = "cancellation_id")
+	private UUID cancellationId;
 
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false)
@@ -68,12 +62,15 @@ public class PaymentEntity extends ModificationTimestampEntity {
 
 	private LocalDateTime paidAt;
 
+	@Column(columnDefinition = "TEXT")
+	private String failedReason;
+
 	@Column(nullable = false, unique = true)
 	private String idempotencyKey;
 
 	private PaymentEntity(
-		OrderEntity order,
-		OrderCancellationEntity cancellation,
+		UUID orderId,
+		UUID cancellationId,
 		PaymentType paymentType,
 		PaymentMethod paymentMethod,
 		Integer paymentAmount,
@@ -81,8 +78,8 @@ public class PaymentEntity extends ModificationTimestampEntity {
 		String pgTid,
 		String idempotencyKey
 	) {
-		this.order = order;
-		this.cancellation = cancellation;
+		this.orderId = orderId;
+		this.cancellationId = cancellationId;
 		this.paymentType = paymentType;
 		this.paymentMethod = paymentMethod;
 		this.paymentAmount = paymentAmount;
@@ -94,8 +91,8 @@ public class PaymentEntity extends ModificationTimestampEntity {
 	}
 
 	public static PaymentEntity create(
-		OrderEntity order,
-		OrderCancellationEntity cancellation,
+		UUID orderId,
+		UUID cancellationId,
 		PaymentType paymentType,
 		PaymentMethod paymentMethod,
 		Integer paymentAmount,
@@ -104,15 +101,16 @@ public class PaymentEntity extends ModificationTimestampEntity {
 		String idempotencyKey
 	) {
 		validate(
-			cancellation,
+			orderId,
+			cancellationId,
 			paymentType,
 			paymentMethod,
 			paymentAmount,
 			idempotencyKey
 		);
 		return new PaymentEntity(
-			order,
-			cancellation,
+			orderId,
+			cancellationId,
 			paymentType,
 			paymentMethod,
 			paymentAmount,
@@ -122,13 +120,43 @@ public class PaymentEntity extends ModificationTimestampEntity {
 		);
 	}
 
+	public void succeed(String pgTid) {
+		Preconditions.domainValidate(
+			this.paymentStatus == PaymentStatus.PENDING,
+			"PENDING 상태에서만 결제 성공 처리할 수 있습니다."
+		);
+		this.paymentStatus = PaymentStatus.SUCCESS;
+		this.pgTid = pgTid;
+		this.paidAt = LocalDateTime.now();
+		this.failedReason = null;
+	}
+
+	public void fail(String failedReason) {
+		Preconditions.domainValidate(
+			this.paymentStatus == PaymentStatus.PENDING,
+			"PENDING 상태에서만 결제 실패 처리할 수 있습니다."
+		);
+		Preconditions.domainValidate(
+			StringUtils.hasText(failedReason),
+			"결제 실패 사유는 비어 있을 수 없습니다."
+		);
+		this.paymentStatus = PaymentStatus.FAILED;
+		this.paidAt = null;
+		this.failedReason = failedReason;
+	}
+
 	private static void validate(
-		OrderCancellationEntity cancellation,
+		UUID orderId,
+		UUID cancellationId,
 		PaymentType paymentType,
 		PaymentMethod paymentMethod,
 		Integer paymentAmount,
 		String idempotencyKey
 	) {
+		Preconditions.domainValidate(
+			orderId != null,
+			"주문 ID는 필수입니다."
+		);
 		Preconditions.domainValidate(
 			paymentType != null,
 			"결제 처리 유형은 필수입니다."
@@ -150,7 +178,7 @@ public class PaymentEntity extends ModificationTimestampEntity {
 
 		if (paymentType == PaymentType.REFUND) {
 			Preconditions.domainValidate(
-				cancellation != null,
+				cancellationId != null,
 				"결제 유형이 '환불'인 경우 취소 정보는 필수입니다."
 			);
 		}

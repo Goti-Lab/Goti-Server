@@ -55,6 +55,15 @@ class OrderItemEntityTest {
 	}
 
 	@Test
+	void 주문상세_결제완료_성공() {
+		OrderItemEntity item = OrderItemEntity.create(order, seat, TicketType.ADULT, 12000);
+
+		item.pay();
+
+		assertThat(item.getItemStatus()).isEqualTo(OrderItemStatus.PAID);
+	}
+
+	@Test
 	void 주문상세_생성_실패_권종_null() {
 		assertThatThrownBy(
 			() -> OrderItemEntity.create(order, seat, null, 12000)
