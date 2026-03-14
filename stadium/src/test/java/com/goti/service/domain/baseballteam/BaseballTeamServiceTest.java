@@ -51,22 +51,9 @@ public class BaseballTeamServiceTest {
 
 	@Test
 	void 야구구단_생성_성공() {
+
 		BaseballTeamCreateResponse response = baseballTeamService.create(
-			baseballTeamCreateRequest.teamCode(),
-			baseballTeamCreateRequest.teamName(),
-			baseballTeamCreateRequest.teamNameEn(),
-			baseballTeamCreateRequest.sponsor(),
-			baseballTeamCreateRequest.homeGround(),
-			baseballTeamCreateRequest.foundedYear(),
-			baseballTeamCreateRequest.officeAddress(),
-			baseballTeamCreateRequest.zipCode(),
-			baseballTeamCreateRequest.siteAddress(),
-			baseballTeamCreateRequest.owner(),
-			baseballTeamCreateRequest.generalManager(),
-			baseballTeamCreateRequest.director(),
-			baseballTeamCreateRequest.ownerAgency(),
-			baseballTeamCreateRequest.ceo(),
-			baseballTeamCreateRequest.logoUrl()
+			baseballTeamCreateRequest.toCommand()
 		);
 
 		assertNotNull(response.teamId());

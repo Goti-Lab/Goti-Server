@@ -1,10 +1,11 @@
 package com.goti.service.domain.baseballteam;
 
-import com.goti.constants.TeamCode;
 import com.goti.domain.entity.team.BaseballTeamEntity;
 import com.goti.dto.response.BaseballTeamCreateResponse;
 
 import com.goti.repository.BaseballTeamRepository;
+
+import com.goti.service.domain.baseballteam.command.BaseballTeamCreateCommand;
 
 import lombok.RequiredArgsConstructor;
 
@@ -21,26 +22,23 @@ public class BaseballTeamServiceImpl implements BaseballTeamService {
 
 	@Override
 	@Transactional
-	public BaseballTeamCreateResponse create(
-		TeamCode teamCode,
-		String teamName,
-		String teamNameEn,
-		String sponsor,
-		String homeGround,
-		Integer foundedYear,
-		String officeAddress,
-		String zipCode,
-		String siteAddress,
-		String owner,
-		String ownerAgency,
-		String ceo,
-		String generalManager,
-		String director,
-		String logoUrl
-	) {
+	public BaseballTeamCreateResponse create(BaseballTeamCreateCommand command) {
 		BaseballTeamEntity baseballTeam = BaseballTeamEntity.create(
-			teamCode, teamName, teamNameEn, sponsor, homeGround, foundedYear, officeAddress,
-			zipCode, siteAddress, owner, ownerAgency, ceo, generalManager, director, logoUrl
+			command.teamCode(),
+			command.teamName(),
+			command.teamNameEn(),
+			command.sponsor(),
+			command.homeGround(),
+			command.foundedYear(),
+			command.officeAddress(),
+			command.zipCode(),
+			command.siteAddress(),
+			command.owner(),
+			command.generalManager(),
+			command.director(),
+			command.ownerAgency(),
+			command.ceo(),
+			command.logoUrl()
 		);
 		baseballTeamRepository.save(baseballTeam);
 

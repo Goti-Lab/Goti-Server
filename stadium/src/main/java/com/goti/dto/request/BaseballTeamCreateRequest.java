@@ -3,6 +3,8 @@ package com.goti.dto.request;
 import com.goti.config.validator.PastYear;
 import com.goti.constants.TeamCode;
 
+import com.goti.service.domain.baseballteam.command.BaseballTeamCreateCommand;
+
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -71,4 +73,12 @@ public record BaseballTeamCreateRequest(
 	)
 	String logoUrl
 ) {
+
+	public BaseballTeamCreateCommand toCommand() {
+		return new BaseballTeamCreateCommand(
+			teamCode, teamName, teamNameEn, sponsor, homeGround,
+			foundedYear, officeAddress, zipCode, siteAddress,
+			owner, ownerAgency, ceo, generalManager, director, logoUrl
+		);
+	}
 }
