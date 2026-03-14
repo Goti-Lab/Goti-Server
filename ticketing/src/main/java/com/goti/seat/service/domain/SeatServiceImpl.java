@@ -87,7 +87,12 @@ public class SeatServiceImpl implements SeatService {
 
 	@Override
 	@Transactional(readOnly = true)
-	public List<SeatResponse> get(UUID sectionId) {
+	public List<SeatResponse> get(UUID sectionId, UUID userId) {
+		Preconditions.validate(
+			userId != null,
+			ErrorCode.AUTH_INVALID
+		);
+
 		return seatRepository.findAllBySection(sectionId).stream()
 			.map(SeatResponse::from)
 			.toList();

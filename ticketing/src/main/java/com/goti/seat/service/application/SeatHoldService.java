@@ -8,6 +8,7 @@ import com.goti.constants.messages.ErrorCode;
 import com.goti.domain.entity.seat.SeatHoldEntity;
 import com.goti.exception.CustomException;
 import com.goti.infra.lock.DistributedLockManager;
+import com.goti.global.validation.Preconditions;
 import com.goti.seat.repository.SeatHoldRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -32,6 +33,19 @@ public class SeatHoldService {
 			.orElseThrow(() -> new CustomException(ErrorCode.SEAT_HOLD_NOT_FOUND));
 
 		String lockKey = buildLockKey(seatHold.getGameSchedule().getId(), seatHold.getSeat().getId());
+		return distributedLockManager.withLock(lockKey, () -> seatHoldTransactionalService.release(holdId, userId));
+	}
+
+	public UUID release(UUID gameId, UUID holdId, UUID userId) {
+		SeatHoldEntity seatHold = seatHoldRepository.findById(holdId)
+			.orElseThrow(() -> new CustomException(ErrorCode.SEAT_HOLD_NOT_FOUND));
+
+		Preconditions.validate(
+			seatHold.getGameSchedule().getId().equals(gameId),
+			ErrorCode.SEAT_HOLD_GAME_MISMATCH
+		);
+
+		String lockKey = buildLockKey(gameId, seatHold.getSeat().getId());
 		return distributedLockManager.withLock(lockKey, () -> seatHoldTransactionalService.release(holdId, userId));
 	}
 

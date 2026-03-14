@@ -1,26 +1,27 @@
 package com.goti.seat.controller;
 
+import static com.goti.global.api.ApiSuccessResponse.*;
+
+import java.util.UUID;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.goti.global.api.ApiSuccessResponse;
 import com.goti.seat.dto.request.HoldSeatRequest;
 import com.goti.seat.dto.response.HoldSeatResponse;
 import com.goti.seat.dto.response.ReleaseSeatResponse;
 import com.goti.seat.service.application.SeatHoldService;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
-import java.util.UUID;
-
-import static com.goti.global.api.ApiSuccessResponse.wrap;
 
 @Tag(name = "Seat Reservation", description = "좌석 점유 및 해제 API")
 @RestController
@@ -31,19 +32,20 @@ public class SeatReservationController {
 
 	@Operation(
 		summary = "좌석 점유",
-		description = "좌석을 임시 점유(HOLD) API"
+		description = "좌석 임시 점유(HOLD) API"
 	)
-	@PostMapping
+	@PostMapping("/seats/{seatId}")
 	public ResponseEntity<ApiSuccessResponse<HoldSeatResponse>> hold(
-		@RequestParam(required = false) UUID userId, // TODO: 로그인 구현 완료 시 인증 컨텍스트에서 조회
+		@PathVariable UUID seatId,
+		@AuthenticationPrincipal(expression = "id") UUID memberId,
 		@Valid @RequestBody HoldSeatRequest request
 	) {
 		// TODO: 대기열 구현 완료 후 queueTokenJti를 요청값이 아닌 queue token claim(jti)에서 추출하도록 변경
 		HoldSeatResponse response = HoldSeatResponse.from(
 			seatHoldService.hold(
 				request.gameId(),
-				request.seatId(),
-				userId,
+				seatId,
+				memberId,
 				request.queueTokenJti()
 			)
 		);
@@ -57,10 +59,10 @@ public class SeatReservationController {
 	@PostMapping("/{holdId}")
 	public ResponseEntity<ApiSuccessResponse<ReleaseSeatResponse>> release(
 		@PathVariable UUID holdId,
-		@RequestParam(required = false) UUID userId // TODO: 로그인 구현 완료 시 인증 컨텍스트에서 조회
+		@AuthenticationPrincipal(expression = "id") UUID memberId
 	) {
 		ReleaseSeatResponse response = ReleaseSeatResponse.from(
-			seatHoldService.release(holdId, userId)
+			seatHoldService.release(holdId, memberId)
 		);
 		return wrap(response);
 	}

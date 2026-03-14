@@ -6,6 +6,8 @@ import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.goti.constants.messages.ErrorCode;
+import com.goti.global.validation.Preconditions;
 import com.goti.seat.dto.response.GameSeatStatusResponse;
 import com.goti.seat.repository.SeatStatusRepository;
 
@@ -20,8 +22,14 @@ public class SeatStatusServiceImpl implements SeatStatusService {
 	@Transactional(readOnly = true)
 	public List<GameSeatStatusResponse> get(
 		UUID gameId,
-		UUID sectionId
+		UUID sectionId,
+		UUID userId
 	) {
+		Preconditions.validate(
+			userId != null,
+			ErrorCode.AUTH_INVALID
+		);
+
 		return seatStatusRepository.findSeatStatuses(gameId, sectionId).stream()
 			.map(GameSeatStatusResponse::from)
 			.toList();

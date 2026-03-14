@@ -9,5 +9,5 @@ import com.goti.seat.dto.response.SeatResponse;
 public interface SeatService {
 	BulkCreateSeatsResponse create(UUID sectionId, String rowName, Integer startSeatNumber, Integer endSeatNumber);
 
-	List<SeatResponse> get(UUID sectionId);
+	List<SeatResponse> get(UUID sectionId, UUID userId);
 }

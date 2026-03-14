@@ -8,5 +8,5 @@ import com.goti.seat.dto.response.SeatSectionResponse;
 public interface SeatSectionService {
 	SeatSectionResponse create(UUID gradeId, UUID stadiumId, String sectionCode, Integer capacity);
 
-	List<SeatSectionResponse> get(UUID stadiumId);
+	List<SeatSectionResponse> get(UUID stadiumId, UUID userId);
 }

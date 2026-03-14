@@ -36,7 +36,12 @@ public class SeatGradeServiceImpl implements SeatGradeService {
 
 	@Override
 	@Transactional(readOnly = true)
-	public List<SeatGradeResponse> get(UUID stadiumId) {
+	public List<SeatGradeResponse> get(UUID stadiumId, UUID userId) {
+		Preconditions.validate(
+			userId != null,
+			ErrorCode.AUTH_INVALID
+		);
+
 		return seatGradeRepository.findAllByStadiumId(stadiumId).stream()
 			.map(SeatGradeResponse::from)
 			.toList();

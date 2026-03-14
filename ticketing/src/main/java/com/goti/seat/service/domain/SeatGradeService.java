@@ -8,5 +8,5 @@ import com.goti.seat.dto.response.SeatGradeResponse;
 public interface SeatGradeService {
 	SeatGradeResponse create(UUID stadiumId, String name, String displayColorHex);
 
-	List<SeatGradeResponse> get(UUID stadiumId);
+	List<SeatGradeResponse> get(UUID stadiumId, UUID userId);
 }

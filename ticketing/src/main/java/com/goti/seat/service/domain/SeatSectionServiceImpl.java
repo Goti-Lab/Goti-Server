@@ -52,7 +52,12 @@ public class SeatSectionServiceImpl implements SeatSectionService {
 
 	@Override
 	@Transactional(readOnly = true)
-	public List<SeatSectionResponse> get(UUID stadiumId) {
+	public List<SeatSectionResponse> get(UUID stadiumId, UUID userId) {
+		Preconditions.validate(
+			userId != null,
+			ErrorCode.AUTH_INVALID
+		);
+
 		return seatSectionRepository.findAllByStadiumId(stadiumId).stream()
 			.map(SeatSectionResponse::from)
 			.toList();
