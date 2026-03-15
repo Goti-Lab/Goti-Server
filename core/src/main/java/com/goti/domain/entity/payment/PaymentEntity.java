@@ -87,6 +87,7 @@ public class PaymentEntity extends ModificationTimestampEntity {
 		this.pgTid = pgTid;
 		this.paymentStatus = PaymentStatus.PENDING;
 		this.paidAt = null;
+		this.failedReason = null;
 		this.idempotencyKey = idempotencyKey;
 	}
 

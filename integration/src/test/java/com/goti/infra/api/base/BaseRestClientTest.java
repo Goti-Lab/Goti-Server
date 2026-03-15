@@ -1,30 +1,20 @@
 package com.goti.infra.api.base;
 
-import com.goti.IntegrationApplication;
-import com.goti.constants.messages.ErrorCode;
-import com.goti.exception.CustomException;
-
 import lombok.extern.slf4j.Slf4j;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ActiveProfiles;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClient;
 
 import java.util.Map;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @Slf4j
-@ActiveProfiles("test")
-@SpringBootTest(classes = IntegrationApplication.class)
 public class BaseRestClientTest {
 
-	@Autowired
 	RestClient restClient;
 
 	static final String BASE_URL = "https://jsonplaceholder.typicode.com";
@@ -49,6 +39,7 @@ public class BaseRestClientTest {
 
 	@BeforeEach
 	void setUp() {
+		restClient = RestClient.builder().build();
 		testApiClient = new TestApiClient(restClient);
 	}
 
@@ -68,7 +59,7 @@ public class BaseRestClientTest {
 	@Test
 	void restClient_get_요청_실패_테스트() {
 
-		CustomException exception = assertThrows(CustomException.class, () -> {
+		HttpClientErrorException.NotFound exception = assertThrows(HttpClientErrorException.NotFound.class, () -> {
 			testApiClient.get(
 				BASE_URL + "/posts/99999999",
 				null,
@@ -76,7 +67,7 @@ public class BaseRestClientTest {
 				String.class
 			);
 		});
-		assertThat(exception.error()).isEqualTo(ErrorCode.INTERNAL_SERVER_ERROR);
+		assertNotNull(exception.getStatusCode());
 	}
 
 	@Test

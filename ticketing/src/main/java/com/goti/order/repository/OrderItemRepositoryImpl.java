@@ -1,7 +1,10 @@
 package com.goti.order.repository;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.UUID;
+
+import com.goti.domain.entity.seat.QSeatSectionEntity;
 
 import org.springframework.stereotype.Repository;
 
@@ -44,5 +47,21 @@ public class OrderItemRepositoryImpl implements OrderItemRepositoryCustom {
 			.fetchFirst();
 
 		return result != null;
+	}
+
+	@Override
+	public List<OrderItemEntity> findOrderItemsByOrderId(UUID orderId) {
+		QOrderItemEntity orderItem = QOrderItemEntity.orderItemEntity;
+		QOrderEntity order = QOrderEntity.orderEntity;
+		QSeatEntity seat = QSeatEntity.seatEntity;
+		QSeatSectionEntity seatSection = QSeatSectionEntity.seatSectionEntity;
+
+		return queryFactory
+			.selectFrom(orderItem)
+			.join(orderItem.order, order).fetchJoin()
+			.join(orderItem.seat, seat).fetchJoin()
+			.join(seat.seatSection, seatSection).fetchJoin()
+			.where(order.id.eq(orderId))
+			.fetch();
 	}
 }
