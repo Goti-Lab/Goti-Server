@@ -34,10 +34,10 @@ public class BaseballTeamServiceImpl implements BaseballTeamService {
 			command.zipCode(),
 			command.siteAddress(),
 			command.owner(),
-			command.generalManager(),
-			command.director(),
 			command.ownerAgency(),
 			command.ceo(),
+			command.generalManager(),
+			command.director(),
 			command.logoUrl()
 		);
 		baseballTeamRepository.save(baseballTeam);

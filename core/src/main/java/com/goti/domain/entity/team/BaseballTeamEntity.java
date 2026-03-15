@@ -120,10 +120,10 @@ public class BaseballTeamEntity extends ModificationTimestampEntity {
 		String zipCode,
 		String siteAddress,
 		String owner,
-		String generalManager,
-		String director,
 		String ownerAgency,
 		String ceo,
+		String generalManager,
+		String director,
 		String logoUrl
 	) {
 

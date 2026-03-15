@@ -324,7 +324,7 @@ public class BaseballTeamEntityTest {
 				"https://www.samsunglions.com/",
 				owner,
 				"삼성그룹",
-				"홍길동",
+				"이재용",
 				"이종열",
 				"박진만",
 				"https://image.url/logo.png"
@@ -352,9 +352,9 @@ public class BaseballTeamEntityTest {
 				"42250",
 				"https://www.samsunglions.com/",
 				"이재용",
-				generalManager,
+				"삼성그룹",
 				"홍길동",
-				"이종열",
+				generalManager,
 				"박진만",
 				"https://image.url/logo.png"
 			)
@@ -382,9 +382,9 @@ public class BaseballTeamEntityTest {
 				"https://www.samsunglions.com/",
 				"홍길동",
 				"삼성그룹",
-				director,
-				"이종열",
 				"박진만",
+				"이종열",
+				director,
 				"https://image.url/logo.png"
 			)
 		).isInstanceOfSatisfying(
