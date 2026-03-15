@@ -40,7 +40,7 @@ public class OrderEntity extends ModificationTimestampEntity {
 	private String orderNumber;
 
 	@Column(nullable = false)
-	private UUID userId;
+	private UUID memberId;
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "game_schedule_id", nullable = false)
@@ -62,13 +62,13 @@ public class OrderEntity extends ModificationTimestampEntity {
 
 	private OrderEntity(
 		String orderNumber,
-		UUID userId,
+		UUID memberId,
 		GameScheduleEntity gameSchedule,
 		Integer totalQuantity,
 		Integer totalAmount
 	) {
 		this.orderNumber = orderNumber;
-		this.userId = userId;
+		this.memberId = memberId;
 		this.gameSchedule = gameSchedule;
 		this.orderStatus = OrderStatus.PENDING;
 		this.totalQuantity = totalQuantity;

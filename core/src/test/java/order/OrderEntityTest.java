@@ -54,7 +54,7 @@ class OrderEntityTest {
 		);
 
 		assertThat(order.getOrderNumber()).isEqualTo(orderNumber);
-		assertThat(order.getUserId()).isEqualTo(userId);
+		assertThat(order.getMemberId()).isEqualTo(userId);
 		assertThat(order.getGameSchedule()).isEqualTo(gameSchedule);
 		assertThat(order.getOrderStatus()).isEqualTo(OrderStatus.PENDING);
 		assertThat(order.getTotalQuantity()).isEqualTo(totalQuantity);

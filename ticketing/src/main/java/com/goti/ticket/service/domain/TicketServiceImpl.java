@@ -28,7 +28,7 @@ public class TicketServiceImpl implements TicketService {
 	public TicketEntity create(
 		OrderItemEntity orderItem,
 		UUID gameId,
-		UUID userId,
+		UUID memberId,
 		String userNickname,
 		String userEmail,
 		String userPhone,
@@ -42,7 +42,7 @@ public class TicketServiceImpl implements TicketService {
 			orderItem.getId(),
 			null,
 			gameId,
-			userId,
+			memberId,
 			userNickname,
 			userEmail,
 			userPhone,

@@ -2,7 +2,12 @@ package com.goti.order.service.domain;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.UUID;
+
+import com.goti.constants.messages.ErrorCode;
+import com.goti.global.validation.Preconditions;
+import com.goti.order.dto.response.OrderListResponse;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,20 +29,33 @@ public class OrderServiceImpl implements OrderService {
 	@Override
 	@Transactional
 	public OrderEntity create(
-		UUID userId,
+		UUID memberId,
 		GameScheduleEntity gameSchedule,
 		Integer totalQuantity,
 		Integer totalAmount
 	) {
 		OrderEntity order = OrderEntity.create(
 			generateOrderNumber(),
-			userId,
+			memberId,
 			gameSchedule,
 			totalQuantity,
 			totalAmount
 		);
 
 		return orderRepository.save(order);
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public List<OrderListResponse> getMyOrders(UUID memberId) {
+		Preconditions.validate(
+			memberId != null,
+			ErrorCode.AUTH_INVALID
+		);
+
+		return orderRepository.findAllByMemberIdOrderByCreatedAtDesc(memberId).stream()
+			.map(OrderListResponse::from)
+			.toList();
 	}
 
 	private String generateOrderNumber() {

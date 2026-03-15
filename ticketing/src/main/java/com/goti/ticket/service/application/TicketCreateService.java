@@ -34,7 +34,7 @@ public class TicketCreateService {
 			.map(orderItem -> ticketService.create(
 				orderItem,
 				order.getGameSchedule().getId(),
-				order.getUserId(),
+				order.getMemberId(),
 				orderHistory.getName(),
 				orderHistory.getEmail(),
 				orderHistory.getMobile(),

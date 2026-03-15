@@ -29,14 +29,14 @@ public class TicketQrService {
 	@Transactional(readOnly = true)
 	public TicketQrResponse create(
 		UUID ticketId,
-		UUID userId
+		UUID memberId
 	) {
 		Preconditions.validate(
-			userId != null,
+			memberId != null,
 			ErrorCode.AUTH_INVALID
 		);
 
-		TicketEntity ticket = ticketRepository.findByIdAndUserId(ticketId, userId)
+		TicketEntity ticket = ticketRepository.findByIdAndUserId(ticketId, memberId)
 			.orElseThrow(() -> new CustomException(ErrorCode.TICKET_NOT_FOUND));
 
 		return createQrToken(ticket);
