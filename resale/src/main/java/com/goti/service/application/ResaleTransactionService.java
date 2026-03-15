@@ -115,6 +115,7 @@ public class ResaleTransactionService {
 		ResalePriceHistoryEntity resalePriceHistory = ResalePriceHistoryEntity.create(
 			resaleListing.getGameId(),
 			resaleListing.getSeatId(),
+			resaleListing.getSectionId(),
 			resaleListing.getGradeId(),
 			resaleTransaction.getTransactionPrice()
 		);

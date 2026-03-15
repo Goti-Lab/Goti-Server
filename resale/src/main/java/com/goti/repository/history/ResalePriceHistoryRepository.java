@@ -1,6 +1,7 @@
 package com.goti.repository.history;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -33,5 +34,16 @@ public interface ResalePriceHistoryRepository extends JpaRepository<ResalePriceH
 		@Param("gradeId") UUID gradeId,
 		@Param("startOfDay") Instant startOfDay,
 		@Param("endOfDay") Instant endOfDay
+	);
+
+	@Query("SELECT r FROM ResalePriceHistoryEntity r "
+		+ "WHERE r.gameId = :gameId "
+		+ "AND r.gradeId = :gradeId "
+		+ "AND r.createdAt >= :since "
+		+ "ORDER BY r.createdAt ASC")
+	List<ResalePriceHistoryEntity> findByGameAndGrade(
+		@Param("gameId") UUID gameId,
+		@Param("gradeId") UUID gradeId,
+		@Param("since") Instant since
 	);
 }

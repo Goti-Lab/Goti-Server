@@ -1,5 +1,6 @@
 package com.goti.service.application;
 
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.ZoneId;
@@ -10,9 +11,11 @@ import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.goti.constants.ResaleGraphRange;
 import com.goti.constants.ResaleListingStatus;
 import com.goti.domain.entity.resale.ResaleListingEntity;
 import com.goti.domain.entity.resale.ResalePriceHistoryEntity;
+import com.goti.dto.response.ResalePriceHistoryResponse;
 import com.goti.repository.history.ResalePriceHistoryRepository;
 import com.goti.repository.listing.ResaleListingRepository;
 
@@ -59,4 +62,19 @@ public class ResalePriceService {
 		listingRepository.saveAll(resaleListings);
 	}
 
+	@Transactional(readOnly = true)
+	public List<ResalePriceHistoryResponse> getHistory(UUID gameId, UUID gradeId, ResaleGraphRange range) {
+		Instant since = range.getTime();
+
+		List<ResalePriceHistoryEntity> resaleHistories = priceHistoryRepository.findByGameAndGrade(
+			gameId,
+			gradeId,
+			since
+		);
+
+		return resaleHistories
+			.stream()
+			.map(ResalePriceHistoryResponse::from)
+			.toList();
+	}
 }

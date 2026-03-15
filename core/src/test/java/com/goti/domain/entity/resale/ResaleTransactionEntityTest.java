@@ -39,6 +39,7 @@ class ResaleTransactionEntityTest {
 			UUID.randomUUID(),
 			UUID.randomUUID(),
 			UUID.randomUUID(),
+			UUID.randomUUID(),
 			"A구역 10열 5번",
 			50000,
 			50000

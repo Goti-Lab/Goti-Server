@@ -25,6 +25,7 @@ class ResaleListingEntityTest {
 	private static final UUID VALID_SELLER_ID = UUID.randomUUID();
 	private static final UUID VALID_GAME_ID = UUID.randomUUID();
 	private static final UUID VALID_SEAT_ID = UUID.randomUUID();
+	private static final UUID VALID_SECTION_ID = UUID.randomUUID();
 	private static final UUID VALID_GRADE_ID = UUID.randomUUID();
 	private static final String VALID_SEAT_INFO = "A구역 10열 5번";
 	private static final Integer VALID_DAILY_BASE_PRICE = 50000;
@@ -37,6 +38,7 @@ class ResaleListingEntityTest {
 			VALID_SELLER_ID,
 			VALID_GAME_ID,
 			VALID_SEAT_ID,
+			VALID_SECTION_ID,
 			VALID_GRADE_ID,
 			VALID_SEAT_INFO,
 			VALID_DAILY_BASE_PRICE,
@@ -48,6 +50,7 @@ class ResaleListingEntityTest {
 			() -> assertThat(entity.getSellerId()).isEqualTo(VALID_SELLER_ID),
 			() -> assertThat(entity.getGameId()).isEqualTo(VALID_GAME_ID),
 			() -> assertThat(entity.getSeatId()).isEqualTo(VALID_SEAT_ID),
+			() -> assertThat(entity.getSectionId()).isEqualTo(VALID_SECTION_ID),
 			() -> assertThat(entity.getGradeId()).isEqualTo(VALID_GRADE_ID),
 			() -> assertThat(entity.getSeatInfo()).isEqualTo(VALID_SEAT_INFO),
 			() -> assertThat(entity.getDailyBasePrice()).isEqualTo(VALID_DAILY_BASE_PRICE),
@@ -67,6 +70,7 @@ class ResaleListingEntityTest {
 			VALID_SELLER_ID,
 			VALID_GAME_ID,
 			VALID_SEAT_ID,
+			VALID_SECTION_ID,
 			VALID_GRADE_ID,
 			VALID_SEAT_INFO,
 			0,
@@ -86,6 +90,7 @@ class ResaleListingEntityTest {
 			VALID_SELLER_ID,
 			VALID_GAME_ID,
 			VALID_SEAT_ID,
+			VALID_SECTION_ID,
 			VALID_GRADE_ID,
 			VALID_SEAT_INFO,
 			VALID_DAILY_BASE_PRICE,
@@ -102,6 +107,7 @@ class ResaleListingEntityTest {
 			null,
 			VALID_GAME_ID,
 			VALID_SEAT_ID,
+			VALID_SECTION_ID,
 			VALID_GRADE_ID,
 			VALID_SEAT_INFO,
 			VALID_DAILY_BASE_PRICE,
@@ -118,6 +124,7 @@ class ResaleListingEntityTest {
 			VALID_SELLER_ID,
 			null,
 			VALID_SEAT_ID,
+			VALID_SECTION_ID,
 			VALID_GRADE_ID,
 			VALID_SEAT_INFO,
 			VALID_DAILY_BASE_PRICE,
@@ -134,6 +141,7 @@ class ResaleListingEntityTest {
 			VALID_SELLER_ID,
 			VALID_GAME_ID,
 			null,
+			VALID_SECTION_ID,
 			VALID_GRADE_ID,
 			VALID_SEAT_INFO,
 			VALID_DAILY_BASE_PRICE,
@@ -144,12 +152,30 @@ class ResaleListingEntityTest {
 	}
 
 	@Test
+	void 구역_ID가_null_실패() {
+		assertThatThrownBy(() -> ResaleListingEntity.create(
+			VALID_TICKET_ID,
+			VALID_SELLER_ID,
+			VALID_GAME_ID,
+			VALID_SEAT_ID,
+			null,
+			VALID_GRADE_ID,
+			VALID_SEAT_INFO,
+			VALID_DAILY_BASE_PRICE,
+			VALID_LISTING_PRICE
+		))
+			.isInstanceOf(FieldValidationException.class)
+			.hasMessageContaining("구역 ID는 비어 있을 수 없습니다");
+	}
+
+	@Test
 	void 등급_ID가_null_실패() {
 		assertThatThrownBy(() -> ResaleListingEntity.create(
 			VALID_TICKET_ID,
 			VALID_SELLER_ID,
 			VALID_GAME_ID,
 			VALID_SEAT_ID,
+			VALID_SECTION_ID,
 			null,
 			VALID_SEAT_INFO,
 			VALID_DAILY_BASE_PRICE,
@@ -166,6 +192,7 @@ class ResaleListingEntityTest {
 			VALID_SELLER_ID,
 			VALID_GAME_ID,
 			VALID_SEAT_ID,
+			VALID_SECTION_ID,
 			VALID_GRADE_ID,
 			null,
 			VALID_DAILY_BASE_PRICE,
@@ -183,6 +210,7 @@ class ResaleListingEntityTest {
 			VALID_SELLER_ID,
 			VALID_GAME_ID,
 			VALID_SEAT_ID,
+			VALID_SECTION_ID,
 			VALID_GRADE_ID,
 			VALID_SEAT_INFO,
 			dailyPrice,
@@ -200,6 +228,7 @@ class ResaleListingEntityTest {
 			VALID_SELLER_ID,
 			VALID_GAME_ID,
 			VALID_SEAT_ID,
+			VALID_SECTION_ID,
 			VALID_GRADE_ID,
 			VALID_SEAT_INFO,
 			dailyPrice,
@@ -217,6 +246,7 @@ class ResaleListingEntityTest {
 			VALID_SELLER_ID,
 			VALID_GAME_ID,
 			VALID_SEAT_ID,
+			VALID_SECTION_ID,
 			VALID_GRADE_ID,
 			VALID_SEAT_INFO,
 			VALID_DAILY_BASE_PRICE,
@@ -234,6 +264,7 @@ class ResaleListingEntityTest {
 			VALID_SELLER_ID,
 			VALID_GAME_ID,
 			VALID_SEAT_ID,
+			VALID_SECTION_ID,
 			VALID_GRADE_ID,
 			VALID_SEAT_INFO,
 			VALID_DAILY_BASE_PRICE,

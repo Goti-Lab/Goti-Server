@@ -23,11 +23,12 @@ public class TicketService {
 		// 테스트용 더미 데이터
 		return new ResaleTicketResponse(
 			ticketId,
+			ownerId,
 			UUID.fromString("8df84c70-833e-4374-85ad-fa52f92f939f"),
 			// 경기ID 고정 (경기당 횟수 테스트 5,3)
 			// UUID.randomUUID(), // 경기아이디 랜덤 (10회 테스트)
-			ownerId,
 			UUID.fromString("8df84c70-833e-4374-85ad-fa52f92f939e"),
+			UUID.fromString("8df84c70-833e-4374-85ad-fa52f92f939c"),
 			UUID.fromString("8df84c70-833e-4374-85ad-fa52f92f939d"),
 			"A구역 3열 15번",
 			50000,

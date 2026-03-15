@@ -65,6 +65,7 @@ public class ResaleListingService {
 			sellerId,
 			ticketInfo.gameId(),
 			ticketInfo.seatId(),
+			ticketInfo.sectionId(),
 			ticketInfo.gradeId(),
 			ticketInfo.seatInfo(),
 			ticketInfo.ticketPrice(),
@@ -112,13 +113,23 @@ public class ResaleListingService {
 		return ResaleListingResponse.from(resaleListing);
 	}
 
-	@Transactional
+	@Transactional(readOnly = true)
 	public List<ResaleListingResponse> getListingsBySellerId(UUID sellerId) {
 		List<ResaleListingEntity> resaleListings = listingRepository.findAllBySellerId(sellerId);
 
 		return resaleListings.stream()
 			.map(ResaleListingResponse::from)
 			.toList();
+	}
+
+	@Transactional(readOnly = true)
+	public long getListingCountBySection(UUID gameId, UUID sectionId) {
+		return listingRepository.countByGameIdAndSectionIdAndListingStatus(gameId, sectionId, ResaleListingStatus.LISTING);
+	}
+
+	@Transactional(readOnly = true)
+	public long getTotalListingCount(UUID gameId) {
+		return listingRepository.countByGameIdAndListingStatus(gameId, ResaleListingStatus.LISTING);
 	}
 
 	@Transactional

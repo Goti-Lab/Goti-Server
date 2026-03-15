@@ -23,6 +23,7 @@ class ResalePriceHistoryEntityTest {
 
 	private static final UUID VALID_GAME_ID = UUID.randomUUID();
 	private static final UUID VALID_SEAT_ID = UUID.randomUUID();
+	private static final UUID VALID_SECTION_ID = UUID.randomUUID();
 	private static final UUID VALID_GRADE_ID = UUID.randomUUID();
 	private static final Integer VALID_TRANSACTION_PRICE = 50000;
 	private static final LocalDate VALID_TRANSACTION_DATE = LocalDate.now().minusDays(1);
@@ -33,6 +34,7 @@ class ResalePriceHistoryEntityTest {
 		ResalePriceHistoryEntity entity = ResalePriceHistoryEntity.create(
 			VALID_GAME_ID,
 			VALID_SEAT_ID,
+			VALID_SECTION_ID,
 			VALID_GRADE_ID,
 			VALID_TRANSACTION_PRICE
 		);
@@ -40,6 +42,7 @@ class ResalePriceHistoryEntityTest {
 		assertAll(
 			() -> assertThat(entity.getGameId()).isEqualTo(VALID_GAME_ID),
 			() -> assertThat(entity.getSeatId()).isEqualTo(VALID_SEAT_ID),
+			() -> assertThat(entity.getSectionId()).isEqualTo(VALID_SECTION_ID),
 			() -> assertThat(entity.getGradeId()).isEqualTo(VALID_GRADE_ID),
 			() -> assertThat(entity.getTransactionPrice()).isEqualTo(VALID_TRANSACTION_PRICE)
 		);
@@ -50,6 +53,7 @@ class ResalePriceHistoryEntityTest {
 		ResalePriceHistoryEntity entity = ResalePriceHistoryEntity.create(
 			VALID_GAME_ID,
 			VALID_SEAT_ID,
+			VALID_SECTION_ID,
 			VALID_GRADE_ID,
 			0
 		);
@@ -63,6 +67,7 @@ class ResalePriceHistoryEntityTest {
 		assertThatThrownBy(() -> ResalePriceHistoryEntity.create(
 			null,
 			VALID_SEAT_ID,
+			VALID_SECTION_ID,
 			VALID_GRADE_ID,
 			VALID_TRANSACTION_PRICE
 		))
@@ -75,6 +80,7 @@ class ResalePriceHistoryEntityTest {
 		assertThatThrownBy(() -> ResalePriceHistoryEntity.create(
 			VALID_GAME_ID,
 			null,
+			VALID_SECTION_ID,
 			VALID_GRADE_ID,
 			VALID_TRANSACTION_PRICE
 		))
@@ -83,10 +89,24 @@ class ResalePriceHistoryEntityTest {
 	}
 
 	@Test
+	void 구역_ID가_null_실패() {
+		assertThatThrownBy(() -> ResalePriceHistoryEntity.create(
+			VALID_GAME_ID,
+			VALID_SEAT_ID,
+			null,
+			VALID_GRADE_ID,
+			VALID_TRANSACTION_PRICE
+		))
+			.isInstanceOf(FieldValidationException.class)
+			.hasMessageContaining("구역 ID는 비어 있을 수 없습니다");
+	}
+
+	@Test
 	void 등급_ID가_null_실패() {
 		assertThatThrownBy(() -> ResalePriceHistoryEntity.create(
 			VALID_GAME_ID,
 			VALID_SEAT_ID,
+			VALID_SECTION_ID,
 			null,
 			VALID_TRANSACTION_PRICE
 		))
@@ -100,6 +120,7 @@ class ResalePriceHistoryEntityTest {
 		assertThatThrownBy(() -> ResalePriceHistoryEntity.create(
 			VALID_GAME_ID,
 			VALID_SEAT_ID,
+			VALID_SECTION_ID,
 			VALID_GRADE_ID,
 			transactionPrice
 		))
@@ -113,6 +134,7 @@ class ResalePriceHistoryEntityTest {
 		assertThatThrownBy(() -> ResalePriceHistoryEntity.create(
 			VALID_GAME_ID,
 			VALID_SEAT_ID,
+			VALID_SECTION_ID,
 			VALID_GRADE_ID,
 			transactionPrice
 		))
