@@ -105,7 +105,7 @@ jobs:
           SMS_API_SECRET: ${{ secrets.SMS_API_SECRET }}
           SMS_API_SENDER: ${{ secrets.SMS_API_SENDER }}
         run: |
-          MODULES="core common integration user stadium ticketing payment resale api"
+          MODULES="common integration user stadium ticketing payment resale api"
 
           CHANGED=$(git diff --name-only origin/develop...HEAD | grep -oP '^[^/]+' | sort -u)
 

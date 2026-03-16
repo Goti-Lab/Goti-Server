@@ -1,8 +1,9 @@
 .PHONY: help build test docker-build db-up db-down db-logs up down logs ps clean \
-       msa-build msa-run msa-stop
+       msa-up msa-down msa-logs msa-ps msa-restart msa-build
 
 COMPOSE_INFRA := docker compose -f docker/docker-compose.yml
 COMPOSE_ALL   := docker compose -f docker/docker-compose.yml -f docker/docker-compose.app.yml
+COMPOSE_MSA   := docker compose -f docker/docker-compose.yml -f docker/docker-compose.msa.yml
 
 help: ## 도움말
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-18s\033[0m %s\n", $$1, $$2}'
@@ -40,25 +41,25 @@ ps: ## 컨테이너 상태 확인
 clean: ## 볼륨 포함 전체 정리
 	$(COMPOSE_ALL) down -v --remove-orphans
 
-# === MSA 테스트 ===
-MSA_MODULES := user stadium ticketing payment resale
-MSA_PORTS   := 8081 8082 8083 8084 8085
+# === MSA (Docker Compose) ===
 
-msa-build: ## [MSA] 모듈별 bootJar 빌드
-	./gradlew $(foreach m,$(MSA_MODULES),:$(m):bootJar) -Pmsa --no-daemon -x test
+msa-build: ## [MSA] 모듈별 bootJar 빌드 (Gradle)
+	./gradlew $(foreach m,user stadium ticketing payment resale,:$(m):bootJar) -Pmsa --no-daemon -x test
 
-msa-run: db-up msa-build ## [MSA] 인프라 + 모듈별 독립 실행
-	@echo "=== MSA 모드 시작 ==="
-	$(eval PAIRS := $(join $(MSA_MODULES),$(addprefix :,$(MSA_PORTS))))
-	@$(foreach p,$(PAIRS),\
-		$(eval M := $(word 1,$(subst :, ,$(p))))\
-		$(eval P := $(word 2,$(subst :, ,$(p))))\
-		echo "  $(M) → localhost:$(P)" && \
-		SERVER_PORT=$(P) java -jar $(M)/build/libs/$(M)-0.0.1-SNAPSHOT.jar &\
-	)
-	@echo "=== 전체 모듈 실행 중 ==="
+msa-up: ## [MSA] Docker로 전체 서비스 시작 (5개 서비스 + DB + Redis)
+	$(COMPOSE_MSA) up -d --build
 
-msa-stop: ## [MSA] 모듈 프로세스 전체 종료
-	@echo "=== MSA 프로세스 종료 ==="
-	@pkill -f 'goti.*SNAPSHOT.jar' || true
-	@echo "종료 완료"
+msa-down: ## [MSA] 전체 서비스 중지
+	$(COMPOSE_MSA) down
+
+msa-logs: ## [MSA] 전체 서비스 로그
+	$(COMPOSE_MSA) logs -f
+
+msa-ps: ## [MSA] 서비스 상태 확인
+	$(COMPOSE_MSA) ps
+
+msa-restart: ## [MSA] 특정 서비스 재시작 (예: make msa-restart SVC=user)
+	$(COMPOSE_MSA) up -d --build $(SVC)
+
+msa-clean: ## [MSA] 볼륨 포함 전체 정리
+	$(COMPOSE_MSA) down -v --remove-orphans
