@@ -51,6 +51,7 @@ public class PaymentService {
 			paymentClient.releaseEscrow(orderId);
 		} catch (Exception e) {
 			log.error("에스크로 해제 실패 - orderId: {}, error: {}", orderId, e.getMessage());
+			throw e;
 		}
 	}
 }

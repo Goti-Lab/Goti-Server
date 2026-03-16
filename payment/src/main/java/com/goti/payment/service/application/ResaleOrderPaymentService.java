@@ -1,5 +1,6 @@
 package com.goti.payment.service.application;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -10,10 +11,9 @@ import com.goti.constants.PaymentMethod;
 import com.goti.constants.PaymentStatus;
 import com.goti.payment.domain.entity.payment.EscrowAccountEntity;
 import com.goti.payment.dto.request.ResalePaymentRequest;
-import com.goti.payment.dto.request.ResaleTransactionItemRequest;
-import com.goti.dto.response.PaymentResponse;
+import com.goti.payment.dto.response.PaymentResponse;
 import com.goti.payment.repository.EscrowAccountRepository;
-import com.goti.service.domain.PaymentService;
+import com.goti.payment.service.domain.PaymentService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -44,16 +44,18 @@ public class ResaleOrderPaymentService {
 				request.totalSellerFee()
 			);
 
-			for (ResaleTransactionItemRequest item : request.items()) {
-				EscrowAccountEntity escrow = EscrowAccountEntity.create(
-					item.transactionId(),
-					request.buyerId(),
-					item.sellerId(),
-					item.settlementAmount()
-				);
-				escrowAccountRepository.save(escrow);
-
-			}
+			List<EscrowAccountEntity> escrows = request.items()
+				.stream()
+				.map(item ->
+					EscrowAccountEntity
+						.create(
+							item.transactionId(),
+							request.buyerId(),
+							item.sellerId(),
+							item.settlementAmount()
+						))
+				.toList();
+			escrowAccountRepository.saveAll(escrows);
 
 			paymentOrderGateway.confirmResalePayment(
 				request.orderId(),
@@ -73,7 +75,8 @@ public class ResaleOrderPaymentService {
 		List<EscrowAccountEntity> escrows = escrowAccountRepository.findAllByTransactionIdIn(transactionIds);
 
 		for (EscrowAccountEntity escrow : escrows) {
-			escrow.release();
+			LocalDateTime releaseTime = LocalDateTime.now();
+			escrow.release(releaseTime);
 			// TODO: 실제 정산 시 은행/PG API 호출 로직 추가
 		}
 

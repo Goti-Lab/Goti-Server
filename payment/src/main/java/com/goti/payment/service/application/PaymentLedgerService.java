@@ -21,6 +21,9 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class PaymentLedgerService {
 
+	private static final BigDecimal VAT_RATE = new BigDecimal("0.1");
+	private static final BigDecimal VAT_DIVISOR = new BigDecimal("1.1");
+
 	private final PaymentLedgerRepository ledgerRepository;
 
 	@Transactional
@@ -34,8 +37,8 @@ public class PaymentLedgerService {
 		int totalFee = buyerFee + sellerFee;
 		BigDecimal totalFeeBD = BigDecimal.valueOf(totalFee);
 		BigDecimal vatBD = totalFeeBD
-			.multiply(new BigDecimal("0.1"))
-			.divide(new BigDecimal("1.1"), 0, RoundingMode.HALF_UP);
+			.multiply(VAT_RATE)
+			.divide(VAT_DIVISOR, 0, RoundingMode.HALF_UP);
 
 		int vat = vatBD.intValue();
 		int netProfit = totalFee - vat;
