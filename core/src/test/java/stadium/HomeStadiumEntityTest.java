@@ -2,7 +2,6 @@ package stadium;
 
 import com.goti.constants.StadiumType;
 import com.goti.constants.TeamCode;
-import com.goti.domain.entity.resale.EscrowAccountEntity;
 import com.goti.domain.entity.stadium.HomeStadiumEntity;
 import com.goti.domain.entity.stadium.StadiumEntity;
 import com.goti.domain.entity.team.BaseballTeamEntity;
