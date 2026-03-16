@@ -10,7 +10,6 @@ import com.goti.constants.PaymentMethod;
 import com.goti.constants.PaymentStatus;
 import com.goti.domain.entity.payment.EscrowAccountEntity;
 import com.goti.dto.request.ResalePaymentRequest;
-import com.goti.dto.request.ResaleTransactionItemRequest;
 import com.goti.dto.response.PaymentResponse;
 import com.goti.repository.EscrowAccountRepository;
 import com.goti.service.domain.PaymentService;
@@ -44,16 +43,18 @@ public class ResaleOrderPaymentService {
 				request.totalSellerFee()
 			);
 
-			for (ResaleTransactionItemRequest item : request.items()) {
-				EscrowAccountEntity escrow = EscrowAccountEntity.create(
-					item.transactionId(),
-					request.buyerId(),
-					item.sellerId(),
-					item.settlementAmount()
-				);
-				escrowAccountRepository.save(escrow);
-
-			}
+			List<EscrowAccountEntity> escrows = request.items()
+				.stream()
+				.map(item ->
+					EscrowAccountEntity
+						.create(
+							item.transactionId(),
+							request.buyerId(),
+							item.sellerId(),
+							item.settlementAmount()
+						))
+				.toList();
+			escrowAccountRepository.saveAll(escrows);
 
 			paymentOrderGateway.confirmResalePayment(
 				request.orderId(),
