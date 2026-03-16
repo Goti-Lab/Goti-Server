@@ -35,7 +35,6 @@ public class SecurityConfig {
 		"/api/v1/games/**",
 		"/api/v1/resale/histories/**",
 		"/api/v1/baseball-teams/**",
-		"/api/v1/payments/**",
 		"/actuator/**",
 		"/swagger-ui/**",
 		"/v3/api-docs/**"
