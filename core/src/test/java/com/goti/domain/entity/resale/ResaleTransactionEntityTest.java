@@ -30,6 +30,7 @@ class ResaleTransactionEntityTest {
 	private static final Integer VALID_SELLER_TOTAL = 48000; // 50000 - 2000
 
 	private ResaleListingEntity validListing;
+	private ResaleOrderEntity resaleOrder;
 
 	@BeforeEach
 	void setUp() {
@@ -44,11 +45,17 @@ class ResaleTransactionEntityTest {
 			50000,
 			50000
 		);
+		resaleOrder = ResaleOrderEntity.create(
+			"RES-260316-123456",
+			VALID_BUYER_ID,
+			VALID_BUYER_TOTAL
+		);
 	}
 
 	@Test
 	void 리셀_거래_생성_성공() {
 		ResaleTransactionEntity entity = ResaleTransactionEntity.create(
+			resaleOrder,
 			validListing,
 			VALID_BUYER_ID,
 			VALID_SELLER_ID,
@@ -60,6 +67,7 @@ class ResaleTransactionEntityTest {
 		);
 
 		assertAll(
+			() -> assertThat(entity.getResaleOrder()).isEqualTo(resaleOrder),
 			() -> assertThat(entity.getListing()).isEqualTo(validListing),
 			() -> assertThat(entity.getBuyerId()).isEqualTo(VALID_BUYER_ID),
 			() -> assertThat(entity.getSellerId()).isEqualTo(VALID_SELLER_ID),
@@ -79,6 +87,7 @@ class ResaleTransactionEntityTest {
 		Integer sellerTotal = VALID_TRANSACTION_PRICE; // 수수료 0
 
 		ResaleTransactionEntity entity = ResaleTransactionEntity.create(
+			resaleOrder,
 			validListing,
 			VALID_BUYER_ID,
 			VALID_SELLER_ID,
@@ -100,6 +109,7 @@ class ResaleTransactionEntityTest {
 	@Test
 	void 거래_가격이_0_성공() {
 		ResaleTransactionEntity entity = ResaleTransactionEntity.create(
+			resaleOrder,
 			validListing,
 			VALID_BUYER_ID,
 			VALID_SELLER_ID,
@@ -122,6 +132,7 @@ class ResaleTransactionEntityTest {
 	@Test
 	void 구매자_ID가_null_실패() {
 		assertThatThrownBy(() -> ResaleTransactionEntity.create(
+			resaleOrder,
 			validListing,
 			null,
 			VALID_SELLER_ID,
@@ -138,6 +149,7 @@ class ResaleTransactionEntityTest {
 	@Test
 	void 판매자_ID가_null_실패() {
 		assertThatThrownBy(() -> ResaleTransactionEntity.create(
+			resaleOrder,
 			validListing,
 			VALID_BUYER_ID,
 			null,
@@ -156,6 +168,7 @@ class ResaleTransactionEntityTest {
 		UUID sameUserId = UUID.randomUUID();
 
 		assertThatThrownBy(() -> ResaleTransactionEntity.create(
+			resaleOrder,
 			validListing,
 			sameUserId,
 			sameUserId,
@@ -173,6 +186,7 @@ class ResaleTransactionEntityTest {
 	@NullSource
 	void 거래_가격이_null_실패(Integer transactionPrice) {
 		assertThatThrownBy(() -> ResaleTransactionEntity.create(
+			resaleOrder,
 			validListing,
 			VALID_BUYER_ID,
 			VALID_SELLER_ID,
@@ -190,6 +204,7 @@ class ResaleTransactionEntityTest {
 	@ValueSource(ints = {-1, -10000})
 	void 거래_가격이_음수_실패(Integer transactionPrice) {
 		assertThatThrownBy(() -> ResaleTransactionEntity.create(
+			resaleOrder,
 			validListing,
 			VALID_BUYER_ID,
 			VALID_SELLER_ID,
@@ -207,6 +222,7 @@ class ResaleTransactionEntityTest {
 	@NullSource
 	void 구매자_수수료가_null_실패(Integer buyerFee) {
 		assertThatThrownBy(() -> ResaleTransactionEntity.create(
+			resaleOrder,
 			validListing,
 			VALID_BUYER_ID,
 			VALID_SELLER_ID,
@@ -224,6 +240,7 @@ class ResaleTransactionEntityTest {
 	@ValueSource(ints = {-1, -1000})
 	void 구매자_수수료가_음수_실패(Integer buyerFee) {
 		assertThatThrownBy(() -> ResaleTransactionEntity.create(
+			resaleOrder,
 			validListing,
 			VALID_BUYER_ID,
 			VALID_SELLER_ID,
@@ -241,6 +258,7 @@ class ResaleTransactionEntityTest {
 	@NullSource
 	void 판매자_수수료가_null_실패(Integer sellerFee) {
 		assertThatThrownBy(() -> ResaleTransactionEntity.create(
+			resaleOrder,
 			validListing,
 			VALID_BUYER_ID,
 			VALID_SELLER_ID,
@@ -258,6 +276,7 @@ class ResaleTransactionEntityTest {
 	@ValueSource(ints = {-1, -1000})
 	void 판매자_수수료가_음수_실패(Integer sellerFee) {
 		assertThatThrownBy(() -> ResaleTransactionEntity.create(
+			resaleOrder,
 			validListing,
 			VALID_BUYER_ID,
 			VALID_SELLER_ID,
@@ -275,6 +294,7 @@ class ResaleTransactionEntityTest {
 	@NullSource
 	void 구매자_총액이_null_실패(Integer buyerTotal) {
 		assertThatThrownBy(() -> ResaleTransactionEntity.create(
+			resaleOrder,
 			validListing,
 			VALID_BUYER_ID,
 			VALID_SELLER_ID,
@@ -292,6 +312,7 @@ class ResaleTransactionEntityTest {
 	@ValueSource(ints = {-1, -10000})
 	void 구매자_총액이_음수_실패(Integer buyerTotal) {
 		assertThatThrownBy(() -> ResaleTransactionEntity.create(
+			resaleOrder,
 			validListing,
 			VALID_BUYER_ID,
 			VALID_SELLER_ID,
@@ -310,6 +331,7 @@ class ResaleTransactionEntityTest {
 		Integer wrongBuyerTotal = 99999;
 
 		assertThatThrownBy(() -> ResaleTransactionEntity.create(
+			resaleOrder,
 			validListing,
 			VALID_BUYER_ID,
 			VALID_SELLER_ID,
@@ -327,6 +349,7 @@ class ResaleTransactionEntityTest {
 	@NullSource
 	void 판매자_총액이_null_실패(Integer sellerTotal) {
 		assertThatThrownBy(() -> ResaleTransactionEntity.create(
+			resaleOrder,
 			validListing,
 			VALID_BUYER_ID,
 			VALID_SELLER_ID,
@@ -344,6 +367,7 @@ class ResaleTransactionEntityTest {
 	@ValueSource(ints = {-1, -10000})
 	void 판매자_총액이_음수_실패(Integer sellerTotal) {
 		assertThatThrownBy(() -> ResaleTransactionEntity.create(
+			resaleOrder,
 			validListing,
 			VALID_BUYER_ID,
 			VALID_SELLER_ID,
@@ -362,6 +386,7 @@ class ResaleTransactionEntityTest {
 		Integer wrongSellerTotal = 99999; // 50000 - 2000 ≠ 99999
 
 		assertThatThrownBy(() -> ResaleTransactionEntity.create(
+			resaleOrder,
 			validListing,
 			VALID_BUYER_ID,
 			VALID_SELLER_ID,
