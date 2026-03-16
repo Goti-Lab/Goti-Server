@@ -14,16 +14,16 @@ import com.goti.constants.messages.ErrorCode;
 import com.goti.domain.entity.resale.ResaleListingEntity;
 import com.goti.domain.entity.resale.ResalePriceHistoryEntity;
 import com.goti.domain.entity.resale.ResaleRestrictionEntity;
+import com.goti.dto.internal.ResaleTicketResponse;
 import com.goti.dto.request.ResaleListingCancelRequest;
 import com.goti.dto.request.ResaleListingCreateRequest;
 import com.goti.dto.response.ResaleListingResponse;
-import com.goti.dto.response.ResaleTicketResponse;
 import com.goti.exception.CustomException;
 import com.goti.global.validation.Preconditions;
+import com.goti.infra.TicketClient;
 import com.goti.repository.ResaleRestrictionRepository;
 import com.goti.repository.history.ResalePriceHistoryRepository;
 import com.goti.repository.listing.ResaleListingRepository;
-import com.goti.service.TicketService;
 import com.goti.utils.ResalePricePolicy;
 import com.goti.utils.ResaleRestrictionHandler;
 
@@ -37,17 +37,19 @@ public class ResaleListingService {
 	private final ResalePriceHistoryRepository priceHistoryRepository;
 	private final ResaleRestrictionHandler restrictionHandler;
 	private final ResalePricePolicy pricePolicy;
-	private final TicketService ticketService;
+	private final TicketClient ticketClient;
 
 	@Transactional
 	public ResaleListingResponse createListing(UUID sellerId, ResaleListingCreateRequest request) {
-		ResaleTicketResponse ticketInfo = ticketService.getTicketInfo(request.ticketId(), sellerId);
+		ResaleTicketResponse ticketInfo = ticketClient.getTicketInfo(request.ticketId(), sellerId);
 
 		validateTicketOwner(ticketInfo, sellerId);
 
 		validateGameStartedOneHour(ticketInfo.gameDate());
 
 		validateDuplicateListing(ticketInfo.ticketId());
+
+		restrictionHandler.validateReListingLimit(ticketInfo.transactionId(), ticketInfo.createdAt());
 
 		ResaleRestrictionEntity resaleRestriction = getOrCreateRestriction(sellerId);
 

@@ -1,5 +1,7 @@
 package com.goti.utils;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.UUID;
 
 import org.springframework.stereotype.Component;
@@ -16,6 +18,8 @@ public class ResaleRestrictionHandler {
 	private static final int MAX_GAME_SELL_COUNT = 5;
 	private static final int MAX_GAME_BUY_COUNT = 3;
 	private static final int MAX_GAME_CANCEL_COUNT = 3;
+	private static final int MAX_GAME_POSSESSION_COUNT = 4;
+	private static final int RE_LISTING_MIN_HOURS = 6;
 
 	public void validateCanSell(ResaleRestrictionEntity restriction, UUID gameId) {
 		Preconditions.validate(!restriction.isResaleBlocked(), ErrorCode.RESALE_BLOCKED);
@@ -63,6 +67,23 @@ public class ResaleRestrictionHandler {
 			restriction.getGameCancelCount(gameId) < MAX_GAME_CANCEL_COUNT,
 			ErrorCode.GAME_CANCEL_LIMIT_EXCEEDED, String.valueOf(MAX_GAME_CANCEL_COUNT)
 		);
+	}
+
+	public void validatePossessionLimit(int currentOwnedCount, int pendingCount, int requestCount) {
+		Preconditions.validate(
+			currentOwnedCount + pendingCount + requestCount <= MAX_GAME_POSSESSION_COUNT,
+			ErrorCode.GAME_POSSESSION_LIMIT_EXCEEDED, String.valueOf(MAX_GAME_POSSESSION_COUNT)
+		);
+	}
+
+	public void validateReListingLimit(UUID transactionId, Instant createdAt) {
+		if (transactionId != null && createdAt != null) {
+			long hoursPassed = Duration.between(createdAt, Instant.now()).toHours();
+			Preconditions.validate(
+				hoursPassed >= RE_LISTING_MIN_HOURS,
+				ErrorCode.RE_LISTING_LIMIT_EXCEEDED, String.valueOf(RE_LISTING_MIN_HOURS)
+			);
+		}
 	}
 
 	public void handleAfterSell(ResaleRestrictionEntity restriction, UUID gameId) {
