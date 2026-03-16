@@ -10,6 +10,7 @@ public interface PaymentService {
 		UUID orderId,
 		UUID userId,
 		PaymentMethod paymentMethod,
-		String idempotencyKey
+		String idempotencyKey,
+		Integer paymentAmount
 	);
 }

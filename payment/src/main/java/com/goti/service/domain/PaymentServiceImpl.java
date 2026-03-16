@@ -2,19 +2,16 @@ package com.goti.service.domain;
 
 import java.util.UUID;
 
-import com.goti.service.OrderService;
-
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.goti.constants.PaymentMethod;
 import com.goti.constants.PaymentType;
 import com.goti.constants.messages.ErrorCode;
-import com.goti.domain.entity.payment.PaymentEntity;
 import com.goti.global.validation.Preconditions;
+import com.goti.domain.entity.payment.PaymentEntity;
 import com.goti.dto.response.PaymentResponse;
 import com.goti.repository.PaymentRepository;
-import com.goti.service.dto.PaymentOrderInfo;
 
 import lombok.RequiredArgsConstructor;
 
@@ -24,7 +21,6 @@ public class PaymentServiceImpl implements PaymentService {
 	private static final String MOCK_PG_PROVIDER = "MOCK";
 	private static final String MOCK_PAYMENT_FAILED_REASON = "mock 결제 실패";
 
-	private final OrderService orderService;
 	private final PaymentRepository paymentRepository;
 
 	@Override
@@ -33,7 +29,8 @@ public class PaymentServiceImpl implements PaymentService {
 		UUID orderId,
 		UUID userId,
 		PaymentMethod paymentMethod,
-		String idempotencyKey
+		String idempotencyKey,
+		Integer paymentAmount
 	) {
 		Preconditions.validate(
 			userId != null,
@@ -45,19 +42,12 @@ public class PaymentServiceImpl implements PaymentService {
 			ErrorCode.PAYMENT_IDEMPOTENCY_KEY_ALREADY_EXISTS
 		);
 
-		PaymentOrderInfo order = orderService.getPaymentOrder(orderId, userId);
-
-		Preconditions.validate(
-			order.userId().equals(userId),
-			ErrorCode.AUTH_PERMISSION_DENIED
-		);
-
 		PaymentEntity payment = PaymentEntity.create(
-			order.orderId(),
+			orderId,
 			null,
 			PaymentType.PAYMENT,
 			paymentMethod,
-			order.totalAmount(),
+			paymentAmount,
 			MOCK_PG_PROVIDER,
 			null,
 			idempotencyKey
@@ -65,12 +55,11 @@ public class PaymentServiceImpl implements PaymentService {
 
 		if (shouldFail(idempotencyKey)) {
 			payment.fail(MOCK_PAYMENT_FAILED_REASON);
+			paymentRepository.save(payment);
 		} else {
 			payment.succeed(generateMockPgTid());
-			orderService.confirmPayment(orderId, userId);
+			paymentRepository.save(payment);
 		}
-
-		paymentRepository.save(payment);
 
 		return PaymentResponse.from(
 			payment.getId(),

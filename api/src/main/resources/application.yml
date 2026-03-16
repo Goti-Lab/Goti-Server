@@ -81,3 +81,7 @@ seat:
     enabled: true
     fixed-delay-ms: 1000
     batch-size: 200
+
+internal:
+  ticketing:
+    base-url: ${TICKETING_BASE_URL:http://localhost:8080}

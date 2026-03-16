@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.goti.global.api.ApiSuccessResponse;
 import com.goti.dto.request.PaymentRequest;
 import com.goti.dto.response.PaymentResponse;
-import com.goti.service.domain.PaymentService;
+import com.goti.service.application.OrderPaymentService;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -27,7 +27,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/orders")
 public class PaymentController {
-	private final PaymentService paymentService;
+	private final OrderPaymentService orderPaymentService;
 
 	@Operation(
 		summary = "결제 요청",
@@ -40,7 +40,7 @@ public class PaymentController {
 		@Valid @RequestBody PaymentRequest request
 	) {
 		return wrap(
-			paymentService.create(
+			orderPaymentService.create(
 				orderId,
 				memberId,
 				request.paymentMethod(),

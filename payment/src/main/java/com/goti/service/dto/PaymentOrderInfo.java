@@ -6,7 +6,7 @@ import com.goti.constants.OrderStatus;
 
 public record PaymentOrderInfo(
 	UUID orderId,
-	UUID userId,
+	UUID memberId,
 	OrderStatus orderStatus,
 	Integer totalAmount
 ) {

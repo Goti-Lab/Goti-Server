@@ -10,7 +10,7 @@ import lombok.RequiredArgsConstructor;
 public enum RedisKey {
 	SMS_AUTH_CODE("auth:sms:", Duration.ofMinutes(3)),
 	OAUTH_STATE("oauth:state:", Duration.ofMinutes(5)),
-	TICKET_QR("lock:ticket-qr:", Duration.ofMinutes(3));
+	TICKET_QR("ticket:qr-token:", Duration.ofMinutes(3));
 
 	private final String prefix;
 

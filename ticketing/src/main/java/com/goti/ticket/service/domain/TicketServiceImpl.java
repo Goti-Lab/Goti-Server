@@ -60,18 +60,18 @@ public class TicketServiceImpl implements TicketService {
 	private String generateTicketNumber() {
 		String ticketNumber = "TKT" +
 			LocalDate.now().format(TICKET_NUMBER_FORMATTER) +
-			getTsidSuffix(6);
+			getTsid(6);
 
 		return ticketNumber;
 	}
 
 	private String generateQrCode() {
-		String qrCode = QR_PREFIX + getTsidSuffix(10);
+		String qrCode = QR_PREFIX + getTsid(10);
 
 		return qrCode;
 	}
 
-	private String getTsidSuffix(int length) {
+	private String getTsid(int length) {
 		String tsid = TsidCreator.getTsid().toString();
 		return tsid.substring(tsid.length() - length);
 	}
