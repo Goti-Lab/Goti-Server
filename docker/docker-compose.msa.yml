@@ -28,10 +28,17 @@ services:
       GOOGLE_CLIENT: ${GOOGLE_CLIENT:-not-set}
       GOOGLE_SECRET: ${GOOGLE_SECRET:-not-set}
       GOOGLE_REDIRECT_URI: ${GOOGLE_REDIRECT_URI:-http://localhost:8081/callback}
+      SMS_ENABLED: "true"
       SMS_API_KEY: ${SMS_API_KEY:-not-set}
       SMS_API_SECRET: ${SMS_API_SECRET:-not-set}
       SMS_API_SENDER: ${SMS_API_SENDER:-01000000000}
       SMS_API_DOMAIN: ${SMS_API_DOMAIN:-https://api.coolsms.co.kr}
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/actuator/health || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 60s
     depends_on:
       postgres: { condition: service_healthy }
       redis: { condition: service_healthy }
@@ -61,6 +68,12 @@ services:
       JWT_SECRET_KEY: ${JWT_SECRET_KEY:-local-dev-secret-key-minimum-32-chars-long!!}
       JWT_ACCESS_TIME: ${JWT_ACCESS_TIME:-3600000}
       JWT_REFRESH_TIME: ${JWT_REFRESH_TIME:-604800000}
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/actuator/health || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 60s
     depends_on:
       postgres: { condition: service_healthy }
       redis: { condition: service_healthy }
@@ -90,6 +103,12 @@ services:
       JWT_SECRET_KEY: ${JWT_SECRET_KEY:-local-dev-secret-key-minimum-32-chars-long!!}
       JWT_ACCESS_TIME: ${JWT_ACCESS_TIME:-3600000}
       JWT_REFRESH_TIME: ${JWT_REFRESH_TIME:-604800000}
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/actuator/health || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 60s
     depends_on:
       postgres: { condition: service_healthy }
       redis: { condition: service_healthy }
@@ -120,6 +139,12 @@ services:
       JWT_ACCESS_TIME: ${JWT_ACCESS_TIME:-3600000}
       JWT_REFRESH_TIME: ${JWT_REFRESH_TIME:-604800000}
       TICKETING_BASE_URL: http://ticketing:8080
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/actuator/health || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 60s
     depends_on:
       postgres: { condition: service_healthy }
       redis: { condition: service_healthy }
@@ -149,6 +174,12 @@ services:
       JWT_SECRET_KEY: ${JWT_SECRET_KEY:-local-dev-secret-key-minimum-32-chars-long!!}
       JWT_ACCESS_TIME: ${JWT_ACCESS_TIME:-3600000}
       JWT_REFRESH_TIME: ${JWT_REFRESH_TIME:-604800000}
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/actuator/health || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 60s
     depends_on:
       postgres: { condition: service_healthy }
       redis: { condition: service_healthy }
