@@ -1,5 +1,6 @@
 package com.goti.service.application;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -74,7 +75,8 @@ public class ResaleOrderPaymentService {
 		List<EscrowAccountEntity> escrows = escrowAccountRepository.findAllByTransactionIdIn(transactionIds);
 
 		for (EscrowAccountEntity escrow : escrows) {
-			escrow.release();
+			LocalDateTime releaseTime = LocalDateTime.now();
+			escrow.release(releaseTime);
 			// TODO: 실제 정산 시 은행/PG API 호출 로직 추가
 		}
 
