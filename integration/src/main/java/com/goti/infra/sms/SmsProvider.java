@@ -8,11 +8,9 @@ import net.nurigo.sdk.message.model.Message;
 import net.nurigo.sdk.message.request.SingleMessageSendingRequest;
 import net.nurigo.sdk.message.service.DefaultMessageService;
 
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 @Component
-@ConditionalOnProperty(prefix = "sms.api", name = "enabled", havingValue = "true")
 @RequiredArgsConstructor
 public class SmsProvider {
 	private final SmsProperties smsProperties;
