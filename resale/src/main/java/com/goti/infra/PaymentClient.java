@@ -36,7 +36,7 @@ public class PaymentClient {
 		restClient.post()
 			.uri(
 				UriComponentsBuilder.fromUriString(properties.baseUrl())
-					.path("/api/v1/resale/payments/{orderId}/release")
+					.path("/api/v1/resale/payments/orders/{orderId}/release")
 					.buildAndExpand(orderId)
 					.toUri()
 			)
