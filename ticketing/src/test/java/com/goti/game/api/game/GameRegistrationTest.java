@@ -72,7 +72,6 @@ public class GameRegistrationTest {
 	private static final LocalDateTime START_AT =
 		LocalDateTime.now().plusDays(3).withMinute(30).withSecond(0).withNano(0);
 	private static final LeagueType LEAGUE_TYPE = LeagueType.REGULAR;
-	private static final LocalDateTime now = LocalDateTime.now();
 	private static final int TICKETING_START_HOUR = 11;
 
 	@BeforeEach

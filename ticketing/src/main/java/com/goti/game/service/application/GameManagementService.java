@@ -54,6 +54,9 @@ public class GameManagementService {
 		GameTicketingStatusEntity gameTicketingStatus =
 			gameTicketingStatusService.create(gameSchedule);
 
+		gameSchedule.initGameStatus(gameStatus);
+		gameSchedule.initTicketingStatus(gameTicketingStatus);
+
 		return GameCreateResponse.from(
 			gameSchedule.getId(),
 			gameSchedule.getHomeTeamId(),
