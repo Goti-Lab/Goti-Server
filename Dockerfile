@@ -9,7 +9,6 @@ COPY gradle/ gradle/
 RUN chmod +x gradlew
 
 # 각 모듈의 build.gradle 복사 (의존성 해석용)
-COPY core/build.gradle core/build.gradle
 COPY common/build.gradle common/build.gradle
 COPY integration/build.gradle integration/build.gradle
 COPY user/build.gradle user/build.gradle
