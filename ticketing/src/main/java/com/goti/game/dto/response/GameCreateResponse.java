@@ -1,7 +1,10 @@
 package com.goti.game.dto.response;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.goti.constants.GameStatus;
 import com.goti.constants.LeagueType;
+
+import com.goti.constants.TicketingStatus;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
@@ -11,16 +14,16 @@ import java.util.UUID;
 @Schema(description = "경기 등록 응답")
 public record GameCreateResponse(
 
-	@Schema(description = "경기 ID", example = "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa")
+	@Schema(description = "경기 ID", example = "9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d")
 	UUID gameId,
 
-	@Schema(description = "홈팀 ID", example = "11111111-1111-1111-1111-111111111111")
+	@Schema(description = "홈팀 ID", example = "9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d")
 	UUID homeTeamId,
 
-	@Schema(description = "원정팀 ID", example = "22222222-2222-2222-2222-222222222222")
+	@Schema(description = "원정팀 ID", example = "9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d")
 	UUID awayTeamId,
 
-	@Schema(description = "구장 ID", example = "33333333-3333-3333-3333-333333333333")
+	@Schema(description = "구장 ID", example = "9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d")
 	UUID stadiumId,
 
 	@Schema(
@@ -34,7 +37,24 @@ public record GameCreateResponse(
 	LeagueType leagueType,
 
 	@Schema(description = "경기 상태", example = "SCHEDULED")
-	GameStatus gameStatus
+	GameStatus gameStatus,
+
+	@Schema(
+		description = "게임 예매 오픈 일시 (yyyy-MM-dd HH:mm)",
+		example = "2026-08-20 11:00"
+	)
+	@JsonFormat(pattern = "yyyy-MM-dd HH:mm")
+	LocalDateTime ticketingOpenedAt,
+
+	@Schema(
+		description = "게임 예매 마감 일시 (yyyy-MM-dd HH:mm)",
+		example = "2026-08-26 19:00"
+	)
+	@JsonFormat(pattern = "yyyy-MM-dd HH:mm")
+	LocalDateTime ticketingEndAt,
+
+	@Schema(description = "게임 예매 상태", example = "SCHEDULED")
+	TicketingStatus ticketingStatus
 
 ) {
 	public static GameCreateResponse from(
@@ -44,10 +64,22 @@ public record GameCreateResponse(
 		UUID stadiumId,
 		LocalDateTime startAt,
 		LeagueType leagueType,
-		GameStatus gameStatus
+		GameStatus gameStatus,
+		LocalDateTime ticketingOpenedAt,
+		LocalDateTime ticketingEndAt,
+		TicketingStatus ticketingStatus
 	) {
 		return new GameCreateResponse(
-			gameId, homeTeamId, awayTeamId, stadiumId, startAt, leagueType, gameStatus
+			gameId,
+			homeTeamId,
+			awayTeamId,
+			stadiumId,
+			startAt,
+			leagueType,
+			gameStatus,
+			ticketingOpenedAt,
+			ticketingEndAt,
+			ticketingStatus
 		);
 	}
 }

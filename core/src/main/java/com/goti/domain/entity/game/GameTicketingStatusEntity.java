@@ -43,30 +43,33 @@ public class GameTicketingStatusEntity extends ModificationTimestampEntity {
 	private GameTicketingStatusEntity(
 		GameScheduleEntity gameSchedule,
 		LocalDateTime ticketingOpenedAt,
-		LocalDateTime ticketingEndAt
+		LocalDateTime ticketingEndAt,
+		TicketingStatus status
 	) {
 		this.gameSchedule = gameSchedule;
 		this.ticketingOpenedAt = ticketingOpenedAt;
 		this.ticketingEndAt = ticketingEndAt;
-		this.status = TicketingStatus.UPCOMING;
+		this.status = status;
 	}
 
 	public static GameTicketingStatusEntity create(
 		final GameScheduleEntity gameSchedule,
 		final LocalDateTime ticketingOpenedAt,
-		final LocalDateTime ticketingEndAt
+		final LocalDateTime ticketingEndAt,
+		final TicketingStatus status
 	) {
-		validate(gameSchedule, ticketingOpenedAt, ticketingEndAt);
+		validate(gameSchedule, ticketingOpenedAt, ticketingEndAt, status);
 
 		return new GameTicketingStatusEntity(
-			gameSchedule, ticketingOpenedAt, ticketingEndAt
+			gameSchedule, ticketingOpenedAt, ticketingEndAt, status
 		);
 	}
 
 	private static void validate(
 		GameScheduleEntity gameSchedule,
 		LocalDateTime ticketingOpenedAt,
-		LocalDateTime ticketingEndAt
+		LocalDateTime ticketingEndAt,
+		TicketingStatus status
 	) {
 		LocalDateTime now = LocalDateTime.now();
 		Preconditions.domainValidate(
@@ -75,21 +78,24 @@ public class GameTicketingStatusEntity extends ModificationTimestampEntity {
 		);
 
 		Preconditions.domainValidate(
-			ticketingOpenedAt != null && ticketingOpenedAt.isAfter(now),
-			"예매 시작 시점은 현재보다 미래여야 합니다."
+			ticketingOpenedAt != null,
+			"예매 시작 시점은 비어있을 수 없습니다."
 		);
 
 		Preconditions.domainValidate(
-			ticketingEndAt != null && ticketingEndAt.isAfter(now),
-			"예매 종료 시점은 현재보다 미래여야 합니다."
+			ticketingEndAt != null,
+			"예매 종료 시점은 비어있을 수 없습니다."
 		);
 
-		if (ticketingOpenedAt != null && ticketingEndAt != null) {
-			Preconditions.domainValidate(
-				ticketingEndAt.isAfter(ticketingOpenedAt),
-				"예매 종료 시점은 시작 시점보다 이후여야 합니다."
-			);
-		}
+		Preconditions.domainValidate(
+			ticketingEndAt.isAfter(ticketingOpenedAt),
+			"예매 종료 시점은 시작 시점보다 이후여야 합니다."
+		);
+
+		Preconditions.domainValidate(
+			status != null,
+			"티켓팅 상태는 비어있을 수 없습니다."
+		);
 	}
 
 }

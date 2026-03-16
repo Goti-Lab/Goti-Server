@@ -2,7 +2,7 @@ package com.goti.game.controller;
 
 import com.goti.game.dto.request.GameCreateRequest;
 import com.goti.game.dto.response.GameCreateResponse;
-import com.goti.game.service.application.GameOperationService;
+import com.goti.game.service.application.GameManagementService;
 
 import com.goti.global.api.ApiSuccessResponse;
 
@@ -25,7 +25,7 @@ import static com.goti.global.api.ApiSuccessResponse.wrap;
 @RequestMapping("/api/v1/games")
 public class GameController {
 
-	private final GameOperationService gameOperationService;
+	private final GameManagementService gameManagementService;
 
 	@Operation(
 		summary = "야구 경기 등록",
@@ -36,7 +36,7 @@ public class GameController {
 		@RequestBody @Valid GameCreateRequest request
 	) {
 		return wrap(
-			gameOperationService.register(
+			gameManagementService.register(
 				request.homeTeamId(),
 				request.awayTeamId(),
 				request.stadiumId(),

@@ -63,7 +63,8 @@ public class GameScheduleEntity extends ModificationTimestampEntity {
 		LeagueType leagueType
 	) {
 
-		validate(homeTeamId, awayTeamId, stadiumId, startAt, leagueType);
+		validate(homeTeamId, awayTeamId, stadiumId, leagueType);
+		validateStartAt(startAt);
 
 		return new GameScheduleEntity(
 			homeTeamId,
@@ -78,7 +79,6 @@ public class GameScheduleEntity extends ModificationTimestampEntity {
 		UUID homeTeamId,
 		UUID awayTeamId,
 		UUID stadiumId,
-		LocalDateTime startAt,
 		LeagueType leagueType
 	) {
 
@@ -101,15 +101,26 @@ public class GameScheduleEntity extends ModificationTimestampEntity {
 		);
 
 		Preconditions.domainValidate(
-			startAt != null,
-			"경기 시작 시간은 필수입니다."
-		);
-
-		Preconditions.domainValidate(
 			leagueType != null,
 			"경기 타입은 필수입니다."
 		);
 
+	}
 
+	private static void validateStartAt(LocalDateTime startAt) {
+		Preconditions.domainValidate(
+			startAt != null,
+			"경기 시작 시간은 필수입니다."
+		);
+		LocalDateTime now = LocalDateTime.now();
+		Preconditions.domainValidate(
+			startAt.isAfter(now),
+			"과거 시점의 경기 일정은 생성할 수 없습니다."
+		);
+
+		Preconditions.domainValidate(
+			!startAt.toLocalDate().isEqual(now.toLocalDate()),
+			"경기 당일에는 일정을 등록할 수 없습니다"
+		);
 	}
 }

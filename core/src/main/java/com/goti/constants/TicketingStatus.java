@@ -6,10 +6,10 @@ import lombok.RequiredArgsConstructor;
 @Getter
 @RequiredArgsConstructor
 public enum TicketingStatus {
-	UPCOMING("판매 예정"),
-	OPEN("판매 중"),
-	SOLD_OUT("매진"),
-	CLOSED("판매 마감"),
+	SCHEDULED("판매 예정"),
+	AVAILABLE("구매 가능"),
+	EXHAUSTED("매진"),
+	TERMINATED("판매 종료"),
 	CANCELED("판매 취소"),
 	PAUSED("일시 중단")
 	;
