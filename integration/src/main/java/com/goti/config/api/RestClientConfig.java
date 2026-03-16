@@ -68,6 +68,8 @@ public class RestClientConfig {
 			body
 		);
 
-		throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR);
+		throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR,
+			new RuntimeException(String.format("외부 API 오류: %s %s → %d",
+				request.getMethod(), request.getURI(), status)));
 	}
 }

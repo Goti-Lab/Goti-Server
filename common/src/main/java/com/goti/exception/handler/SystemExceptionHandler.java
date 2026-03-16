@@ -32,7 +32,7 @@ public class SystemExceptionHandler extends BaseExceptionHandler {
 		if (error.isSystemError()) {
 			log.error("[System Error] code={} message={}", error.name(), ex.getMessage(), ex);
 		} else {
-			log.warn("[Business Error] code={} message={}", error.name(), ex.getMessage(), ex);
+			log.warn("[Business Error] code={} message={}", error.name(), ex.getMessage());
 		}
 		return toResponse(ex);
 	}
