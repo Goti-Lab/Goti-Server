@@ -21,5 +21,4 @@ dependencies {
 
     implementation project(':common')
     implementation project(':integration')
-    implementation project(':user')
 }
