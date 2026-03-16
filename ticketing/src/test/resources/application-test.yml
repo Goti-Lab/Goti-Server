@@ -8,9 +8,9 @@ spring:
       hibernate:
         hbm2ddl.create_namespaces: true
   datasource:
-    url: ${DATASOURCE_URL}
-    username: ${DATASOURCE_USERNAME}
-    password: ${DATASOURCE_PASSWORD}
+    url: ${DATASOURCE_URL:jdbc:postgresql://localhost:5432/goti}
+    username: ${DATASOURCE_USERNAME:goti}
+    password: ${DATASOURCE_PASSWORD:goti1234}
     driver-class-name: org.postgresql.Driver
     hikari:
       idle-timeout: 5000
