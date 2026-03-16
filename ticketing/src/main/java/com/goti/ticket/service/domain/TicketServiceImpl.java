@@ -19,7 +19,6 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class TicketServiceImpl implements TicketService {
 	private static final DateTimeFormatter TICKET_NUMBER_FORMATTER = DateTimeFormatter.ofPattern("yyMMdd");
-	private static final String QR_PREFIX = "QR";
 
 	private final TicketRepository ticketRepository;
 
@@ -50,8 +49,7 @@ public class TicketServiceImpl implements TicketService {
 			gameDate,
 			seatInfo,
 			ticketPrice,
-			null,
-			generateQrCode()
+			null
 		);
 
 		return ticketRepository.save(ticket);
@@ -63,12 +61,6 @@ public class TicketServiceImpl implements TicketService {
 			getTsid(6);
 
 		return ticketNumber;
-	}
-
-	private String generateQrCode() {
-		String qrCode = QR_PREFIX + getTsid(10);
-
-		return qrCode;
 	}
 
 	private String getTsid(int length) {

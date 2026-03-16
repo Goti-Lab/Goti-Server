@@ -83,9 +83,6 @@ public class TicketEntity extends ModificationTimestampEntity {
 	@Column(nullable = false)
 	private ResaleEnabledStatus resaleEnabledStatus;
 
-	@Column(unique = true)
-	private String qrCode;
-
 	@Column
 	private LocalDateTime usedAt;
 
@@ -102,8 +99,7 @@ public class TicketEntity extends ModificationTimestampEntity {
 		LocalDateTime gameDate,
 		String seatInfo,
 		Integer ticketPrice,
-		Integer resalePrice,
-		String qrCode
+		Integer resalePrice
 	) {
 		this.ticketNumber = ticketNumber;
 		this.orderItemId = orderItemId;
@@ -120,7 +116,6 @@ public class TicketEntity extends ModificationTimestampEntity {
 		this.resalePrice = resalePrice;
 		this.ticketStatus = TicketStatus.ISSUED;
 		this.resaleEnabledStatus = ResaleEnabledStatus.DISABLED;
-		this.qrCode = qrCode;
 		this.usedAt = null;
 	}
 
@@ -137,8 +132,7 @@ public class TicketEntity extends ModificationTimestampEntity {
 		LocalDateTime gameDate,
 		String seatInfo,
 		Integer ticketPrice,
-		Integer resalePrice,
-		String qrCode
+		Integer resalePrice
 	) {
 		validate(
 			ticketNumber,
@@ -161,8 +155,7 @@ public class TicketEntity extends ModificationTimestampEntity {
 			gameDate,
 			seatInfo,
 			ticketPrice,
-			resalePrice,
-			qrCode
+			resalePrice
 		);
 	}
 

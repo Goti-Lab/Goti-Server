@@ -10,7 +10,7 @@ import com.goti.domain.entity.ticket.TicketEntity;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
-@Schema(description = "티켓 조회 응답")
+@Schema(description = "티켓 상세 조회 응답")
 public record TicketResponse(
 	@Schema(description = "티켓 ID", example = "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa")
 	UUID ticketId,

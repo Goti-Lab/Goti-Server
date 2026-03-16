@@ -68,7 +68,6 @@ class TicketEntityTest {
 			LocalDateTime.of(2026, 4, 1, 18, 30),
 			"VIP A구역 3열 15번",
 			12000,
-			null,
 			null
 		);
 
@@ -101,7 +100,6 @@ class TicketEntityTest {
 				null,
 				"VIP A구역 3열 15번",
 				12000,
-				null,
 				null
 			)
 		).isInstanceOf(FieldValidationException.class)
@@ -124,7 +122,6 @@ class TicketEntityTest {
 				null,
 				"VIP A구역 3열 15번",
 				12000,
-				null,
 				null
 			)
 		).isInstanceOf(FieldValidationException.class)
@@ -147,7 +144,6 @@ class TicketEntityTest {
 				null,
 				" ",
 				12000,
-				null,
 				null
 			)
 		).isInstanceOf(FieldValidationException.class)
@@ -170,7 +166,6 @@ class TicketEntityTest {
 				null,
 				"VIP A구역 3열 15번",
 				-1,
-				null,
 				null
 			)
 		).isInstanceOf(FieldValidationException.class)
