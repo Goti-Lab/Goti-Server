@@ -1,16 +1,18 @@
 package com.goti.infra.lock;
 
-import com.goti.config.properties.DistributedLockProperties;
-import com.goti.constants.messages.ErrorCode;
-import com.goti.exception.CustomException;
-import com.goti.global.validation.Preconditions;
-import lombok.RequiredArgsConstructor;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
+
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.stereotype.Component;
 
-import java.util.concurrent.TimeUnit;
-import java.util.function.Supplier;
+import com.goti.config.properties.DistributedLockProperties;
+import com.goti.constants.messages.ErrorCode;
+import com.goti.exception.CustomException;
+import com.goti.global.validation.Preconditions;
+
+import lombok.RequiredArgsConstructor;
 
 @Component
 @RequiredArgsConstructor
@@ -27,6 +29,28 @@ public class DistributedLockManager {
 			Preconditions.validate(
 				acquired,
 				ErrorCode.SEAT_LOCK_ACQUIRE_FAILED
+			);
+			return action.get();
+		} catch (InterruptedException e) {
+			Thread.currentThread().interrupt();
+			throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR, e);
+		} finally {
+			if (acquired && lock.isHeldByCurrentThread()) {
+				lock.unlock();
+			}
+		}
+	}
+
+	public <T> T withLock(String lockKey, ErrorCode errorCode, Supplier<T> action) {
+		RLock lock = redissonClient.getLock(lockKey);
+		boolean acquired = false;
+
+		try {
+			acquired = lock.tryLock(distributedLockProperties.waitSeconds(), TimeUnit.SECONDS);
+
+			Preconditions.validate(
+				acquired,
+				errorCode
 			);
 			return action.get();
 		} catch (InterruptedException e) {
