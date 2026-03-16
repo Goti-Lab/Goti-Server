@@ -2,7 +2,6 @@ package payment;
 
 import static org.assertj.core.api.Assertions.*;
 
-import java.time.LocalDateTime;
 import java.util.UUID;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -12,11 +11,9 @@ import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.test.context.ActiveProfiles;
 
-import com.goti.constants.LeagueType;
 import com.goti.constants.PaymentMethod;
 import com.goti.constants.PaymentStatus;
 import com.goti.constants.PaymentType;
-import com.goti.domain.entity.game.GameScheduleEntity;
 import com.goti.domain.entity.payment.PaymentEntity;
 import com.goti.exception.FieldValidationException;
 
@@ -29,13 +26,6 @@ class PaymentEntityTest {
 
 	@BeforeEach
 	void setup() {
-		GameScheduleEntity gameSchedule = GameScheduleEntity.create(
-			UUID.randomUUID(),
-			UUID.randomUUID(),
-			UUID.randomUUID(),
-			LocalDateTime.of(2026, 4, 1, 18, 30),
-			LeagueType.REGULAR
-		);
 		orderId = UUID.randomUUID();
 		paymentAmount = 24000;
 		idempotencyKey = "payment-idempotency-key";

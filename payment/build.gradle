@@ -20,7 +20,6 @@ dependencies {
     runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.13.0'
 
 
-    implementation project(':core')
     implementation project(':common')
     implementation project(':integration')
 }
