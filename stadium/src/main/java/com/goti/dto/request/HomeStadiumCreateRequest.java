@@ -10,10 +10,6 @@ import java.util.UUID;
 @Schema(description = "홈구장 생성")
 public record HomeStadiumCreateRequest(
 
-	@Schema(description = "구단 ID", example = "c2123239-12bb-bded-6113-01cq2bae3ex4")
-	@NotNull(message = "구단 ID는 필수 항목입니다.")
-	UUID baseballTeamId,
-
 	@Schema(description = "구장 ID", example = "fe512439-b6bb-4aed-8612-02f34bae3ec5")
 	@NotNull(message = "구장 ID는 필수 항목입니다.")
 	UUID stadiumId,
