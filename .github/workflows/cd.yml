@@ -144,3 +144,90 @@ jobs:
             --instance-id "$INSTANCE_ID" \
             --query "StandardOutputContent" --output text
           exit 1
+
+  # MSA 모듈별 ECR 이미지 빌드+push (deploy job과 병렬 실행)
+  msa-image-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ap-northeast-2
+
+      - name: Login to Amazon ECR
+        id: ecr-login
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Detect changed modules
+        id: detect
+        run: |
+          MSA_MODULES="user stadium ticketing payment resale"
+          SHARED_MODULES="common integration core"
+
+          CHANGED=$(git diff --name-only HEAD~1 HEAD | grep -oP '^[^/]+' | sort -u)
+          echo "변경된 디렉토리: $CHANGED"
+
+          # common/integration/core 변경 시 전체 MSA 모듈 빌드
+          BUILD_ALL=false
+          for shared in $SHARED_MODULES; do
+            if echo "$CHANGED" | grep -qx "$shared"; then
+              BUILD_ALL=true
+              echo "공유 모듈 $shared 변경 감지 — 전체 MSA 모듈 빌드"
+              break
+            fi
+          done
+
+          if [ "$BUILD_ALL" = true ]; then
+            echo "modules=$MSA_MODULES" >> "$GITHUB_OUTPUT"
+          else
+            TARGETS=""
+            for module in $MSA_MODULES; do
+              if echo "$CHANGED" | grep -qx "$module"; then
+                TARGETS="$TARGETS $module"
+              fi
+            done
+            TARGETS=$(echo "$TARGETS" | xargs)
+            echo "modules=$TARGETS" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Set up Docker Buildx
+        if: steps.detect.outputs.modules != ''
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push MSA images
+        if: steps.detect.outputs.modules != ''
+        env:
+          ECR_REGISTRY: ${{ steps.ecr-login.outputs.registry }}
+        run: |
+          MODULES="${{ steps.detect.outputs.modules }}"
+          SHORT_SHA=${GITHUB_SHA::7}
+          TAG="dev-${SHORT_SHA}"
+
+          echo "빌드 대상 모듈: $MODULES"
+          echo "이미지 태그: $TAG"
+
+          for MODULE in $MODULES; do
+            REPO="goti-${MODULE}"
+            IMAGE="${ECR_REGISTRY}/${REPO}:${TAG}"
+
+            # 이미 존재하는 이미지 스킵 (모놀리식 deploy job과 동일 패턴)
+            if aws ecr describe-images --repository-name "${REPO}" --image-ids imageTag="${TAG}" > /dev/null 2>&1; then
+              echo "--- ${MODULE}: 이미지 ${TAG} 이미 존재 — 스킵 ---"
+              continue
+            fi
+
+            echo "--- ${MODULE} 빌드 시작 ---"
+            docker buildx build \
+              --build-arg MODULE="${MODULE}" \
+              --cache-from type=gha,scope="${MODULE}" \
+              --cache-to type=gha,mode=max,scope="${MODULE}" \
+              --tag "${IMAGE}" \
+              --push \
+              .
+            echo "--- ${MODULE} 빌드 완료: ${IMAGE} ---"
+          done

@@ -134,6 +134,54 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-      - name: Docker build verification
+      - name: Docker build verification (monolith)
         run: DOCKER_BUILDKIT=1 docker build -t goti-server:ci-test .
+
+      - name: Detect changed MSA modules
+        id: detect
+        run: |
+          MSA_MODULES="user stadium ticketing payment resale"
+          SHARED_MODULES="common integration core"
+
+          CHANGED=$(git diff --name-only origin/develop...HEAD | grep -oP '^[^/]+' | sort -u)
+          echo "변경된 디렉토리: $CHANGED"
+
+          BUILD_ALL=false
+          for shared in $SHARED_MODULES; do
+            if echo "$CHANGED" | grep -qx "$shared"; then
+              BUILD_ALL=true
+              echo "공유 모듈 $shared 변경 감지 — 전체 MSA 모듈 빌드 검증"
+              break
+            fi
+          done
+
+          if [ "$BUILD_ALL" = true ]; then
+            echo "modules=$MSA_MODULES" >> "$GITHUB_OUTPUT"
+          else
+            TARGETS=""
+            for module in $MSA_MODULES; do
+              if echo "$CHANGED" | grep -qx "$module"; then
+                TARGETS="$TARGETS $module"
+              fi
+            done
+            TARGETS=$(echo "$TARGETS" | xargs)
+            echo "modules=$TARGETS" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Docker build verification (MSA modules)
+        if: steps.detect.outputs.modules != ''
+        run: |
+          MODULES="${{ steps.detect.outputs.modules }}"
+          echo "MSA 빌드 검증 대상: $MODULES"
+
+          for MODULE in $MODULES; do
+            echo "--- ${MODULE} 빌드 검증 ---"
+            DOCKER_BUILDKIT=1 docker build \
+              --build-arg MODULE="${MODULE}" \
+              -t "goti-${MODULE}:ci-test" \
+              .
+            echo "--- ${MODULE} 빌드 검증 완료 ---"
+          done
