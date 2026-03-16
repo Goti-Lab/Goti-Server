@@ -16,13 +16,10 @@ permissions:
 env:
   AWS_REGION: ap-northeast-2
   ECR_REPOSITORY: goti-server
-  EC2_TAG_KEY: Service
-  EC2_TAG_VALUE: goti-server
-  S3_BUCKET: goti-dev-deploy-artifacts
-  S3_PREFIX: server
 
 jobs:
-  deploy:
+  # 모놀리식 ECR 이미지 빌드+push
+  image-build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -61,91 +58,7 @@ jobs:
               .
           fi
 
-      - name: Upload deploy artifacts to S3
-        run: |
-          aws s3 cp scripts/deploy.sh s3://${{ env.S3_BUCKET }}/${{ env.S3_PREFIX }}/scripts/deploy.sh
-          aws s3 cp docker/docker-compose.deploy.yml s3://${{ env.S3_BUCKET }}/${{ env.S3_PREFIX }}/docker/docker-compose.deploy.yml
-
-      - name: Get EC2 instance ID
-        id: ec2
-        run: |
-          INSTANCE_ID=$(aws ec2 describe-instances \
-            --filters "Name=tag:${{ env.EC2_TAG_KEY }},Values=${{ env.EC2_TAG_VALUE }}" \
-                      "Name=instance-state-name,Values=running" \
-            --query "Reservations[0].Instances[0].InstanceId" \
-            --output text)
-          if [ "$INSTANCE_ID" = "None" ] || [ -z "$INSTANCE_ID" ]; then
-            echo "::error::EC2 인스턴스를 찾을 수 없습니다 (tag: ${{ env.EC2_TAG_KEY }}=${{ env.EC2_TAG_VALUE }})"
-            exit 1
-          fi
-          echo "instance_id=${INSTANCE_ID}" >> "$GITHUB_OUTPUT"
-
-      - name: Deploy via SSM
-        id: ssm
-        run: |
-          COMMAND_ID=$(aws ssm send-command \
-            --instance-ids "${{ steps.ec2.outputs.instance_id }}" \
-            --document-name "AWS-RunShellScript" \
-            --parameters commands='[
-              "sudo mkdir -p /opt/goti-server/scripts /opt/goti-server/docker",
-              "aws s3 sync s3://${{ env.S3_BUCKET }}/${{ env.S3_PREFIX }}/ /opt/goti-server/ --delete --region ${{ env.AWS_REGION }}",
-              "sudo chmod +x /opt/goti-server/scripts/deploy.sh",
-              "sudo bash /opt/goti-server/scripts/deploy.sh ${{ steps.ecr-login.outputs.registry }}/${{ env.ECR_REPOSITORY }} ${{ steps.image.outputs.tag }} ${{ env.AWS_REGION }}"
-            ]' \
-            --timeout-seconds 300 \
-            --query "Command.CommandId" \
-            --output text)
-          echo "command_id=${COMMAND_ID}" >> "$GITHUB_OUTPUT"
-
-      - name: Wait for deployment
-        run: |
-          COMMAND_ID="${{ steps.ssm.outputs.command_id }}"
-          INSTANCE_ID="${{ steps.ec2.outputs.instance_id }}"
-          MAX_WAIT=300  # 5분 (send-command timeout과 동일)
-          INTERVAL=10
-          ELAPSED=0
-
-          echo "배포 완료 대기 중... (최대 ${MAX_WAIT}초)"
-          while [ $ELAPSED -lt $MAX_WAIT ]; do
-            STATUS=$(aws ssm get-command-invocation \
-              --command-id "$COMMAND_ID" \
-              --instance-id "$INSTANCE_ID" \
-              --query "Status" --output text 2>/dev/null || echo "Pending")
-
-            case "$STATUS" in
-              Success)
-                echo "배포 성공 (${ELAPSED}초 경과)"
-                exit 0
-                ;;
-              Failed|TimedOut|Cancelled|Undeliverable|Terminated)
-                echo "::error::배포 실패 (Status: $STATUS, ${ELAPSED}초 경과)"
-                aws ssm get-command-invocation \
-                  --command-id "$COMMAND_ID" \
-                  --instance-id "$INSTANCE_ID" \
-                  --query "StandardOutputContent" --output text
-                echo "=== Error ==="
-                aws ssm get-command-invocation \
-                  --command-id "$COMMAND_ID" \
-                  --instance-id "$INSTANCE_ID" \
-                  --query "StandardErrorContent" --output text
-                exit 1
-                ;;
-              *)
-                echo "  대기 중... (${ELAPSED}s / ${MAX_WAIT}s, Status: $STATUS)"
-                sleep $INTERVAL
-                ELAPSED=$((ELAPSED + INTERVAL))
-                ;;
-            esac
-          done
-
-          echo "::error::배포 대기 타임아웃 (${MAX_WAIT}초 초과)"
-          aws ssm get-command-invocation \
-            --command-id "$COMMAND_ID" \
-            --instance-id "$INSTANCE_ID" \
-            --query "StandardOutputContent" --output text
-          exit 1
-
-  # MSA 모듈별 ECR 이미지 빌드+push (deploy job과 병렬 실행)
+  # MSA 모듈별 ECR 이미지 빌드+push
   msa-image-build:
     runs-on: ubuntu-latest
     steps:
@@ -157,7 +70,7 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
-          aws-region: ap-northeast-2
+          aws-region: ${{ env.AWS_REGION }}
 
       - name: Login to Amazon ECR
         id: ecr-login
@@ -215,7 +128,7 @@ jobs:
             REPO="goti-${MODULE}"
             IMAGE="${ECR_REGISTRY}/${REPO}:${TAG}"
 
-            # 이미 존재하는 이미지 스킵 (모놀리식 deploy job과 동일 패턴)
+            # 이미 존재하는 이미지 스킵
             if aws ecr describe-images --repository-name "${REPO}" --image-ids imageTag="${TAG}" > /dev/null 2>&1; then
               echo "--- ${MODULE}: 이미지 ${TAG} 이미 존재 — 스킵 ---"
               continue
@@ -231,3 +144,17 @@ jobs:
               .
             echo "--- ${MODULE} 빌드 완료: ${IMAGE} ---"
           done
+
+  # ECR 이미지 push 후 Goti-k8s Renovate 즉시 트리거
+  trigger-renovate:
+    needs: [image-build, msa-image-build]
+    if: always() && (needs.image-build.result == 'success' || needs.msa-image-build.result == 'success')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Goti-k8s Renovate
+        run: |
+          gh api repos/Team-Ikujo/Goti-k8s/dispatches \
+            -f event_type=image-pushed \
+            -f 'client_payload[sha]=${{ github.sha }}'
+        env:
+          GH_TOKEN: ${{ secrets.GOTI_K8S_DISPATCH_TOKEN }}
