@@ -9,7 +9,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.context.ActiveProfiles;
 
-import com.goti.domain.entity.seat.SeatGradeEntity;
+import com.goti.ticketing.domain.entity.seat.SeatGradeEntity;
 import com.goti.exception.FieldValidationException;
 
 import lombok.extern.slf4j.Slf4j;

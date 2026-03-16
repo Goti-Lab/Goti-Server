@@ -1,7 +1,7 @@
 package com.goti.stadium.api;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.goti.GotiStadiumApplication;
+import com.goti.stadium.GotiStadiumApplication;
 
 import com.goti.stadium.constants.TeamCode;
 import com.goti.stadium.dto.request.BaseballTeamCreateRequest;

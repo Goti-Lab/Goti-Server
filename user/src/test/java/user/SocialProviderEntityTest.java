@@ -13,8 +13,8 @@ import org.springframework.test.context.ActiveProfiles;
 
 import com.goti.constants.Gender;
 import com.goti.constants.OAuthProvider;
-import com.goti.domain.entity.user.MemberEntity;
-import com.goti.domain.entity.user.SocialProviderEntity;
+import com.goti.user.domain.entity.user.MemberEntity;
+import com.goti.user.domain.entity.user.SocialProviderEntity;
 import com.goti.exception.FieldValidationException;
 
 import lombok.extern.slf4j.Slf4j;

@@ -5,20 +5,20 @@ import static org.assertj.core.api.Assertions.*;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-import com.goti.constants.LeagueType;
+import com.goti.ticketing.constants.LeagueType;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.context.ActiveProfiles;
 
-import com.goti.constants.OrderItemStatus;
-import com.goti.constants.TicketType;
-import com.goti.domain.entity.game.GameScheduleEntity;
-import com.goti.domain.entity.order.OrderEntity;
-import com.goti.domain.entity.order.OrderItemEntity;
-import com.goti.domain.entity.seat.SeatEntity;
-import com.goti.domain.entity.seat.SeatGradeEntity;
-import com.goti.domain.entity.seat.SeatSectionEntity;
+import com.goti.ticketing.constants.OrderItemStatus;
+import com.goti.ticketing.constants.TicketType;
+import com.goti.ticketing.domain.entity.game.GameScheduleEntity;
+import com.goti.ticketing.domain.entity.order.OrderEntity;
+import com.goti.ticketing.domain.entity.order.OrderItemEntity;
+import com.goti.ticketing.domain.entity.seat.SeatEntity;
+import com.goti.ticketing.domain.entity.seat.SeatGradeEntity;
+import com.goti.ticketing.domain.entity.seat.SeatSectionEntity;
 import com.goti.exception.FieldValidationException;
 
 @ActiveProfiles("test")

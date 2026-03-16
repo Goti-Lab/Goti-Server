@@ -11,10 +11,10 @@ import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.test.context.ActiveProfiles;
 
-import com.goti.constants.PaymentMethod;
-import com.goti.constants.PaymentStatus;
-import com.goti.constants.PaymentType;
-import com.goti.domain.entity.payment.PaymentEntity;
+import com.goti.payment.constants.PaymentMethod;
+import com.goti.payment.constants.PaymentStatus;
+import com.goti.payment.constants.PaymentType;
+import com.goti.payment.domain.entity.payment.PaymentEntity;
 import com.goti.exception.FieldValidationException;
 
 @ActiveProfiles("test")

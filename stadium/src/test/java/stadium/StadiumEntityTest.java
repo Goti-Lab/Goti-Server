@@ -11,7 +11,7 @@ import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.test.context.ActiveProfiles;
 
-import com.goti.domain.entity.stadium.StadiumEntity;
+import com.goti.stadium.domain.entity.stadium.StadiumEntity;
 import com.goti.exception.FieldValidationException;
 
 import lombok.extern.slf4j.Slf4j;

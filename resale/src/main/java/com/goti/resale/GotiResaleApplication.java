@@ -3,6 +3,7 @@ package com.goti.resale;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 @ConfigurationPropertiesScan(basePackages = "com.goti")
 @SpringBootApplication(scanBasePackages = {
@@ -13,6 +14,7 @@ import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
 	"com.goti.exception",
 	"com.goti.global"
 })
+@EnableScheduling
 public class GotiResaleApplication {
 
 	public static void main(String[] args) {

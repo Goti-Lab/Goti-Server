@@ -6,17 +6,17 @@ import static org.junit.jupiter.api.Assertions.*;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-import com.goti.constants.LeagueType;
+import com.goti.ticketing.constants.LeagueType;
 import com.goti.exception.FieldValidationException;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.context.ActiveProfiles;
 
-import com.goti.constants.GameResult;
-import com.goti.constants.GameStatus;
-import com.goti.domain.entity.game.GameScheduleEntity;
-import com.goti.domain.entity.game.GameStatusEntity;
+import com.goti.ticketing.constants.GameResult;
+import com.goti.ticketing.constants.GameStatus;
+import com.goti.ticketing.domain.entity.game.GameScheduleEntity;
+import com.goti.ticketing.domain.entity.game.GameStatusEntity;
 
 import lombok.extern.slf4j.Slf4j;
 

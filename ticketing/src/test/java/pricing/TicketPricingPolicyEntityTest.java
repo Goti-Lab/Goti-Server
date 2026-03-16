@@ -9,7 +9,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.context.ActiveProfiles;
 
-import com.goti.domain.entity.pricing.TicketPricingPolicyEntity;
+import com.goti.ticketing.domain.entity.pricing.TicketPricingPolicyEntity;
 import com.goti.exception.FieldValidationException;
 
 @ActiveProfiles("test")

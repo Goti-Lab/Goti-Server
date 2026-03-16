@@ -1,10 +1,10 @@
 package game;
 
-import com.goti.constants.LeagueType;
-import com.goti.constants.TicketingStatus;
-import com.goti.domain.entity.game.GameScheduleEntity;
+import com.goti.ticketing.constants.LeagueType;
+import com.goti.ticketing.constants.TicketingStatus;
+import com.goti.ticketing.domain.entity.game.GameScheduleEntity;
 
-import com.goti.domain.entity.game.GameTicketingStatusEntity;
+import com.goti.ticketing.domain.entity.game.GameTicketingStatusEntity;
 
 import com.goti.exception.FieldValidationException;
 

@@ -5,7 +5,7 @@ import static org.assertj.core.api.Assertions.*;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-import com.goti.constants.LeagueType;
+import com.goti.ticketing.constants.LeagueType;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -15,8 +15,8 @@ import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.test.context.ActiveProfiles;
 
 import com.goti.constants.OrderStatus;
-import com.goti.domain.entity.game.GameScheduleEntity;
-import com.goti.domain.entity.order.OrderEntity;
+import com.goti.ticketing.domain.entity.game.GameScheduleEntity;
+import com.goti.ticketing.domain.entity.order.OrderEntity;
 import com.goti.exception.FieldValidationException;
 
 @ActiveProfiles("test")

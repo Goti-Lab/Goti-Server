@@ -9,12 +9,12 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.context.ActiveProfiles;
 
-import com.goti.constants.TicketPricingDayType;
-import com.goti.constants.TicketPricingMatchType;
-import com.goti.constants.TicketType;
-import com.goti.domain.entity.pricing.TicketPriceEntity;
-import com.goti.domain.entity.pricing.TicketPricingPolicyEntity;
-import com.goti.domain.entity.seat.SeatGradeEntity;
+import com.goti.ticketing.constants.TicketPricingDayType;
+import com.goti.ticketing.constants.TicketPricingMatchType;
+import com.goti.ticketing.constants.TicketType;
+import com.goti.ticketing.domain.entity.pricing.TicketPriceEntity;
+import com.goti.ticketing.domain.entity.pricing.TicketPricingPolicyEntity;
+import com.goti.ticketing.domain.entity.seat.SeatGradeEntity;
 import com.goti.exception.FieldValidationException;
 
 @ActiveProfiles("test")

@@ -1,6 +1,6 @@
 package com.goti.stadium.service.domain.stadium;
 
-import com.goti.GotiStadiumApplication;
+import com.goti.stadium.GotiStadiumApplication;
 import com.goti.stadium.dto.request.StadiumCreateRequest;
 
 import com.goti.stadium.dto.response.StadiumCreateResponse;

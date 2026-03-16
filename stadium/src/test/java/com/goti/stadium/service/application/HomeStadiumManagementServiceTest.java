@@ -1,6 +1,6 @@
 package com.goti.stadium.service.application;
 
-import com.goti.GotiStadiumApplication;
+import com.goti.stadium.GotiStadiumApplication;
 
 import com.goti.stadium.constants.StadiumType;
 import com.goti.stadium.constants.TeamCode;

@@ -1,18 +1,18 @@
 package com.goti.ticketing.game.service;
 
-import com.goti.GotiTicketingApplication;
+import com.goti.ticketing.GotiTicketingApplication;
 
 import com.goti.ticketing.constants.LeagueType;
-import com.goti.constants.TeamCode;
+import com.goti.stadium.constants.TeamCode;
 import com.goti.ticketing.constants.TicketingStatus;
-import com.goti.domain.entity.stadium.StadiumEntity;
-import com.goti.domain.entity.team.BaseballTeamEntity;
+import com.goti.stadium.domain.entity.stadium.StadiumEntity;
+import com.goti.stadium.domain.entity.team.BaseballTeamEntity;
 import com.goti.ticketing.game.dto.response.GameCreateResponse;
 import com.goti.ticketing.game.service.application.GameManagementService;
 
-import com.goti.repository.BaseballTeamRepository;
+import com.goti.stadium.repository.BaseballTeamRepository;
 
-import com.goti.repository.StadiumRepository;
+import com.goti.stadium.repository.StadiumRepository;
 
 import lombok.extern.slf4j.Slf4j;
 

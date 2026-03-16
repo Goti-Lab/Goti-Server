@@ -20,7 +20,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.goti.GotiStadiumApplication;
+import com.goti.stadium.GotiStadiumApplication;
 import com.goti.stadium.constants.StadiumType;
 import com.goti.stadium.constants.TeamCode;
 import com.goti.stadium.domain.entity.stadium.StadiumEntity;

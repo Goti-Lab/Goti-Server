@@ -22,4 +22,7 @@ dependencies {
 
     implementation project(':common')
     implementation project(':integration')
+
+    // TODO: MSA 분리 시 테스트용 Security 설정을 각 모듈에 별도로 두고 제거
+    testImplementation project(':user')
 }

@@ -1,21 +1,21 @@
 package com.goti.ticketing.game.api.game;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.goti.GotiTicketingApplication;
+import com.goti.ticketing.GotiTicketingApplication;
 
-import com.goti.config.jwt.JwtAuthenticationFilter;
-import com.goti.config.security.SecurityConfig;
+import com.goti.user.config.jwt.JwtAuthenticationFilter;
+import com.goti.user.config.security.SecurityConfig;
 import com.goti.ticketing.constants.LeagueType;
-import com.goti.constants.TeamCode;
+import com.goti.stadium.constants.TeamCode;
 import com.goti.ticketing.constants.TicketingStatus;
-import com.goti.domain.entity.stadium.StadiumEntity;
+import com.goti.stadium.domain.entity.stadium.StadiumEntity;
 
-import com.goti.domain.entity.team.BaseballTeamEntity;
+import com.goti.stadium.domain.entity.team.BaseballTeamEntity;
 
 import com.goti.ticketing.game.dto.request.GameCreateRequest;
-import com.goti.repository.BaseballTeamRepository;
+import com.goti.stadium.repository.BaseballTeamRepository;
 
-import com.goti.repository.StadiumRepository;
+import com.goti.stadium.repository.StadiumRepository;
 
 import lombok.extern.slf4j.Slf4j;
 

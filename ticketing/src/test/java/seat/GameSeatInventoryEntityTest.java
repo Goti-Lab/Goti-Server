@@ -9,7 +9,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.context.ActiveProfiles;
 
-import com.goti.domain.entity.seat.GameSeatInventoryEntity;
+import com.goti.ticketing.domain.entity.seat.GameSeatInventoryEntity;
 import com.goti.exception.FieldValidationException;
 
 @ActiveProfiles("test")

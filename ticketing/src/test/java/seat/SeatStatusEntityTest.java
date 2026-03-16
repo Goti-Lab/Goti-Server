@@ -6,18 +6,18 @@ import static org.junit.jupiter.api.Assertions.*;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-import com.goti.constants.LeagueType;
+import com.goti.ticketing.constants.LeagueType;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.context.ActiveProfiles;
 
-import com.goti.constants.SeatStatus;
-import com.goti.domain.entity.game.GameScheduleEntity;
-import com.goti.domain.entity.seat.SeatEntity;
-import com.goti.domain.entity.seat.SeatGradeEntity;
-import com.goti.domain.entity.seat.SeatSectionEntity;
-import com.goti.domain.entity.seat.SeatStatusEntity;
+import com.goti.ticketing.constants.SeatStatus;
+import com.goti.ticketing.domain.entity.game.GameScheduleEntity;
+import com.goti.ticketing.domain.entity.seat.SeatEntity;
+import com.goti.ticketing.domain.entity.seat.SeatGradeEntity;
+import com.goti.ticketing.domain.entity.seat.SeatSectionEntity;
+import com.goti.ticketing.domain.entity.seat.SeatStatusEntity;
 import com.goti.exception.FieldValidationException;
 
 @ActiveProfiles("test")

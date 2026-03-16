@@ -4,7 +4,7 @@ import static org.assertj.core.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 import com.goti.constants.OAuthProvider;
-import com.goti.GotiUserApplication;
+import com.goti.user.GotiUserApplication;
 
 import com.goti.infra.constants.redis.RedisKey;
 

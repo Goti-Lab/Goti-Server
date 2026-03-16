@@ -1,9 +1,9 @@
 package com.goti.stadium.api;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.goti.GotiStadiumApplication;
-import com.goti.config.jwt.JwtAuthenticationFilter;
-import com.goti.config.security.SecurityConfig;
+import com.goti.stadium.GotiStadiumApplication;
+import com.goti.user.config.jwt.JwtAuthenticationFilter;
+import com.goti.user.config.security.SecurityConfig;
 import com.goti.stadium.dto.request.StadiumCreateRequest;
 
 import org.junit.jupiter.api.DisplayName;

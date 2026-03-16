@@ -1,6 +1,6 @@
 package com.goti.stadium.service.domain.baseballteam;
 
-import com.goti.GotiStadiumApplication;
+import com.goti.stadium.GotiStadiumApplication;
 
 import com.goti.stadium.constants.TeamCode;
 import com.goti.stadium.dto.request.BaseballTeamCreateRequest;

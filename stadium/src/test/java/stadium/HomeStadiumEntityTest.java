@@ -1,10 +1,10 @@
 package stadium;
 
-import com.goti.constants.StadiumType;
-import com.goti.constants.TeamCode;
-import com.goti.domain.entity.stadium.HomeStadiumEntity;
-import com.goti.domain.entity.stadium.StadiumEntity;
-import com.goti.domain.entity.team.BaseballTeamEntity;
+import com.goti.stadium.constants.StadiumType;
+import com.goti.stadium.constants.TeamCode;
+import com.goti.stadium.domain.entity.stadium.HomeStadiumEntity;
+import com.goti.stadium.domain.entity.stadium.StadiumEntity;
+import com.goti.stadium.domain.entity.team.BaseballTeamEntity;
 
 import com.goti.exception.FieldValidationException;
 
