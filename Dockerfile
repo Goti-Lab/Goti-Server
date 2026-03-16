@@ -1,6 +1,8 @@
 # ===== Stage 1: Build =====
 FROM eclipse-temurin:21-jdk-alpine AS build
 
+ARG MODULE=api
+
 WORKDIR /app
 
 # Gradle wrapper + 설정 파일 먼저 복사 (의존성 캐시 레이어)
@@ -9,7 +11,6 @@ COPY gradle/ gradle/
 RUN chmod +x gradlew
 
 # 각 모듈의 build.gradle 복사 (의존성 해석용)
-COPY core/build.gradle core/build.gradle
 COPY common/build.gradle common/build.gradle
 COPY integration/build.gradle integration/build.gradle
 COPY user/build.gradle user/build.gradle
@@ -26,16 +27,22 @@ RUN --mount=type=cache,target=/root/.gradle \
 # 전체 소스 복사
 COPY . .
 
-# bootJar 빌드
+# bootJar 빌드 — MODULE=api(기본값)이면 기존 모놀리식, 그 외는 -Pmsa로 도메인 모듈 빌드
 RUN --mount=type=cache,target=/root/.gradle \
-    ./gradlew :api:bootJar --no-daemon -x test
+    if [ "$MODULE" = "api" ]; then \
+      ./gradlew :api:bootJar --no-daemon -x test; \
+    else \
+      ./gradlew :${MODULE}:bootJar -Pmsa --no-daemon -x test; \
+    fi
 
 # ===== Stage 2: Extract (layertools) =====
 FROM eclipse-temurin:21-jdk-alpine AS extract
 
+ARG MODULE=api
+
 WORKDIR /app
 
-COPY --from=build /app/api/build/libs/*.jar app.jar
+COPY --from=build /app/${MODULE}/build/libs/*.jar app.jar
 
 RUN java -Djarmode=layertools -jar app.jar extract
 

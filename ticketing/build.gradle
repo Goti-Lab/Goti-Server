@@ -1,5 +1,6 @@
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
 
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 
@@ -23,9 +24,10 @@ dependencies {
     runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.13.0'
 
 
-    implementation project(':core')
     implementation project(':common')
     implementation project(':integration')
     implementation project(':stadium')
-    implementation project(':user')
+
+    // TODO: MSA 분리 시 테스트용 Security 설정을 각 모듈에 별도로 두고 제거
+    testImplementation project(':user')
 }

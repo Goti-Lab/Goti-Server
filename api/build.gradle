@@ -21,7 +21,6 @@ dependencies {
     implementation 'io.opentelemetry.instrumentation:opentelemetry-hikaricp-3.0'
 
     implementation(project(":common"))
-    implementation(project(":core"))
     implementation(project(":integration"))
     implementation(project(":user"))
     implementation(project(":stadium"))

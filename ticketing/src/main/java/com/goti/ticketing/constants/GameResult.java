@@ -1,0 +1,17 @@
+package com.goti.ticketing.constants;
+
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+
+@Getter
+@RequiredArgsConstructor
+public enum GameResult {
+
+	NONE("결과 없음"),
+	HOME_WIN("홈팀 승리"),
+	AWAY_WIN("원정팀 승리"),
+	DRAW("무승부"),
+	CANCELLED("경기 취소");
+
+	private final String description;
+}

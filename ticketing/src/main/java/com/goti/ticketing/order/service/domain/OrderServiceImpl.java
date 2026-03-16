@@ -1,0 +1,68 @@
+package com.goti.ticketing.order.service.domain;
+
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.UUID;
+
+import com.goti.constants.messages.ErrorCode;
+import com.goti.global.validation.Preconditions;
+import com.goti.ticketing.order.dto.response.OrderListResponse;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.github.f4b6a3.tsid.TsidCreator;
+import com.goti.ticketing.domain.entity.game.GameScheduleEntity;
+import com.goti.ticketing.domain.entity.order.OrderEntity;
+import com.goti.ticketing.order.repository.OrderRepository;
+
+import lombok.RequiredArgsConstructor;
+
+@Service
+@RequiredArgsConstructor
+public class OrderServiceImpl implements OrderService {
+	private static final DateTimeFormatter ORDER_NUMBER_FORMATTER = DateTimeFormatter.ofPattern("yyMMdd");
+
+	private final OrderRepository orderRepository;
+
+	@Override
+	@Transactional
+	public OrderEntity create(
+		UUID memberId,
+		GameScheduleEntity gameSchedule,
+		Integer totalQuantity,
+		Integer totalAmount
+	) {
+		OrderEntity order = OrderEntity.create(
+			generateOrderNumber(),
+			memberId,
+			gameSchedule,
+			totalQuantity,
+			totalAmount
+		);
+
+		return orderRepository.save(order);
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public List<OrderListResponse> getMyOrders(UUID memberId) {
+		Preconditions.validate(
+			memberId != null,
+			ErrorCode.AUTH_INVALID
+		);
+
+		return orderRepository.findAllByMemberIdOrderByCreatedAtDesc(memberId).stream()
+			.map(OrderListResponse::from)
+			.toList();
+	}
+
+	private String generateOrderNumber() {
+		String tsidSuffix = TsidCreator.getTsid().toString();
+		return "ORD" + "-" +
+			LocalDate.now().format(ORDER_NUMBER_FORMATTER) +
+			tsidSuffix.substring(tsidSuffix.length() - 6);
+	}
+
+}

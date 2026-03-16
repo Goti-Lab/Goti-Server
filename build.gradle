@@ -51,9 +51,11 @@ subprojects {
         workingDir = rootProject.projectDir
     }
 
+    // -Pmsa: bootJar 활성화 (도메인 모듈을 독립 서비스로 빌드)
+    // jar는 항상 활성화 (모듈 간 의존성 해결에 필수: ticketing → stadium 등)
     plugins.withId('org.springframework.boot') {
         def msa = project.hasProperty('msa')
         tasks.named('bootJar') { enabled = msa }
-        tasks.named('jar') { enabled = !msa }
+        tasks.named('jar') { enabled = true }
     }
 }

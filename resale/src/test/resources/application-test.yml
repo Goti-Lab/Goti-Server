@@ -1,0 +1,33 @@
+server:
+  port: 8080
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    properties:
+      hibernate:
+        hbm2ddl.create_namespaces: true
+  datasource:
+    url: ${DATASOURCE_URL:jdbc:postgresql://localhost:5432/goti}
+    username: ${DATASOURCE_USERNAME:goti}
+    password: ${DATASOURCE_PASSWORD:goti1234}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      idle-timeout: 5000
+      max-lifetime: 420000
+      connection-timeout: 5000
+      validation-timeout: 3000
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+  config:
+    import:
+      - application-integration.yml
+      - optional:file:.env.test[.properties]
+
+jwt:
+  secret: ${JWT_SECRET_KEY:test-jwt-secret-key-min-32-characters-long}
+  access-valid-time: ${JWT_ACCESS_TIME:3600000}
+  refresh-valid-time: ${JWT_REFRESH_TIME:604800000}
+  registration-valid-time: ${JWT_REGISTRATION_TIME:300000}

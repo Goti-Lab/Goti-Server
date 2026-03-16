@@ -1,9 +1,9 @@
 package com.goti;
 
-import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
+import org.springframework.context.annotation.Configuration;
 
 @ConfigurationPropertiesScan
-@SpringBootApplication
+@Configuration
 public class IntegrationApplication {
 }
