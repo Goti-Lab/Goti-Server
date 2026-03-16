@@ -1,4 +1,4 @@
-package com.goti.domain.entity.resale;
+package com.goti.domain.entity.payment;
 
 import static lombok.AccessLevel.*;
 
@@ -82,4 +82,9 @@ public class EscrowAccountEntity extends ModificationTimestampEntity {
 		Preconditions.domainValidate(escrowAmount != null && escrowAmount >= 0, "에스크로 금액은 0 이상이어야 합니다.");
 	}
 
+	public void release() {
+		Preconditions.domainValidate(this.escrowStatus == EscrowStatus.HOLDING, "대기 상태의 에스크로만 해제할 수 있습니다.");
+		this.escrowStatus = EscrowStatus.RELEASED;
+		this.releasedAt = LocalDateTime.now();
+	}
 }

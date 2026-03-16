@@ -1,4 +1,4 @@
-package com.goti.domain.entity.resale;
+package payment;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.*;
@@ -12,6 +12,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.test.context.ActiveProfiles;
 
 import com.goti.constants.EscrowStatus;
+import com.goti.domain.entity.payment.EscrowAccountEntity;
 import com.goti.exception.FieldValidationException;
 
 import lombok.extern.slf4j.Slf4j;
@@ -24,7 +25,7 @@ class EscrowAccountEntityTest {
 	private static final UUID VALID_BUYER_ID = UUID.randomUUID();
 	private static final UUID VALID_SELLER_ID = UUID.randomUUID();
 	private static final Integer VALID_ESCROW_AMOUNT = 52500;
-	
+
 	@Test
 	void 에스크로_계좌_생성_성공() {
 		EscrowAccountEntity entity = EscrowAccountEntity.create(
