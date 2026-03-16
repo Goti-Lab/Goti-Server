@@ -2,8 +2,7 @@ package com.goti.stadium.api;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.goti.stadium.GotiStadiumApplication;
-import com.goti.user.config.jwt.JwtAuthenticationFilter;
-import com.goti.user.config.security.SecurityConfig;
+import com.goti.stadium.config.TestSecurityConfig;
 import com.goti.stadium.dto.request.StadiumCreateRequest;
 
 import org.junit.jupiter.api.DisplayName;
@@ -25,7 +24,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 
-@Import({SecurityConfig.class, JwtAuthenticationFilter.class})
+@Import(TestSecurityConfig.class)
 @SpringBootTest(classes = GotiStadiumApplication.class)
 @Transactional
 @AutoConfigureMockMvc

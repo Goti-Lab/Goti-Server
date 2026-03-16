@@ -30,4 +30,4 @@ sms:
     secret: ${SMS_API_SECRET:}
     sender: ${SMS_API_SENDER:}
     content: "[Goti] 인증번호 [{code}]를 입력해주세요."
-    domain: ${SMS_API_DOMAIN:}
+    domain: ${SMS_API_DOMAIN:https://api.coolsms.co.kr}

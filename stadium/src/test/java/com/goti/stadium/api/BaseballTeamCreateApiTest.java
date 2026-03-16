@@ -6,11 +6,14 @@ import com.goti.stadium.GotiStadiumApplication;
 import com.goti.stadium.constants.TeamCode;
 import com.goti.stadium.dto.request.BaseballTeamCreateRequest;
 
+import com.goti.stadium.config.TestSecurityConfig;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
@@ -22,6 +25,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
+@Import(TestSecurityConfig.class)
 @SpringBootTest(classes = GotiStadiumApplication.class)
 @Transactional
 @AutoConfigureMockMvc

@@ -2,9 +2,7 @@ package com.goti.ticketing.game.api.game;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.goti.ticketing.GotiTicketingApplication;
-
-import com.goti.user.config.jwt.JwtAuthenticationFilter;
-import com.goti.user.config.security.SecurityConfig;
+import com.goti.ticketing.config.TestSecurityConfig;
 import com.goti.ticketing.constants.LeagueType;
 import com.goti.stadium.constants.TeamCode;
 import com.goti.ticketing.constants.TicketingStatus;
@@ -45,7 +43,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
 @Slf4j
-@Import({SecurityConfig.class, JwtAuthenticationFilter.class})
+@Import(TestSecurityConfig.class)
 @SpringBootTest(classes = GotiTicketingApplication.class)
 @Transactional
 @AutoConfigureMockMvc
