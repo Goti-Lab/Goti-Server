@@ -33,7 +33,7 @@ public class PaymentClient {
 	}
 
 	public void releaseEscrow(UUID orderId) {
-		restClient.post()
+		restClient.patch()
 			.uri(
 				UriComponentsBuilder.fromUriString(properties.baseUrl())
 					.path("/api/v1/resales/payments/orders/{orderId}/release")

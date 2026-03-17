@@ -22,7 +22,7 @@ public class ResaleOrderClient {
 	}
 
 	public void completeOrder(UUID orderId, UUID paymentId) {
-		restClient.post()
+		restClient.patch()
 			.uri(
 				UriComponentsBuilder.fromUriString(properties.baseUrl())
 					.path("/api/v1/resales/orders/{orderId}/complete")

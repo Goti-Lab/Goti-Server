@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -56,7 +57,7 @@ public class ResaleOrderController {
 		summary = "리셀 주문 완료 처리",
 		description = "결제 완료 전제 기반 리셀 주문 처리 API"
 	)
-	@PostMapping("/orders/{resaleOrderId}/complete")
+	@PatchMapping("/orders/{resaleOrderId}/complete")
 	public ResponseEntity<ApiSuccessResponse<ResaleOrderCompleteResponse>> completeOrder(
 		@PathVariable UUID resaleOrderId,
 		@RequestParam UUID paymentId
@@ -69,7 +70,7 @@ public class ResaleOrderController {
 		summary = "리셀 정산 최종 완료 처리",
 		description = "실제 은행 지급 완료 후 관리자가 정산 상태를 변경 API"
 	)
-	@PostMapping("/orders/{resaleOrderId}/settled")
+	@PatchMapping("/orders/{resaleOrderId}/settled")
 	@PreAuthorize("hasRole('ADMIN')")
 	public ResponseEntity<ApiSuccessResponse<Void>> completeSettlement(
 		@PathVariable UUID resaleOrderId
@@ -106,7 +107,7 @@ public class ResaleOrderController {
 		summary = "리셀 점유 해제",
 		description = "리셀 점유 해제 API"
 	)
-	@PostMapping("/holds/{holdId}/release")
+	@PatchMapping("/holds/{holdId}/release")
 	public ResponseEntity<ApiSuccessResponse<ResaleReleaseResponse>> releaseResale(
 		@AuthenticationPrincipal(expression = "id") UUID buyerId,
 		@PathVariable UUID holdId

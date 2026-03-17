@@ -8,9 +8,9 @@ import java.util.UUID;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -59,7 +59,7 @@ public class ResaleListingController {
 		summary = "등록 취소",
 		description = "리셀 취소 API"
 	)
-	@PutMapping("/listings/cancel")
+	@PatchMapping("/listings/cancel")
 	public ResponseEntity<ApiSuccessResponse<ResaleListingResponse>> cancelListing(
 		@AuthenticationPrincipal(expression = "id") UUID sellerId,
 		@Valid @RequestBody ResaleListingCancelRequest request
