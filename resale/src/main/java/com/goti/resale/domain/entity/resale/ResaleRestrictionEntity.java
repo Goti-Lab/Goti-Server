@@ -18,6 +18,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Index;
 import jakarta.persistence.Table;
+import jakarta.persistence.Version;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -29,7 +30,7 @@ import lombok.NoArgsConstructor;
 	})
 @NoArgsConstructor(access = PROTECTED)
 public class ResaleRestrictionEntity extends ModificationTimestampEntity {
-	
+
 	@Column(nullable = false)
 	private UUID userId;
 
@@ -63,6 +64,9 @@ public class ResaleRestrictionEntity extends ModificationTimestampEntity {
 	@JdbcTypeCode(SqlTypes.JSON)
 	@Column(name = "game_cancel_counts", columnDefinition = "jsonb")
 	private Map<UUID, Integer> gameCancelCounts = new HashMap<>();
+
+	@Version
+	private Long version;
 
 	private ResaleRestrictionEntity(
 		UUID userId
