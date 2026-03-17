@@ -33,7 +33,7 @@ public class SecurityConfig {
 		"/api/v1/auth/**",
 		"/api/v1/stadiums/**",
 		"/api/v1/games/**",
-		"/api/v1/resale/histories/**",
+		"/api/v1/resales/histories/**",
 		"/api/v1/baseball-teams/**",
 		"/actuator/**",
 		"/swagger-ui/**",
@@ -41,10 +41,10 @@ public class SecurityConfig {
 	};
 
 	public static final String[] PERMIT_MEMBER_PATH = {
-		"/api/v1/resale/listings/**",
-		"/api/v1/resale/holds/**",
-		"/api/v1/resale/orders/**",
-		"/api/v1/resale/payments/**",
+		"/api/v1/resales/listings/**",
+		"/api/v1/resales/holds/**",
+		"/api/v1/resales/orders/**",
+		"/api/v1/resales/payments/**",
 		"/api/v1/orders/**"
 	};
 

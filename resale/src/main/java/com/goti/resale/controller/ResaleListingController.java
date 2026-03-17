@@ -15,13 +15,13 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.goti.global.api.ApiSuccessResponse;
 import com.goti.resale.constants.ResaleGraphRange;
 import com.goti.resale.dto.request.ResaleListingCancelRequest;
 import com.goti.resale.dto.request.ResaleListingCreateRequest;
 import com.goti.resale.dto.response.ResaleListingCountResponse;
 import com.goti.resale.dto.response.ResaleListingResponse;
 import com.goti.resale.dto.response.ResalePriceHistoryResponse;
-import com.goti.global.api.ApiSuccessResponse;
 import com.goti.resale.service.application.ResaleListingService;
 import com.goti.resale.service.application.ResalePriceService;
 
@@ -34,7 +34,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Tag(name = "Resale Listing", description = "리셀 등록 API")
 @RestController
-@RequestMapping("/api/v1/resale")
+@RequestMapping("/api/v1/resales")
 @RequiredArgsConstructor
 public class ResaleListingController {
 

@@ -16,13 +16,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.goti.global.api.ApiSuccessResponse;
 import com.goti.resale.dto.request.ResaleHoldRequest;
 import com.goti.resale.dto.request.ResaleOrderRequest;
 import com.goti.resale.dto.response.ResaleHoldResponse;
 import com.goti.resale.dto.response.ResaleOrderCompleteResponse;
 import com.goti.resale.dto.response.ResaleOrderCreateResponse;
 import com.goti.resale.dto.response.ResaleReleaseResponse;
-import com.goti.global.api.ApiSuccessResponse;
 import com.goti.resale.service.application.ResaleHoldService;
 import com.goti.resale.service.application.ResaleOrderService;
 
@@ -33,7 +33,7 @@ import lombok.RequiredArgsConstructor;
 
 @Tag(name = "Resale Order", description = "리셀 주문 및 거래 관련 API")
 @RestController
-@RequestMapping("/api/v1/resale")
+@RequestMapping("/api/v1/resales")
 @RequiredArgsConstructor
 public class ResaleOrderController {
 	private final ResaleOrderService resaleOrderService;

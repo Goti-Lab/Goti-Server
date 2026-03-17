@@ -8,8 +8,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import com.goti.payment.config.properties.ResaleApiProperties;
 import com.goti.global.api.ApiSuccessResponse;
+import com.goti.payment.config.properties.ResaleApiProperties;
 
 @Component
 public class ResaleOrderClient {
@@ -25,7 +25,7 @@ public class ResaleOrderClient {
 		restClient.post()
 			.uri(
 				UriComponentsBuilder.fromUriString(properties.baseUrl())
-					.path("/api/v1/resale/orders/{orderId}/complete")
+					.path("/api/v1/resales/orders/{orderId}/complete")
 					.queryParam("paymentId", paymentId)
 					.buildAndExpand(orderId)
 					.toUri()
@@ -38,7 +38,7 @@ public class ResaleOrderClient {
 		ApiSuccessResponse<List<UUID>> response = restClient.get()
 			.uri(
 				UriComponentsBuilder.fromUriString(properties.baseUrl())
-					.path("/api/v1/resale/orders/{orderId}/transactions")
+					.path("/api/v1/resales/orders/{orderId}/transactions")
 					.buildAndExpand(orderId)
 					.toUri()
 			)
