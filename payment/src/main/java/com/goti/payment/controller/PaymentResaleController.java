@@ -9,6 +9,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -52,7 +53,7 @@ public class PaymentResaleController {
 		summary = "리셀 에스크로 해제 요청",
 		description = "티켓 소유권 이전 완료 후 에스크로를 해제하여 판매자에게 정산 지시 API"
 	)
-	@PostMapping("/orders/{orderId}/release")
+	@PatchMapping("/orders/{orderId}/release")
 	public ResponseEntity<ApiSuccessResponse<Void>> releaseEscrow(
 		@PathVariable UUID orderId
 	) {

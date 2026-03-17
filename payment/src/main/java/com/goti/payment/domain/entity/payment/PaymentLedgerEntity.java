@@ -63,14 +63,14 @@ public class PaymentLedgerEntity extends ModificationTimestampEntity {
 	}
 
 	public static PaymentLedgerEntity create(
-		UUID orderId,
-		UUID paymentId,
-		Integer totalAmount,
-		Integer buyerFee,
-		Integer sellerFee,
-		Integer vat,
-		Integer netProfit,
-		Integer settlementAmount
+		final UUID orderId,
+		final UUID paymentId,
+		final Integer totalAmount,
+		final Integer buyerFee,
+		final Integer sellerFee,
+		final Integer vat,
+		final Integer netProfit,
+		final Integer settlementAmount
 	) {
 		return new PaymentLedgerEntity(
 			orderId,

@@ -19,7 +19,7 @@ public record ResalePaymentRequest(
 	UUID buyerId,
 
 	@Schema(description = "구매자 총 결제 금액", example = "54000")
-	@Positive(message = "구매자 총 금액은 양수여야 합니다.")
+	@Positive(message = "구매자 총 금액은 0원 이상이어야 합니다.")
 	int totalAmount,
 
 	@Schema(description = "총 구매자 수수료 합계", example = "2000")

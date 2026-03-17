@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 
+@Schema(description = "리셀 생성을 위한 리셀 거래 내용 요청")
 public record ResaleTransactionItemRequest(
 	@Schema(description = "거래 ID", example = "8df84c70-833e-4374-85ad-fa52f92f939e")
 	@NotNull(message = "거래 ID는 필수입니다.")
