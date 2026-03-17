@@ -1,7 +1,6 @@
 package com.goti.user.service.test;
 
 import java.time.LocalDate;
-import java.util.UUID;
 
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
@@ -9,6 +8,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.goti.constants.Gender;
 import com.goti.constants.OAuthProvider;
+import com.goti.constants.messages.ErrorCode;
+import com.goti.exception.CustomException;
 import com.goti.user.config.jwt.JwtTokenProvider;
 import com.goti.user.constants.UserRole;
 import com.goti.user.domain.entity.user.MemberEntity;
@@ -48,6 +49,14 @@ public class TestUserService {
 		);
 	}
 
+	/**
+	 * 테스트 유저 대량 생성.
+	 * @Max(10_000)으로 단일 요청 상한을 제한하여 트랜잭션 부담을 완화.
+	 * 10,000건 이상 필요 시 startIndex를 변경하여 반복 호출 (K6 setup에서 처리).
+	 *
+	 * <p>성능 참고: 건당 findByMobile SELECT가 발생하나, 테스트 데이터 세팅 용도이므로
+	 * 배치 IN 쿼리 최적화는 적용하지 않음. 10,000건 기준 수 초 내 완료.</p>
+	 */
 	@Transactional
 	public BulkTestUserResponse bulkCreateUsers(BulkCreateTestUserRequest request) {
 		int created = 0;
@@ -61,16 +70,9 @@ public class TestUserService {
 				continue;
 			}
 
-			String name = "test-user-" + i;
-			String email = "test-" + i + "@test.com";
-
-			MemberEntity member = memberService.save(
-				name, mobile, Gender.MALE, LocalDate.of(2000, 1, 1)
+			createMemberWithSocialProvider(
+				"test-user-" + i, mobile, Gender.MALE, LocalDate.of(2000, 1, 1)
 			);
-			socialProviderService.save(
-				member, OAuthProvider.NAVER, "test-" + UUID.randomUUID(), email
-			);
-
 			created++;
 		}
 
@@ -80,9 +82,7 @@ public class TestUserService {
 	@Transactional(readOnly = true)
 	public TokenResponse login(TestLoginRequest request) {
 		MemberEntity member = memberService.findByMobile(request.mobile())
-			.orElseThrow(() -> new IllegalArgumentException(
-				"테스트 유저를 찾을 수 없습니다: mobile=" + request.mobile()
-			));
+			.orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
 
 		String accessToken = jwtTokenProvider.create(
 			member.getId(), member.getMobile(), UserRole.MEMBER
@@ -95,9 +95,10 @@ public class TestUserService {
 		String name, String mobile, Gender gender, LocalDate birthDate
 	) {
 		MemberEntity member = memberService.save(name, mobile, gender, birthDate);
+		// 테스트 더미 SocialProvider — providerId는 mobile 기반 고정값 (SecureRandom 불필요)
 		socialProviderService.save(
 			member, OAuthProvider.NAVER,
-			"test-" + UUID.randomUUID(),
+			"test-provider-" + mobile,
 			"test-" + mobile + "@test.com"
 		);
 		return member;
