@@ -11,6 +11,7 @@ public record ResaleOrderCreatedEvent(
 	int totalBuyerAmount,
 	int totalBuyerFee,
 	int totalSellerFee,
-	List<ResaleTransactionItemRequest> paymentItems
+	List<ResaleTransactionItemRequest> paymentItems,
+	String idempotencyKey
 ) {
 }

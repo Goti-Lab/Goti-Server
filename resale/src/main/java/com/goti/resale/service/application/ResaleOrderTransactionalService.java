@@ -85,7 +85,8 @@ public class ResaleOrderTransactionalService {
 			totalBuyerAmount,
 			totalBuyerFee,
 			totalSellerFee,
-			paymentItems
+			paymentItems,
+			String.valueOf(resaleOrder.getId())
 		));
 
 		return ResaleOrderCreateResponse.from(

@@ -24,7 +24,8 @@ public class PaymentService {
 		int totalAmount,
 		int totalBuyerFee,
 		int totalSellerFee,
-		List<ResaleTransactionItemRequest> items
+		List<ResaleTransactionItemRequest> items,
+		String idempotencyKey
 	) {
 		ResalePaymentRequest request = new ResalePaymentRequest(
 			orderId,
@@ -34,7 +35,7 @@ public class PaymentService {
 			totalSellerFee,
 			items,
 			"CARD",
-			UUID.randomUUID().toString()
+			idempotencyKey
 		);
 
 		try {

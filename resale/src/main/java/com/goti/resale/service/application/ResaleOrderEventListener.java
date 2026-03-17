@@ -2,7 +2,6 @@ package com.goti.resale.service.application;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
@@ -51,7 +50,8 @@ public class ResaleOrderEventListener {
 			event.totalBuyerAmount(),
 			event.totalBuyerFee(),
 			event.totalSellerFee(),
-			event.paymentItems()
+			event.paymentItems(),
+			event.idempotencyKey()
 		);
 	}
 
