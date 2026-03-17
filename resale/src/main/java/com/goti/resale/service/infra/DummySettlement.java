@@ -1,4 +1,4 @@
-package com.goti.service.infra;
+package com.goti.resale.service.infra;
 
 import java.util.UUID;
 

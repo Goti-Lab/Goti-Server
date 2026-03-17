@@ -1,10 +1,13 @@
-package com.goti.service.infra;
+package com.goti.resale.service.infra;
 
 import java.util.List;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import com.goti.constants.messages.ErrorCode;
+import com.goti.exception.CustomException;
 import com.goti.resale.dto.request.ResalePaymentRequest;
 import com.goti.resale.dto.request.ResaleTransactionItemRequest;
 import com.goti.resale.infra.PaymentClient;
@@ -15,6 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class PaymentService {
 	private final PaymentClient paymentClient;
 
@@ -42,7 +46,7 @@ public class PaymentService {
 			paymentClient.createResalePayment(request);
 		} catch (Exception e) {
 			log.error("리셀 결제 요청 실패 - orderId: {}, error: {}", orderId, e.getMessage());
-			throw e;
+			throw new CustomException(ErrorCode.RESALE_PAYMENT_FAILED);
 		}
 	}
 
@@ -52,7 +56,7 @@ public class PaymentService {
 			paymentClient.releaseEscrow(orderId);
 		} catch (Exception e) {
 			log.error("에스크로 해제 실패 - orderId: {}, error: {}", orderId, e.getMessage());
-			throw e;
+			throw new CustomException(ErrorCode.RESALE_ESCROW_FAILED);
 		}
 	}
 }
