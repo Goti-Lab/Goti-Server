@@ -1,0 +1,105 @@
+package com.goti.user.service.test;
+
+import java.time.LocalDate;
+import java.util.UUID;
+
+import org.springframework.context.annotation.Profile;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.goti.constants.Gender;
+import com.goti.constants.OAuthProvider;
+import com.goti.user.config.jwt.JwtTokenProvider;
+import com.goti.user.constants.UserRole;
+import com.goti.user.domain.entity.user.MemberEntity;
+import com.goti.user.dto.request.BulkCreateTestUserRequest;
+import com.goti.user.dto.request.CreateTestUserRequest;
+import com.goti.user.dto.request.TestLoginRequest;
+import com.goti.user.dto.response.BulkTestUserResponse;
+import com.goti.user.dto.response.TestUserResponse;
+import com.goti.user.dto.response.TokenResponse;
+import com.goti.user.service.domain.user.MemberService;
+import com.goti.user.service.domain.user.SocialProviderService;
+
+import lombok.RequiredArgsConstructor;
+
+@Profile("!prod")
+@Service
+@RequiredArgsConstructor
+public class TestUserService {
+
+	private final MemberService memberService;
+	private final SocialProviderService socialProviderService;
+	private final JwtTokenProvider jwtTokenProvider;
+
+	@Transactional
+	public TestUserResponse createUser(CreateTestUserRequest request) {
+		MemberEntity member = memberService.findByMobile(request.mobile())
+			.orElseGet(() -> createMemberWithSocialProvider(
+				request.name(), request.mobile(), request.gender(), request.birthDate()
+			));
+
+		String accessToken = jwtTokenProvider.create(
+			member.getId(), member.getMobile(), UserRole.MEMBER
+		);
+
+		return new TestUserResponse(
+			member.getId(), member.getMobile(), member.getName(), accessToken
+		);
+	}
+
+	@Transactional
+	public BulkTestUserResponse bulkCreateUsers(BulkCreateTestUserRequest request) {
+		int created = 0;
+		int skipped = 0;
+
+		for (int i = request.startIndex(); i < request.startIndex() + request.count(); i++) {
+			String mobile = String.format("000%08d", i);
+
+			if (memberService.findByMobile(mobile).isPresent()) {
+				skipped++;
+				continue;
+			}
+
+			String name = "test-user-" + i;
+			String email = "test-" + i + "@test.com";
+
+			MemberEntity member = memberService.save(
+				name, mobile, Gender.MALE, LocalDate.of(2000, 1, 1)
+			);
+			socialProviderService.save(
+				member, OAuthProvider.NAVER, "test-" + UUID.randomUUID(), email
+			);
+
+			created++;
+		}
+
+		return new BulkTestUserResponse(created, skipped);
+	}
+
+	@Transactional(readOnly = true)
+	public TokenResponse login(TestLoginRequest request) {
+		MemberEntity member = memberService.findByMobile(request.mobile())
+			.orElseThrow(() -> new IllegalArgumentException(
+				"테스트 유저를 찾을 수 없습니다: mobile=" + request.mobile()
+			));
+
+		String accessToken = jwtTokenProvider.create(
+			member.getId(), member.getMobile(), UserRole.MEMBER
+		);
+
+		return new TokenResponse(accessToken);
+	}
+
+	private MemberEntity createMemberWithSocialProvider(
+		String name, String mobile, Gender gender, LocalDate birthDate
+	) {
+		MemberEntity member = memberService.save(name, mobile, gender, birthDate);
+		socialProviderService.save(
+			member, OAuthProvider.NAVER,
+			"test-" + UUID.randomUUID(),
+			"test-" + mobile + "@test.com"
+		);
+		return member;
+	}
+}
