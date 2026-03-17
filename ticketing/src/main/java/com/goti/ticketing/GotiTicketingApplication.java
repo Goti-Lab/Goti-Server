@@ -8,7 +8,10 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @ConfigurationPropertiesScan(basePackages = "com.goti")
 @SpringBootApplication(scanBasePackages = {
 	"com.goti.ticketing",
-	"com.goti.stadium", // TODO: MSA 분리 시 REST client/이벤트로 전환 후 제거
+	"com.goti.stadium.service",      // TODO: MSA 분리 시 REST client/이벤트로 전환 후 제거
+	"com.goti.stadium.domain",       // TODO: MSA 분리 시 제거
+	"com.goti.stadium.repository",   // TODO: MSA 분리 시 제거
+	"com.goti.stadium.constants",    // TODO: MSA 분리 시 제거
 	"com.goti.config",
 	"com.goti.infra",
 	"com.goti.domain.base",
