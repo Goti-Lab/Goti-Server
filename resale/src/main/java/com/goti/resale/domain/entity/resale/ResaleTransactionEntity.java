@@ -26,11 +26,16 @@ import lombok.NoArgsConstructor;
 @Table(name = "resale_transactions",
 	indexes = {
 		@Index(name = "idx_listing_id", columnList = "listing_id"),
+		@Index(name = "idx_resale_order_id", columnList = "resale_order_id"),
 		@Index(name = "idx_buyer_id", columnList = "buyer_id"),
 		@Index(name = "idx_seller_id", columnList = "seller_id")
 	})
 @NoArgsConstructor(access = PROTECTED)
 public class ResaleTransactionEntity extends CreationTimestampEntity {
+
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "resale_order_id", nullable = false)
+	private ResaleOrderEntity resaleOrder;
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "listing_id", nullable = false)
@@ -66,6 +71,7 @@ public class ResaleTransactionEntity extends CreationTimestampEntity {
 	private UUID escrowId;
 
 	private ResaleTransactionEntity(
+		ResaleOrderEntity resaleOrder,
 		ResaleListingEntity listing,
 		UUID buyerId,
 		UUID sellerId,
@@ -75,6 +81,7 @@ public class ResaleTransactionEntity extends CreationTimestampEntity {
 		Integer buyerTotal,
 		Integer sellerTotal
 	) {
+		this.resaleOrder = resaleOrder;
 		this.listing = listing;
 		this.buyerId = buyerId;
 		this.sellerId = sellerId;
@@ -89,6 +96,7 @@ public class ResaleTransactionEntity extends CreationTimestampEntity {
 	}
 
 	public static ResaleTransactionEntity create(
+		ResaleOrderEntity resaleOrder,
 		ResaleListingEntity listing,
 		UUID buyerId,
 		UUID sellerId,
@@ -106,6 +114,7 @@ public class ResaleTransactionEntity extends CreationTimestampEntity {
 		);
 
 		return new ResaleTransactionEntity(
+			resaleOrder,
 			listing,
 			buyerId,
 			sellerId,
@@ -151,10 +160,4 @@ public class ResaleTransactionEntity extends CreationTimestampEntity {
 		this.escrowId = escrowId;
 	}
 
-	public void cancel() {
-		Preconditions.domainValidate(
-			this.transactionStatus == ResaleTransactionStatus.PENDING,
-			"결제 대기 상태에서만 할 수 있습니다."
-		);
-	}
 }

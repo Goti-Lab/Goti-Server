@@ -7,8 +7,8 @@ import java.util.UUID;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-import com.goti.resale.dto.response.TicketGameInfoResponse;
-import com.goti.resale.service.TicketService;
+import com.goti.resale.dto.internal.TicketGameInfo;
+import com.goti.resale.infra.TicketClient;
 import com.goti.resale.service.application.ResaleListingService;
 import com.goti.resale.service.application.ResalePriceService;
 
@@ -20,7 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class ResaleScheduler {
 
-	private final TicketService ticketService;
+	private final TicketClient ticketClient;
 	private final ResaleListingService listingService;
 	private final ResalePriceService priceService;
 
@@ -28,7 +28,7 @@ public class ResaleScheduler {
 	@Scheduled(cron = "0 30 19 * * *")
 	public void autoCancelExpiredListings() {
 		LocalDateTime threshold = LocalDateTime.now().minusHours(1);
-		List<UUID> expiredGameIds = ticketService.getExpiredGameIds(threshold);
+		List<UUID> expiredGameIds = ticketClient.getExpiredGameIds(threshold);
 
 		if (!expiredGameIds.isEmpty()) {
 			try {
@@ -41,8 +41,8 @@ public class ResaleScheduler {
 
 	@Scheduled(cron = "0 0 0 * * *")
 	public void updateDailyBasePrices() {
-		List<TicketGameInfoResponse> upcomingGames = ticketService.getUpcomingGames();
-		for (TicketGameInfoResponse info : upcomingGames) {
+		List<TicketGameInfo> upcomingGames = ticketClient.getUpcomingGames();
+		for (TicketGameInfo info : upcomingGames) {
 			try {
 				priceService.updateDailyBasePrice(info.gameId(), info.gradeId());
 			} catch (Exception e) {

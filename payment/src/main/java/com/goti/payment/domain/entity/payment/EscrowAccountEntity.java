@@ -1,13 +1,13 @@
-package com.goti.resale.domain.entity.resale;
+package com.goti.payment.domain.entity.payment;
 
 import static lombok.AccessLevel.*;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-import com.goti.resale.constants.EscrowStatus;
 import com.goti.domain.base.ModificationTimestampEntity;
 import com.goti.global.validation.Preconditions;
+import com.goti.payment.constants.EscrowStatus;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -82,4 +82,9 @@ public class EscrowAccountEntity extends ModificationTimestampEntity {
 		Preconditions.domainValidate(escrowAmount != null && escrowAmount >= 0, "에스크로 금액은 0 이상이어야 합니다.");
 	}
 
+	public void release(LocalDateTime releaseTime) {
+		Preconditions.domainValidate(this.escrowStatus == EscrowStatus.HOLDING, "대기 상태의 에스크로만 해제할 수 있습니다.");
+		this.escrowStatus = EscrowStatus.RELEASED;
+		this.releasedAt = releaseTime;
+	}
 }

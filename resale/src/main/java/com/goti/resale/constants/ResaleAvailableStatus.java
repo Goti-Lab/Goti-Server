@@ -1,7 +1,9 @@
 package com.goti.resale.constants;
 
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
+@Getter
 @RequiredArgsConstructor
 public enum ResaleAvailableStatus {
 	ENABLED("활성"),

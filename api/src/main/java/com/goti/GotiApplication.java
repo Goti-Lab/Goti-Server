@@ -5,6 +5,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.FilterType;
+import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 import com.goti.payment.GotiPaymentApplication;
@@ -29,6 +30,7 @@ import com.goti.user.GotiUserApplication;
 	)
 )
 @EnableScheduling
+@EnableAsync
 public class GotiApplication {
 
 	public static void main(String[] args) {

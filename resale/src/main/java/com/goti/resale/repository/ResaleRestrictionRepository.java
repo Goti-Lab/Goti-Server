@@ -1,6 +1,5 @@
 package com.goti.resale.repository;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -12,5 +11,4 @@ public interface ResaleRestrictionRepository extends JpaRepository<ResaleRestric
 
 	Optional<ResaleRestrictionEntity> findByUserId(UUID userId);
 
-	List<ResaleRestrictionEntity> findByUserIdIn(List<UUID> userIds);
 }

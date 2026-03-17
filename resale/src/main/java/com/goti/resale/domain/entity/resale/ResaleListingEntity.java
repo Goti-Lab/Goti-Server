@@ -186,6 +186,15 @@ public class ResaleListingEntity extends ModificationTimestampEntity {
 		this.soldAt = LocalDateTime.now();
 	}
 
+	public void settle() {
+		Preconditions.domainValidate(
+			this.listingStatus == ResaleListingStatus.SOLD,
+			"판매 완료 상태에서만 정산할 수 있습니다."
+		);
+
+		this.listingStatus = ResaleListingStatus.SETTLED;
+	}
+
 	public void cancelByGameStart() {
 		if (this.listingStatus == ResaleListingStatus.LISTING
 			|| this.listingStatus == ResaleListingStatus.HOLD) {

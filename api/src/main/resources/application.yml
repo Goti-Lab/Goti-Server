@@ -85,3 +85,7 @@ seat:
 internal:
   ticketing:
     base-url: ${TICKETING_BASE_URL:http://localhost:8080}
+  resale:
+    base-url: ${RESALE_BASE_URL:http://localhost:8080}
+  payment:
+    base-url: ${PAYMENT_BASE_URL:http://localhost:8080}

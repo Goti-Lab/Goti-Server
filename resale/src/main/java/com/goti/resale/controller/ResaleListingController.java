@@ -8,20 +8,20 @@ import java.util.UUID;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.goti.global.api.ApiSuccessResponse;
 import com.goti.resale.constants.ResaleGraphRange;
 import com.goti.resale.dto.request.ResaleListingCancelRequest;
 import com.goti.resale.dto.request.ResaleListingCreateRequest;
 import com.goti.resale.dto.response.ResaleListingCountResponse;
 import com.goti.resale.dto.response.ResaleListingResponse;
 import com.goti.resale.dto.response.ResalePriceHistoryResponse;
-import com.goti.global.api.ApiSuccessResponse;
 import com.goti.resale.service.application.ResaleListingService;
 import com.goti.resale.service.application.ResalePriceService;
 
@@ -34,7 +34,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Tag(name = "Resale Listing", description = "리셀 등록 API")
 @RestController
-@RequestMapping("/api/v1/resale")
+@RequestMapping("/api/v1/resales")
 @RequiredArgsConstructor
 public class ResaleListingController {
 
@@ -59,7 +59,7 @@ public class ResaleListingController {
 		summary = "등록 취소",
 		description = "리셀 취소 API"
 	)
-	@PutMapping("/listings/cancel")
+	@PatchMapping("/listings/cancel")
 	public ResponseEntity<ApiSuccessResponse<ResaleListingResponse>> cancelListing(
 		@AuthenticationPrincipal(expression = "id") UUID sellerId,
 		@Valid @RequestBody ResaleListingCancelRequest request
