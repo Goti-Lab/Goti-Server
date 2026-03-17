@@ -38,6 +38,7 @@ public class ResaleOrderEventListener {
 	private final ResalePriceHistoryRepository priceHistoryRepository;
 	private final ResaleRestrictionRepository restrictionRepository;
 	private final ResaleRestrictionHandler restrictionHandler;
+	private final ResaleRestrictionService restrictionService;
 	private final PaymentService paymentService;
 	private final TicketClient ticketClient;
 
@@ -64,6 +65,8 @@ public class ResaleOrderEventListener {
 		List<ResaleListingEntity> listingsToUpdate = new ArrayList<>();
 		List<ResalePriceHistoryEntity> priceHistories = new ArrayList<>();
 
+		ResaleRestrictionEntity restriction = restrictionService.getOrCreateRestriction(event.buyerId());
+
 		for (ResaleTransactionEntity transaction : transactions) {
 			ResaleListingEntity listing = transaction.getListing();
 
@@ -79,7 +82,7 @@ public class ResaleOrderEventListener {
 					transaction.getTransactionPrice()
 				));
 
-			handleBuyerRestriction(event.buyerId(), listing.getGameId());
+			restrictionHandler.handleAfterBuy(restriction, listing.getGameId());
 
 			log.info("티켓 소유권 이전 처리 티켓ID: {}, 구매자: {}", listing.getTicketId(), event.buyerId());
 			ticketClient.transferOwnership(listing.getTicketId(), event.buyerId());
@@ -87,17 +90,8 @@ public class ResaleOrderEventListener {
 
 		listingRepository.saveAll(listingsToUpdate);
 		priceHistoryRepository.saveAll(priceHistories);
+		restrictionRepository.save(restriction);
 
 		paymentService.releaseEscrow(event.resaleOrderId());
-	}
-
-	private void handleBuyerRestriction(UUID buyerId, UUID gameId) {
-		ResaleRestrictionEntity restriction = restrictionRepository.findByUserId(buyerId)
-			.orElseGet(() -> {
-				ResaleRestrictionEntity newRestriction = ResaleRestrictionEntity.create(buyerId);
-				return restrictionRepository.save(newRestriction);
-			});
-		restrictionHandler.handleAfterBuy(restriction, gameId);
-		restrictionRepository.save(restriction);
 	}
 }

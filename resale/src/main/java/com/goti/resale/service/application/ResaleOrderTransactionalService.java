@@ -39,6 +39,7 @@ public class ResaleOrderTransactionalService {
 	private final ResaleOrderRepository resaleOrderRepository;
 	private final ResaleTransactionRepository resaleTransactionRepository;
 	private final ResaleRestrictionHandler resaleRestrictionHandler;
+	private final ResaleRestrictionService restrictionService;
 	private final ResalePricePolicy resalePricePolicy;
 	private final TicketClient ticketClient;
 	private final ApplicationEventPublisher eventPublisher;
@@ -98,7 +99,7 @@ public class ResaleOrderTransactionalService {
 		for (ResaleHoldEntity hold : holds) {
 			ResaleListingEntity listing = hold.getResaleListing();
 
-			ResaleRestrictionEntity restriction = getOrCreateRestriction(buyerId);
+			ResaleRestrictionEntity restriction = restrictionService.getOrCreateRestriction(buyerId);
 			resaleRestrictionHandler.validateCanBuy(restriction, listing.getGameId());
 
 			ResalePricePolicy.FeeResult feeResult = resalePricePolicy.validateTransactionFee(
@@ -139,16 +140,6 @@ public class ResaleOrderTransactionalService {
 			transactions.add(resaleTransactionRepository.save(transaction));
 		}
 		return resaleTransactionRepository.saveAll(transactions);
-	}
-
-	private ResaleRestrictionEntity getOrCreateRestriction(UUID userId) {
-		return resaleRestrictionRepository
-			.findByUserId(userId)
-			.orElseGet(
-				() -> {
-					ResaleRestrictionEntity newRestriction = ResaleRestrictionEntity.create(userId);
-					return resaleRestrictionRepository.save(newRestriction);
-				});
 	}
 
 	private String generateOrderNumber() {

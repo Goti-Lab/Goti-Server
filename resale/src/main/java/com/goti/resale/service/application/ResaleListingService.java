@@ -36,6 +36,7 @@ public class ResaleListingService {
 	private final ResaleRestrictionRepository restrictionRepository;
 	private final ResalePriceHistoryRepository priceHistoryRepository;
 	private final ResaleRestrictionHandler restrictionHandler;
+	private final ResaleRestrictionService restrictionService;
 	private final ResalePricePolicy pricePolicy;
 	private final TicketClient ticketClient;
 
@@ -51,7 +52,7 @@ public class ResaleListingService {
 
 		restrictionHandler.validateReListingLimit(ticketInfo.transactionId(), ticketInfo.createdAt());
 
-		ResaleRestrictionEntity resaleRestriction = getOrCreateRestriction(sellerId);
+		ResaleRestrictionEntity resaleRestriction = restrictionService.getOrCreateRestriction(sellerId);
 
 		restrictionHandler.validateCanSell(resaleRestriction, ticketInfo.gameId());
 
@@ -97,11 +98,7 @@ public class ResaleListingService {
 
 		validateCancelable(resaleListing);
 
-		ResaleRestrictionEntity resaleRestriction =
-			restrictionRepository.findByUserId(sellerId)
-				.orElseThrow(
-					() -> new CustomException(ErrorCode.SELLER_NOT_FOUND)
-				);
+		ResaleRestrictionEntity resaleRestriction = restrictionService.getOrCreateRestriction(sellerId);
 
 		restrictionHandler.validateCanCancel(resaleRestriction, resaleListing.getGameId());
 
@@ -154,16 +151,13 @@ public class ResaleListingService {
 			.distinct()
 			.toList();
 
-		Map<UUID, ResaleRestrictionEntity> restrictionMap = restrictionRepository.findByUserIdIn(sellerIds).stream()
-			.collect(Collectors.toMap(ResaleRestrictionEntity::getUserId, r -> r));
+		Map<UUID, ResaleRestrictionEntity> restrictionMap = sellerIds.stream()
+			.collect(Collectors.toMap(id -> id, restrictionService::getOrCreateRestriction));
 
 		for (ResaleListingEntity listing : listings) {
 			listing.cancelByGameStart();
 
-			ResaleRestrictionEntity restriction = restrictionMap.computeIfAbsent(
-				listing.getSellerId(),
-				ResaleRestrictionEntity::create
-			);
+			ResaleRestrictionEntity restriction = restrictionMap.get(listing.getSellerId());
 
 			restrictionHandler.handleAfterCancel(restriction, listing.getGameId());
 		}
@@ -203,14 +197,5 @@ public class ResaleListingService {
 			ErrorCode.BAD_REQUEST,
 			"취소할 수 없는 상태입니다 (현재: " + listing.getListingStatus() + ")"
 		);
-	}
-
-	private ResaleRestrictionEntity getOrCreateRestriction(UUID userId) {
-		return restrictionRepository
-			.findByUserId(userId)
-			.orElseGet(() -> {
-				ResaleRestrictionEntity newRestriction = ResaleRestrictionEntity.create(userId);
-				return restrictionRepository.save(newRestriction);
-			});
 	}
 }
