@@ -3,7 +3,7 @@ package com.goti.dto.internal;
 import java.util.List;
 import java.util.UUID;
 
-import com.goti.dto.request.ResaleTransactionItemRequest;
+import com.goti.resale.dto.request.ResaleTransactionItemRequest;
 
 public record ResaleOrderCreatedEvent(
 	UUID orderId,

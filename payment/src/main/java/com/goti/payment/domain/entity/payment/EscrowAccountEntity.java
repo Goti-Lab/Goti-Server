@@ -5,9 +5,9 @@ import static lombok.AccessLevel.*;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-import com.goti.resale.constants.EscrowStatus;
 import com.goti.domain.base.ModificationTimestampEntity;
 import com.goti.global.validation.Preconditions;
+import com.goti.payment.constants.EscrowStatus;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

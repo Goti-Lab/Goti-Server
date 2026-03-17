@@ -11,9 +11,9 @@ import org.junit.jupiter.params.provider.NullSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.test.context.ActiveProfiles;
 
-import com.goti.resale.constants.EscrowStatus;
-import com.goti.payment.domain.entity.payment.EscrowAccountEntity;
 import com.goti.exception.FieldValidationException;
+import com.goti.payment.constants.EscrowStatus;
+import com.goti.payment.domain.entity.payment.EscrowAccountEntity;
 
 import lombok.extern.slf4j.Slf4j;
 

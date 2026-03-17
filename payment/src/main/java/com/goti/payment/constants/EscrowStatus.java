@@ -1,7 +1,9 @@
-package com.goti.resale.constants;
+package com.goti.payment.constants;
 
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
+@Getter
 @RequiredArgsConstructor
 public enum EscrowStatus {
 	HOLDING("대기상태"),

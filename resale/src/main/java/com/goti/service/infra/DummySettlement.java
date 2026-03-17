@@ -4,7 +4,7 @@ import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 
-import com.goti.infra.SettlementClient;
+import com.goti.resale.infra.SettlementClient;
 
 @Service
 public class DummySettlement implements SettlementClient {

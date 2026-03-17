@@ -11,19 +11,19 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 
+import com.goti.dto.internal.ResaleOrderCreatedEvent;
+import com.goti.dto.internal.ResaleOrderPaymentCompletedEvent;
 import com.goti.resale.domain.entity.resale.ResaleListingEntity;
 import com.goti.resale.domain.entity.resale.ResalePriceHistoryEntity;
 import com.goti.resale.domain.entity.resale.ResaleRestrictionEntity;
 import com.goti.resale.domain.entity.resale.ResaleTransactionEntity;
-import com.goti.resale.dto.internal.ResaleOrderCreatedEvent;
-import com.goti.resale.dto.internal.ResaleOrderPaymentCompletedEvent;
 import com.goti.resale.infra.TicketClient;
 import com.goti.resale.repository.ResaleRestrictionRepository;
 import com.goti.resale.repository.ResaleTransactionRepository;
 import com.goti.resale.repository.history.ResalePriceHistoryRepository;
 import com.goti.resale.repository.listing.ResaleListingRepository;
-import com.goti.resale.service.infra.PaymentService;
 import com.goti.resale.utils.ResaleRestrictionHandler;
+import com.goti.service.infra.PaymentService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

@@ -3,8 +3,10 @@ package com.goti.resale.constants;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
+@Getter
 @RequiredArgsConstructor
 public enum ResaleGraphRange {
 	HOUR("한 시간"),

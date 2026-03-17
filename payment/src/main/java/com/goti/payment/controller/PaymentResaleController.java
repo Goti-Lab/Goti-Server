@@ -15,10 +15,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.goti.payment.dto.request.ResalePaymentRequest;
-import com.goti.dto.response.PaymentResponse;
-import com.goti.payment.dto.response.ResalePaymentLedgerResponse;
 import com.goti.global.api.ApiSuccessResponse;
+import com.goti.payment.dto.request.ResalePaymentRequest;
+import com.goti.payment.dto.response.PaymentResponse;
+import com.goti.payment.dto.response.ResalePaymentLedgerResponse;
 import com.goti.payment.service.application.PaymentLedgerService;
 import com.goti.payment.service.application.ResaleOrderPaymentService;
 

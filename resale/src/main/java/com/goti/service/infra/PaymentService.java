@@ -5,9 +5,9 @@ import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 
-import com.goti.dto.request.ResalePaymentRequest;
-import com.goti.dto.request.ResaleTransactionItemRequest;
-import com.goti.infra.PaymentClient;
+import com.goti.resale.dto.request.ResalePaymentRequest;
+import com.goti.resale.dto.request.ResaleTransactionItemRequest;
+import com.goti.resale.infra.PaymentClient;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
