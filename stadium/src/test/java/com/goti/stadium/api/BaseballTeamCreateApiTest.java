@@ -3,10 +3,9 @@ package com.goti.stadium.api;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.goti.stadium.GotiStadiumApplication;
 
+import com.goti.stadium.config.TestSecurityConfig;
 import com.goti.stadium.constants.TeamCode;
 import com.goti.stadium.dto.request.BaseballTeamCreateRequest;
-
-import com.goti.stadium.config.TestSecurityConfig;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
