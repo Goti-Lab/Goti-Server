@@ -26,6 +26,7 @@ spring:
       hibernate:
         jdbc.time_zone: UTC
         default_schema: stadium_service
+        hbm2ddl.create_namespaces: true
         dialect: org.hibernate.dialect.PostgreSQLDialect
   data:
     redis:
