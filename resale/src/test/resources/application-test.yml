@@ -31,3 +31,9 @@ jwt:
   access-valid-time: ${JWT_ACCESS_TIME:3600000}
   refresh-valid-time: ${JWT_REFRESH_TIME:604800000}
   registration-valid-time: ${JWT_REGISTRATION_TIME:300000}
+
+seat:
+  hold-expiry:
+    enabled: false
+    fixed-delay-ms: 60000
+    batch-size: 10

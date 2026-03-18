@@ -26,6 +26,7 @@ spring:
       hibernate:
         jdbc.time_zone: UTC
         default_schema: resale_service
+        hbm2ddl.create_namespaces: true
         dialect: org.hibernate.dialect.PostgreSQLDialect
         jdbc:
           batch_size: 500
@@ -53,6 +54,12 @@ management:
   endpoint:
     health:
       show-details: when-authorized
+
+seat:
+  hold-expiry:
+    enabled: true
+    fixed-delay-ms: 60000
+    batch-size: 100
 
 logging:
   pattern:
