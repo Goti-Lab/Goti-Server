@@ -145,16 +145,55 @@ jobs:
             echo "--- ${MODULE} 빌드 완료: ${IMAGE} ---"
           done
 
-  # ECR 이미지 push 후 Goti-k8s Renovate 즉시 트리거
-  trigger-renovate:
+  # ECR 이미지 push 후 Goti-k8s values.yaml 태그 직접 업데이트
+  update-k8s-image-tag:
     needs: [image-build, msa-image-build]
     if: always() && (needs.image-build.result == 'success' || needs.msa-image-build.result == 'success')
     runs-on: ubuntu-latest
     steps:
-      - name: Trigger Goti-k8s Renovate
-        run: |
-          gh api repos/Team-Ikujo/Goti-k8s/dispatches \
-            -f event_type=image-pushed \
-            -f 'client_payload[sha]=${{ github.sha }}'
+      - name: Update Goti-k8s image tags
         env:
           GH_TOKEN: ${{ secrets.GOTI_K8S_DISPATCH_TOKEN }}
+        run: |
+          TAG="dev-${{ github.run_number }}-${GITHUB_SHA::7}"
+          REPO="Team-Ikujo/Goti-k8s"
+          BRANCH="main"
+          MSA_MODULES="user stadium ticketing payment resale"
+
+          echo "이미지 태그: $TAG"
+
+          for MODULE in $MSA_MODULES; do
+            FILE_PATH="environments/dev/goti-${MODULE}/values.yaml"
+
+            # 현재 파일 내용 + SHA 가져오기
+            RESPONSE=$(gh api "repos/${REPO}/contents/${FILE_PATH}?ref=${BRANCH}" 2>/dev/null) || {
+              echo "⚠️ ${FILE_PATH} 조회 실패 — 스킵"
+              continue
+            }
+
+            FILE_SHA=$(echo "$RESPONSE" | jq -r '.sha')
+            CONTENT_B64=$(echo "$RESPONSE" | jq -r '.content')
+            CURRENT=$(echo "$CONTENT_B64" | base64 -d)
+
+            # 현재 태그 확인
+            CURRENT_TAG=$(echo "$CURRENT" | grep -oP 'tag:\s*"\K[^"]+')
+            if [ "$CURRENT_TAG" = "$TAG" ]; then
+              echo "✓ goti-${MODULE}: 이미 최신 ($TAG)"
+              continue
+            fi
+
+            # 태그 교체
+            UPDATED=$(echo "$CURRENT" | sed "s|tag: \"${CURRENT_TAG}\"|tag: \"${TAG}\"|")
+            NEW_B64=$(echo "$UPDATED" | base64 -w 0)
+
+            # 커밋
+            gh api "repos/${REPO}/contents/${FILE_PATH}" \
+              -X PUT \
+              -f message="[CHORE] goti-${MODULE} 이미지 태그 업데이트: ${TAG}" \
+              -f content="${NEW_B64}" \
+              -f sha="${FILE_SHA}" \
+              -f branch="${BRANCH}" \
+              --silent
+
+            echo "✓ goti-${MODULE}: ${CURRENT_TAG} → ${TAG}"
+          done
