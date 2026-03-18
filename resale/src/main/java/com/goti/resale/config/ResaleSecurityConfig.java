@@ -1,5 +1,6 @@
-package com.goti.payment.config;
+package com.goti.resale.config;
 
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -10,10 +11,11 @@ import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
 @EnableWebSecurity
-public class SecurityConfig {
+@ConditionalOnProperty(name = "spring.application.name", havingValue = "goti-resale-service")
+public class ResaleSecurityConfig {
 
 	@Bean
-	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+	public SecurityFilterChain resaleFilterChain(HttpSecurity http) throws Exception {
 		http.csrf(AbstractHttpConfigurer::disable)
 			.sessionManagement(session ->
 				session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
@@ -24,7 +26,8 @@ public class SecurityConfig {
 					"/swagger-ui/**",
 					"/v3/api-docs/**"
 				).permitAll()
-				.anyRequest().permitAll() // TODO: JWT 인증 도입 시 payments → authenticated()
+				.requestMatchers("/api/v1/resales/histories/**").permitAll()
+				.anyRequest().permitAll() // TODO: JWT 인증 도입 시 listings/holds/orders → authenticated()
 			);
 
 		return http.build();

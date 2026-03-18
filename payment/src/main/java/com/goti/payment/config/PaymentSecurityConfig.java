@@ -1,5 +1,6 @@
-package com.goti.ticketing.config;
+package com.goti.payment.config;
 
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -10,10 +11,11 @@ import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
 @EnableWebSecurity
-public class SecurityConfig {
+@ConditionalOnProperty(name = "spring.application.name", havingValue = "goti-payment-service")
+public class PaymentSecurityConfig {
 
 	@Bean
-	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+	public SecurityFilterChain paymentFilterChain(HttpSecurity http) throws Exception {
 		http.csrf(AbstractHttpConfigurer::disable)
 			.sessionManagement(session ->
 				session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
@@ -24,8 +26,7 @@ public class SecurityConfig {
 					"/swagger-ui/**",
 					"/v3/api-docs/**"
 				).permitAll()
-				.requestMatchers("/api/v1/games/**").permitAll()
-				.anyRequest().permitAll() // TODO: JWT 인증 도입 시 orders/seats/tickets → authenticated()
+				.anyRequest().permitAll() // TODO: JWT 인증 도입 시 payments → authenticated()
 			);
 
 		return http.build();

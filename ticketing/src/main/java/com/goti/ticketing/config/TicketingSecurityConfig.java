@@ -1,5 +1,6 @@
-package com.goti.stadium.config;
+package com.goti.ticketing.config;
 
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -10,10 +11,11 @@ import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
 @EnableWebSecurity
-public class SecurityConfig {
+@ConditionalOnProperty(name = "spring.application.name", havingValue = "goti-ticketing-service")
+public class TicketingSecurityConfig {
 
 	@Bean
-	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+	public SecurityFilterChain ticketingFilterChain(HttpSecurity http) throws Exception {
 		http.csrf(AbstractHttpConfigurer::disable)
 			.sessionManagement(session ->
 				session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
@@ -24,9 +26,8 @@ public class SecurityConfig {
 					"/swagger-ui/**",
 					"/v3/api-docs/**"
 				).permitAll()
-				.requestMatchers("/api/v1/stadiums/**").permitAll()
-				.requestMatchers("/api/v1/baseball-teams/**").permitAll()
-				.anyRequest().permitAll() // TODO: JWT 인증 도입 시 authenticated()로 변경
+				.requestMatchers("/api/v1/games/**").permitAll()
+				.anyRequest().permitAll() // TODO: JWT 인증 도입 시 orders/seats/tickets → authenticated()
 			);
 
 		return http.build();
