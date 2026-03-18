@@ -61,6 +61,8 @@ jobs:
   # MSA 모듈별 ECR 이미지 빌드+push
   msa-image-build:
     runs-on: ubuntu-latest
+    outputs:
+      built-modules: ${{ steps.detect.outputs.modules }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -145,10 +147,10 @@ jobs:
             echo "--- ${MODULE} 빌드 완료: ${IMAGE} ---"
           done
 
-  # ECR 이미지 push 후 Goti-k8s values.yaml 태그 직접 업데이트
+  # 빌드된 MSA 모듈만 Goti-k8s values.yaml 태그 업데이트
   update-k8s-image-tag:
-    needs: [image-build, msa-image-build]
-    if: always() && (needs.image-build.result == 'success' || needs.msa-image-build.result == 'success')
+    needs: [msa-image-build]
+    if: needs.msa-image-build.outputs.built-modules != ''
     runs-on: ubuntu-latest
     steps:
       - name: Update Goti-k8s image tags
@@ -158,11 +160,12 @@ jobs:
           TAG="dev-${{ github.run_number }}-${GITHUB_SHA::7}"
           REPO="Team-Ikujo/Goti-k8s"
           BRANCH="main"
-          MSA_MODULES="user stadium ticketing payment resale"
+          BUILT_MODULES="${{ needs.msa-image-build.outputs.built-modules }}"
 
           echo "이미지 태그: $TAG"
+          echo "빌드된 모듈: $BUILT_MODULES"
 
-          for MODULE in $MSA_MODULES; do
+          for MODULE in $BUILT_MODULES; do
             FILE_PATH="environments/dev/goti-${MODULE}/values.yaml"
 
             # 현재 파일 내용 + SHA 가져오기
