@@ -37,7 +37,7 @@ jobs:
       - name: Set image tag
         id: image
         run: |
-          IMAGE_TAG="dev-${GITHUB_SHA::7}"
+          IMAGE_TAG="dev-${{ github.run_number }}-${GITHUB_SHA::7}"
           FULL_IMAGE="${{ steps.ecr-login.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${IMAGE_TAG}"
           echo "tag=${IMAGE_TAG}" >> "$GITHUB_OUTPUT"
           echo "full_image=${FULL_IMAGE}" >> "$GITHUB_OUTPUT"
@@ -119,7 +119,7 @@ jobs:
         run: |
           MODULES="${{ steps.detect.outputs.modules }}"
           SHORT_SHA=${GITHUB_SHA::7}
-          TAG="dev-${SHORT_SHA}"
+          TAG="dev-${{ github.run_number }}-${SHORT_SHA}"
 
           echo "빌드 대상 모듈: $MODULES"
           echo "이미지 태그: $TAG"
