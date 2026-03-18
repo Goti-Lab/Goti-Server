@@ -54,6 +54,12 @@ management:
     health:
       show-details: when-authorized
 
+seat:
+  hold-expiry:
+    enabled: true
+    fixed-delay-ms: 60000
+    batch-size: 100
+
 logging:
   pattern:
     level: "%5p [${spring.application.name:},%X{trace_id:-},%X{span_id:-}]"
