@@ -25,7 +25,7 @@ import lombok.RequiredArgsConstructor;
 @Tag(name = "Payment", description = "결제 API")
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/orders")
+@RequestMapping("/api/v1/payments")
 public class PaymentController {
 	private final OrderPaymentService orderPaymentService;
 
@@ -33,7 +33,7 @@ public class PaymentController {
 		summary = "결제 요청",
 		description = "특정 주문에 대한 mock 결제 요청 API"
 	)
-	@PostMapping("/{orderId}/payments")
+	@PostMapping("/orders/{orderId}")
 	public ResponseEntity<ApiSuccessResponse<PaymentResponse>> create(
 		@PathVariable UUID orderId,
 		@AuthenticationPrincipal(expression = "id") UUID memberId,

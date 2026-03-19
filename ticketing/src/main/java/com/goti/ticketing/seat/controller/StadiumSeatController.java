@@ -31,7 +31,7 @@ import lombok.RequiredArgsConstructor;
 @Tag(name = "Seat Grade", description = "구장 별 좌석 등급 및 구역 API")
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/stadiums")
+@RequestMapping("/api/v1/stadium-seats")
 public class StadiumSeatController {
 	private final SeatGradeService seatGradeService;
 	private final SeatSectionService seatSectionService;
