@@ -5,9 +5,7 @@ import static com.goti.global.api.ApiSuccessResponse.*;
 import java.util.List;
 import java.util.UUID;
 
-import com.goti.ticketing.seat.dto.request.CreateSeatSectionRequest;
-import com.goti.ticketing.seat.dto.response.SeatSectionResponse;
-import com.goti.ticketing.seat.service.domain.SeatSectionService;
+import com.goti.ticketing.seat.dto.response.SeatSectionRegisterResponse;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -20,8 +18,11 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.goti.global.api.ApiSuccessResponse;
 import com.goti.ticketing.seat.dto.request.CreateSeatGradeRequest;
+import com.goti.ticketing.seat.dto.request.CreateSeatSectionRequest;
 import com.goti.ticketing.seat.dto.response.SeatGradeResponse;
+import com.goti.ticketing.seat.dto.response.SeatSectionSearchResponse;
 import com.goti.ticketing.seat.service.domain.SeatGradeService;
+import com.goti.ticketing.seat.service.domain.SeatSectionService;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -57,7 +58,7 @@ public class StadiumSeatController {
 		summary = "좌석 등급 조회",
 		description = "구장별 좌석 등급 조회 API"
 	)
-	@GetMapping("/{stadiumId}/seat-grades")
+	@GetMapping("/stadiums/{stadiumId}/seat-grades")
 	public ResponseEntity<ApiSuccessResponse<List<SeatGradeResponse>>> getSeatGrades(
 		@AuthenticationPrincipal(expression = "id") UUID userId,
 		@PathVariable UUID stadiumId
@@ -70,11 +71,11 @@ public class StadiumSeatController {
 		description = "좌석 등급에 속한 좌석 구역 생성 API"
 	)
 	@PostMapping("/seat-sections")
-	public ResponseEntity<ApiSuccessResponse<SeatSectionResponse>> createSection(
+	public ResponseEntity<ApiSuccessResponse<SeatSectionRegisterResponse>> createSection(
 		@Valid @RequestBody CreateSeatSectionRequest request
 	) {
 		// TODO: 관리자용 API 분리 예정
-		SeatSectionResponse response = seatSectionService.create(
+		SeatSectionRegisterResponse response = seatSectionService.create(
 			request.gradeId(),
 			request.stadiumId(),
 			request.sectionCode(),
@@ -87,11 +88,12 @@ public class StadiumSeatController {
 		summary = "좌석 구역 조회",
 		description = "구장별 좌석 구역 목록 조회 API"
 	)
-	@GetMapping("/{stadiumId}/seat-sections")
-	public ResponseEntity<ApiSuccessResponse<List<SeatSectionResponse>>> getSeatSections(
+	@GetMapping("/stadiums/{stadiumId}/games/{gameId}/seat-sections")
+	public ResponseEntity<ApiSuccessResponse<List<SeatSectionSearchResponse>>> getSeatSections(
 		@AuthenticationPrincipal(expression = "id") UUID userId,
-		@PathVariable UUID stadiumId
+		@PathVariable UUID stadiumId,
+		@PathVariable UUID gameId
 	) {
-		return wrap(seatSectionService.get(stadiumId, userId));
+		return wrap(seatSectionService.get(stadiumId, userId, gameId));
 	}
 }
