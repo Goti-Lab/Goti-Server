@@ -5,9 +5,9 @@ import static lombok.AccessLevel.*;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-import com.goti.resale.constants.ResaleTransactionStatus;
-import com.goti.domain.base.CreationTimestampEntity;
+import com.goti.domain.base.ModificationTimestampEntity;
 import com.goti.global.validation.Preconditions;
+import com.goti.resale.constants.ResaleTransactionStatus;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -25,13 +25,14 @@ import lombok.NoArgsConstructor;
 @Entity
 @Table(name = "resale_transactions",
 	indexes = {
+		@Index(name = "unique_idx_resale_ticket_number", columnList = "resale_ticket_number", unique = true),
 		@Index(name = "idx_listing_id", columnList = "listing_id"),
 		@Index(name = "idx_resale_order_id", columnList = "resale_order_id"),
 		@Index(name = "idx_buyer_id", columnList = "buyer_id"),
 		@Index(name = "idx_seller_id", columnList = "seller_id")
 	})
 @NoArgsConstructor(access = PROTECTED)
-public class ResaleTransactionEntity extends CreationTimestampEntity {
+public class ResaleTransactionEntity extends ModificationTimestampEntity {
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "resale_order_id", nullable = false)
@@ -40,6 +41,9 @@ public class ResaleTransactionEntity extends CreationTimestampEntity {
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "listing_id", nullable = false)
 	private ResaleListingEntity listing;
+
+	@Column(nullable = false)
+	private String resaleTicketNumber;
 
 	@Column(nullable = false)
 	private UUID buyerId;
@@ -73,6 +77,7 @@ public class ResaleTransactionEntity extends CreationTimestampEntity {
 	private ResaleTransactionEntity(
 		ResaleOrderEntity resaleOrder,
 		ResaleListingEntity listing,
+		String resaleTicketNumber,
 		UUID buyerId,
 		UUID sellerId,
 		Integer transactionPrice,
@@ -83,6 +88,7 @@ public class ResaleTransactionEntity extends CreationTimestampEntity {
 	) {
 		this.resaleOrder = resaleOrder;
 		this.listing = listing;
+		this.resaleTicketNumber = resaleTicketNumber;
 		this.buyerId = buyerId;
 		this.sellerId = sellerId;
 		this.transactionPrice = transactionPrice;
@@ -98,6 +104,7 @@ public class ResaleTransactionEntity extends CreationTimestampEntity {
 	public static ResaleTransactionEntity create(
 		ResaleOrderEntity resaleOrder,
 		ResaleListingEntity listing,
+		String resaleTicketNumber,
 		UUID buyerId,
 		UUID sellerId,
 		Integer transactionPrice,
@@ -107,6 +114,7 @@ public class ResaleTransactionEntity extends CreationTimestampEntity {
 		Integer sellerTotal
 	) {
 		validate(
+			resaleTicketNumber,
 			buyerId, sellerId,
 			transactionPrice,
 			buyerFee, sellerFee,
@@ -116,6 +124,7 @@ public class ResaleTransactionEntity extends CreationTimestampEntity {
 		return new ResaleTransactionEntity(
 			resaleOrder,
 			listing,
+			resaleTicketNumber,
 			buyerId,
 			sellerId,
 			transactionPrice,
@@ -127,6 +136,7 @@ public class ResaleTransactionEntity extends CreationTimestampEntity {
 	}
 
 	private static void validate(
+		String ResaleTicketNumber,
 		UUID buyerId,
 		UUID sellerId,
 		Integer transactionPrice,
@@ -135,6 +145,7 @@ public class ResaleTransactionEntity extends CreationTimestampEntity {
 		Integer buyerTotal,
 		Integer sellerTotal
 	) {
+		Preconditions.domainValidate(ResaleTicketNumber != null, "리셀 티켓 번호는 비어 있을 수 없습니다.");
 		Preconditions.domainValidate(buyerId != null, "구매자 ID는 비어 있을 수 없습니다.");
 		Preconditions.domainValidate(sellerId != null, "판매자 ID는 비어 있을 수 없습니다.");
 		Preconditions.domainValidate(!buyerId.equals(sellerId), "구매자와 판매자는 같을 수 없습니다.");

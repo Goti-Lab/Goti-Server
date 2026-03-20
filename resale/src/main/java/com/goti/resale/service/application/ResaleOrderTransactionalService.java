@@ -23,7 +23,6 @@ import com.goti.resale.dto.request.ResaleTransactionItemRequest;
 import com.goti.resale.dto.response.ResaleOrderCreateResponse;
 import com.goti.resale.infra.TicketClient;
 import com.goti.resale.repository.ResaleOrderRepository;
-import com.goti.resale.repository.ResaleRestrictionRepository;
 import com.goti.resale.repository.ResaleTransactionRepository;
 import com.goti.resale.utils.ResalePricePolicy;
 import com.goti.resale.utils.ResaleRestrictionHandler;
@@ -35,7 +34,6 @@ import lombok.RequiredArgsConstructor;
 public class ResaleOrderTransactionalService {
 	private static final DateTimeFormatter ORDER_NUMBER_FORMATTER = DateTimeFormatter.ofPattern("yyMMdd");
 
-	private final ResaleRestrictionRepository resaleRestrictionRepository;
 	private final ResaleOrderRepository resaleOrderRepository;
 	private final ResaleTransactionRepository resaleTransactionRepository;
 	private final ResaleRestrictionHandler resaleRestrictionHandler;
@@ -130,6 +128,7 @@ public class ResaleOrderTransactionalService {
 			ResaleTransactionEntity transaction = ResaleTransactionEntity.create(
 				order,
 				item.listing(),
+				generateResaleTicketNumber(),
 				buyerId,
 				item.getSellerId(),
 				item.getListingPrice(),
@@ -145,7 +144,14 @@ public class ResaleOrderTransactionalService {
 
 	private String generateOrderNumber() {
 		String tsidSuffix = TsidCreator.getTsid().toString();
-		return "RES" + "-" +
+		return "ORD" + "-" +
+			LocalDate.now().format(ORDER_NUMBER_FORMATTER) +
+			tsidSuffix.substring(tsidSuffix.length() - 6);
+	}
+
+	private String generateResaleTicketNumber() {
+		String tsidSuffix = TsidCreator.getTsid().toString();
+		return "RST" + "-" +
 			LocalDate.now().format(ORDER_NUMBER_FORMATTER) +
 			tsidSuffix.substring(tsidSuffix.length() - 6);
 	}

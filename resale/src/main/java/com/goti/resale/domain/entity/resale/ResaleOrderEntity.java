@@ -4,9 +4,9 @@ import static lombok.AccessLevel.*;
 
 import java.util.UUID;
 
-import com.goti.resale.constants.ResaleOrderStatus;
 import com.goti.domain.base.ModificationTimestampEntity;
 import com.goti.global.validation.Preconditions;
+import com.goti.resale.constants.ResaleOrderStatus;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -21,13 +21,13 @@ import lombok.NoArgsConstructor;
 @Entity
 @Table(name = "resale_orders",
 	indexes = {
-		@Index(name = "idx_resale_order_number", columnList = "order_number"),
+		@Index(name = "idx_resale_order_number", columnList = "order_number", unique = true),
 		@Index(name = "idx_resale_order_buyer_id", columnList = "buyer_id")
 	})
 @NoArgsConstructor(access = PROTECTED)
 public class ResaleOrderEntity extends ModificationTimestampEntity {
 
-	@Column(nullable = false, unique = true)
+	@Column(nullable = false)
 	private String orderNumber;
 
 	@Column(nullable = false)
