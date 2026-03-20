@@ -136,6 +136,8 @@ public class ResaleOrderEventListener {
 			log.info("비동기 티켓 소유권 이전 시작 - 티켓ID: {}, 구매자: {}", ticketId, buyerId);
 			ticketClient.transferOwnership(ticketId, buyerId);
 		} catch (Exception e) {
+			log.error("티켓 소유권 이전 실패 - 티켓ID: {}, 구매자: {}, 에러: {}",
+				ticketId, buyerId, e.getMessage(), e);
 			throw new CustomException(ErrorCode.TRANSFER_OWNERSHIP_FAILED);
 		}
 	}

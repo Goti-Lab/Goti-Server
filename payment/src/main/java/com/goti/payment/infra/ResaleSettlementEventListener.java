@@ -26,6 +26,7 @@ public class ResaleSettlementEventListener {
 		try {
 			resaleOrderClient.completeSettlement(event.resaleOrderId());
 		} catch (Exception e) {
+			log.error("정산 실패 - 주문ID: {}, 에러: {}", event.resaleOrderId(), e.getMessage(), e);
 			throw new CustomException(ErrorCode.RESALE_ESCROW_FAILED);
 		}
 	}
