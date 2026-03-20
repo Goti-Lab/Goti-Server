@@ -21,8 +21,8 @@ public class NaverApiClient extends BaseRestClient implements SocialApiClient {
 
 	private final NaverOauthProperties properties;
 
-	public NaverApiClient(RestClient restClient, NaverOauthProperties properties) {
-		super(restClient.mutate());
+	public NaverApiClient(RestClient.Builder builder, NaverOauthProperties properties) {
+		super(builder);
 		this.properties = properties;
 	}
 

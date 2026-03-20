@@ -21,8 +21,8 @@ public class KakaoApiClient extends BaseRestClient implements SocialApiClient {
 
 	private final KakaoOauthProperties properties;
 
-	public KakaoApiClient(RestClient restClient, KakaoOauthProperties properties) {
-		super(restClient.mutate());
+	public KakaoApiClient(RestClient.Builder builder, KakaoOauthProperties properties) {
+		super(builder);
 		this.properties = properties;
 	}
 

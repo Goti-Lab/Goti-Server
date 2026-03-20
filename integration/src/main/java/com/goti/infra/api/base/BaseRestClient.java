@@ -13,7 +13,12 @@ public abstract class BaseRestClient {
 	protected final RestClient restClient;
 
 	protected BaseRestClient(RestClient.Builder builder) {
+		this(builder, null);
+	}
+
+	protected BaseRestClient(RestClient.Builder builder, String baseUrl) {
 		this.restClient = builder
+			.baseUrl(baseUrl != null ? baseUrl : "")
 			.defaultHeaders(headers -> {
 				headers.setContentType(MediaType.APPLICATION_JSON);
 				headers.setAccept(java.util.List.of(MediaType.APPLICATION_JSON));
@@ -102,6 +107,28 @@ public abstract class BaseRestClient {
 			})
 			.retrieve()
 			.body(responseType);
+	}
+
+	protected void getVoid(String uri, Map<String, String> headers, Map<String, ?> queryParams) {
+		restClient.get()
+			.uri(uriBuilder -> {
+				UriBuilder builder = getActualUriBuilder(uri, uriBuilder);
+				if (queryParams != null) builder.queryParams(toParams(queryParams));
+				return builder.build();
+			})
+			.headers(header -> {
+				if (headers != null) headers.forEach(header::add);
+			})
+			.retrieve()
+			.toBodilessEntity();
+	}
+
+	protected void postVoid(String uri, Object body) {
+		restClient.post()
+			.uri(uriBuilder -> getActualUriBuilder(uri, uriBuilder).build())
+			.body(body)
+			.retrieve()
+			.toBodilessEntity();
 	}
 
 	protected Map<String, String> createBearerHeader(String accessToken) {

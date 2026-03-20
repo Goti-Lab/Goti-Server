@@ -23,8 +23,8 @@ public class GoogleApiClient extends BaseRestClient implements SocialApiClient {
 
 	private final GoogleOauthProperties properties;
 
-	public GoogleApiClient(RestClient restClient, GoogleOauthProperties properties) {
-		super(restClient.mutate());
+	public GoogleApiClient(RestClient.Builder builder, GoogleOauthProperties properties) {
+		super(builder);
 		this.properties = properties;
 	}
 

@@ -1,5 +1,6 @@
 package com.goti.stadium.controller;
 
+import com.goti.stadium.domain.entity.stadium.StadiumEntity;
 import com.goti.stadium.dto.request.StadiumCreateRequest;
 import com.goti.stadium.dto.response.StadiumCreateResponse;
 import com.goti.global.api.ApiSuccessResponse;
@@ -11,10 +12,14 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.UUID;
 
 import static com.goti.global.api.ApiSuccessResponse.wrap;
 
@@ -47,5 +52,16 @@ public class StadiumController {
 				request.seatMapConfig()
 			)
 		);
+	}
+
+	@Operation(
+		summary = "야구 구장 조회",
+		description = "야구 구장 조회 API"
+	)
+	@GetMapping("/{stadiumId}")
+	public ResponseEntity<ApiSuccessResponse<StadiumEntity>> get(
+		@PathVariable UUID stadiumId
+	) {
+		return wrap(stadiumService.getById(stadiumId));
 	}
 }

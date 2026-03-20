@@ -1,5 +1,6 @@
 package com.goti.ticketing.game.api.game;
 
+import com.github.tomakehurst.wiremock.client.WireMock;
 import com.goti.ticketing.GotiTicketingApplication;
 import com.goti.ticketing.constants.LeagueType;
 import com.goti.stadium.constants.TeamCode;
@@ -26,11 +27,14 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Map;
 
+import org.springframework.cloud.contract.wiremock.AutoConfigureWireMock;
+
+import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+
 
 @Slf4j
 @SpringBootTest(classes = GotiTicketingApplication.class)
@@ -38,29 +42,52 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 @DisplayName("야구 게임 일정 조회 - GET /api/v1/games/schedules")
+@AutoConfigureWireMock(port = 8080)
 public class GameSchedulesSearchApiTest {
 
 	@Autowired
-	private MockMvc mockMvc;
+	MockMvc mockMvc;
 
 	@Autowired
-	private GameManagementService gameManagementService;
+	GameManagementService gameManagementService;
 
 	@Autowired
-	private BaseballTeamRepository baseballTeamRepository;
+	BaseballTeamRepository baseballTeamRepository;
 
 	@Autowired
-	private StadiumRepository stadiumRepository;
+	StadiumRepository stadiumRepository;
 
-	private BaseballTeamEntity kia;
-	private BaseballTeamEntity samsung;
-	private StadiumEntity stadium;
+	BaseballTeamEntity kia;
+	BaseballTeamEntity samsung;
+	StadiumEntity stadium;
+
+	private static final String BASEBALL_GET_API_URI = "/api/v1/baseball-teams/";
+	private static final String STADIUM_GET_API_URI = "/api/v1/stadiums/";
 
 	@BeforeEach
 	void setup() {
-		saveSamsung();
+
 		saveKia();
+		saveSamsung();
 		saveStadium();
+
+		stubFor(
+			WireMock.get(
+				urlEqualTo(BASEBALL_GET_API_URI + kia.getId())
+			).willReturn(aResponse().withStatus(200))
+		);
+
+		stubFor(
+			WireMock.get(
+				urlEqualTo(BASEBALL_GET_API_URI + samsung.getId())
+			).willReturn(aResponse().withStatus(200))
+		);
+
+		stubFor(
+			WireMock.get(
+				urlEqualTo(STADIUM_GET_API_URI + stadium.getId())
+			).willReturn(aResponse().withStatus(200))
+		);
 
 		gameManagementService.register(
 			kia.getId(), samsung.getId(), stadium.getId(),

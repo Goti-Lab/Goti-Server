@@ -34,11 +34,14 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.cloud.contract.wiremock.AutoConfigureWireMock;
+
+import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
 @Slf4j
 @SpringBootTest(classes = GotiTicketingApplication.class)
@@ -46,6 +49,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 @DisplayName("야구 경기 등록 - POST /api/v1/games")
+@AutoConfigureWireMock(port = 8080)
 public class GameRegistrationTest {
 
 	@Autowired
@@ -69,12 +73,32 @@ public class GameRegistrationTest {
 	private static final LeagueType LEAGUE_TYPE = LeagueType.REGULAR;
 	private static final int TICKETING_START_HOUR = 11;
 
+	private static final String BASEBALL_GET_API_URI = "/api/v1/baseball-teams/";
+	private static final String STADIUM_GET_API_URI = "/api/v1/stadiums/";
+
 	@BeforeEach
 	void setup() {
 		saveAwayTeam();
 		saveHomeTeam();
 		saveStadium();
 
+		stubFor(
+			get(
+				urlEqualTo(BASEBALL_GET_API_URI + homeTeam.getId())
+			).willReturn(aResponse().withStatus(200))
+		);
+
+		stubFor(
+			get(
+				urlEqualTo(BASEBALL_GET_API_URI + awayTeam.getId())
+			).willReturn(aResponse().withStatus(200))
+		);
+
+		stubFor(
+			get(
+				urlEqualTo(STADIUM_GET_API_URI + stadium.getId())
+			).willReturn(aResponse().withStatus(200))
+		);
 	}
 
 
