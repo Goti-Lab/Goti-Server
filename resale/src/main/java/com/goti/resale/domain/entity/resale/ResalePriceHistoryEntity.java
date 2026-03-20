@@ -2,6 +2,7 @@ package com.goti.resale.domain.entity.resale;
 
 import static lombok.AccessLevel.*;
 
+import java.math.BigDecimal;
 import java.util.UUID;
 
 import com.goti.domain.base.ModificationTimestampEntity;
@@ -42,18 +43,22 @@ public class ResalePriceHistoryEntity extends ModificationTimestampEntity {
 	@Column(nullable = false)
 	private Integer transactionPrice;
 
+	private BigDecimal changePercent;
+
 	private ResalePriceHistoryEntity(
 		UUID gameId,
 		UUID seatId,
 		UUID sectionId,
 		UUID gradeId,
-		Integer transactionPrice
+		Integer transactionPrice,
+		BigDecimal changePercent
 	) {
 		this.gameId = gameId;
 		this.seatId = seatId;
 		this.sectionId = sectionId;
 		this.gradeId = gradeId;
 		this.transactionPrice = transactionPrice;
+		this.changePercent = changePercent;
 	}
 
 	public static ResalePriceHistoryEntity create(
@@ -61,7 +66,8 @@ public class ResalePriceHistoryEntity extends ModificationTimestampEntity {
 		UUID seatId,
 		UUID sectionId,
 		UUID gradeId,
-		Integer transactionPrice
+		Integer transactionPrice,
+		BigDecimal changePercent
 	) {
 		validate(gameId, seatId, sectionId, gradeId, transactionPrice);
 
@@ -70,7 +76,8 @@ public class ResalePriceHistoryEntity extends ModificationTimestampEntity {
 			seatId,
 			sectionId,
 			gradeId,
-			transactionPrice
+			transactionPrice,
+			changePercent
 		);
 	}
 
