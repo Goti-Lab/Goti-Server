@@ -64,3 +64,8 @@ seat:
     enabled: true
     fixed-delay-ms: 1000
     batch-size: 200
+
+infra:
+  api:
+    endpoints:
+      stadium: ${STADIUM_API_URL:http://localhost:8080}
