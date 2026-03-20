@@ -7,7 +7,7 @@ import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.goti.payment.constants.PaymentMethod;
+import com.goti.payment.constants.EscrowStatus;
 import com.goti.payment.constants.PaymentStatus;
 import com.goti.payment.domain.entity.payment.EscrowAccountEntity;
 import com.goti.payment.dto.request.ResalePaymentRequest;
@@ -16,12 +16,15 @@ import com.goti.payment.repository.EscrowAccountRepository;
 import com.goti.payment.service.domain.PaymentService;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ResaleOrderPaymentService {
 	private final PaymentOrderGateway paymentOrderGateway;
 	private final PaymentService paymentService;
+	private final ResaleEscrowService escrowService;
 	private final PaymentLedgerService paymentLedgerService;
 	private final EscrowAccountRepository escrowAccountRepository;
 
@@ -30,7 +33,7 @@ public class ResaleOrderPaymentService {
 		PaymentResponse payment = paymentService.create(
 			request.orderId(),
 			request.buyerId(),
-			PaymentMethod.valueOf(request.paymentMethod()),
+			request.paymentMethod(),
 			request.idempotencyKey(),
 			request.totalAmount()
 		);
@@ -55,6 +58,11 @@ public class ResaleOrderPaymentService {
 							item.settlementAmount()
 						))
 				.toList();
+
+			for (EscrowAccountEntity escrow : escrows) {
+				escrowService.createEscrow(escrow);
+			}
+
 			escrowAccountRepository.saveAll(escrows);
 
 			paymentOrderGateway.confirmResalePayment(
@@ -74,12 +82,20 @@ public class ResaleOrderPaymentService {
 
 		List<EscrowAccountEntity> escrows = escrowAccountRepository.findAllByTransactionIdIn(transactionIds);
 
-		for (EscrowAccountEntity escrow : escrows) {
-			LocalDateTime releaseTime = LocalDateTime.now();
-			escrow.release(releaseTime);
-			// TODO: 실제 정산 시 은행/PG API 호출 로직 추가
+		List<EscrowAccountEntity> holdingEscrows = escrows.stream()
+			.filter(escrow -> escrow.getEscrowStatus() == EscrowStatus.HOLDING)
+			.toList();
+
+		if (holdingEscrows.isEmpty()) {
+			return;
 		}
 
-		escrowAccountRepository.saveAll(escrows);
+		for (EscrowAccountEntity escrow : holdingEscrows) {
+			LocalDateTime releaseTime = LocalDateTime.now();
+			escrow.settle(releaseTime);
+		}
+
+		escrowService.processSettlement(orderId, holdingEscrows);
+		escrowAccountRepository.saveAll(holdingEscrows);
 	}
 }
