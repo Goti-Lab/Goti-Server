@@ -26,6 +26,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
+import java.security.interfaces.RSAPublicKey;
 import java.time.Duration;
 import java.util.Date;
 import java.util.UUID;
@@ -46,53 +47,65 @@ public class JwtTokenProvider {
 	private static final String PROVIDER_EMAIL_KEY = "provider_email";
 	static final String SOCIAL_VERIFY_SUBJECT = "social_verify";
 
+	static final String ISSUER = "goti-user-service";
+
 	public String create(UUID id, String mobile, UserRole role, TokenType tokenType) {
 		Date issuedAt = new Date();
 		Duration validTime = tokenType == TokenType.ACCESS ?
 			jwtProperties.accessValidTime() : jwtProperties.refreshValidTime();
 		Date expireAt = new Date(issuedAt.getTime() + validTime.toMillis());
 		String jwtId = createJwtId();
-		return Jwts.builder()
+
+		var builder = Jwts.builder()
 			.subject(id.toString())
 			.id(jwtId)
+			.issuer(ISSUER)
 			.claim(ROLE_CLAIM_KEY, role.name())
 			.claim(MOBILE_CLAIM_KEY, mobile)
 			.issuedAt(issuedAt)
-			.expiration(expireAt)
-			.signWith(jwtProperties.secretKey())
-			.compact();
+			.expiration(expireAt);
+
+		if (jwtProperties.hasRsaKeys()) {
+			builder.signWith(jwtProperties.rsaPrivateKeyParsed());
+		} else {
+			builder.signWith(jwtProperties.secretKey());
+		}
+
+		return builder.compact();
 	}
 
 	public String createSocialVerifyToken(OAuthProvider provider, String providerId, String email) {
 		Date issuedAt = new Date();
 		Date expireAt = new Date(issuedAt.getTime() + Duration.ofMinutes(10).toMillis());
 		String jwtId = createJwtId();
-		return Jwts.builder()
+
+		var builder = Jwts.builder()
 			.subject(SOCIAL_VERIFY_SUBJECT)
 			.id(jwtId)
+			.issuer(ISSUER)
 			.claim(PROVIDER_EMAIL_KEY, email)
 			.claim(PROVIDER_TYPE_KEY, provider)
 			.claim(PROVIDER_ID_KEY, providerId)
 			.issuedAt(issuedAt)
-			.expiration(expireAt)
-			.signWith(jwtProperties.secretKey())
-			.compact();
+			.expiration(expireAt);
+
+		if (jwtProperties.hasRsaKeys()) {
+			builder.signWith(jwtProperties.rsaPrivateKeyParsed());
+		} else {
+			builder.signWith(jwtProperties.secretKey());
+		}
+
+		return builder.compact();
 	}
 
 	public void validateToken(String token) throws JwtException {
-		Jws<Claims> claims = Jwts.parser()
-			.verifyWith(jwtProperties.secretKey())
-			.build().parseSignedClaims(token);
+		Jws<Claims> claims = parseClaimsDualVerify(token);
 		log.info("ExpiredAt :: {}", claims.getPayload().getExpiration());
 	}
 
 	public Claims getSocialVerifyClaims(String token) {
 		try {
-			Claims claims = Jwts.parser()
-				.verifyWith(jwtProperties.secretKey())
-				.build()
-				.parseSignedClaims(token)
-				.getPayload();
+			Claims claims = parseClaimsDualVerify(token).getPayload();
 			if (!SOCIAL_VERIFY_SUBJECT.equals(claims.getSubject())) {
 				throw new CustomException(ErrorCode.AUTH_INVALID);
 			}
@@ -124,17 +137,47 @@ public class JwtTokenProvider {
 		return getClaims(token).getId();
 	}
 
+	/**
+	 * JWKS 엔드포인트용 RSA public key 반환.
+	 */
+	public RSAPublicKey getRsaPublicKey() {
+		if (!jwtProperties.hasRsaKeys()) {
+			return null;
+		}
+		return jwtProperties.rsaPublicKeyParsed();
+	}
+
 	private Claims getClaims(String token) {
+		return parseClaimsDualVerify(token).getPayload();
+	}
+
+	/**
+	 * RS256 우선 검증, 실패 시 HS512 fallback (전환기 호환).
+	 * RSA 키가 설정되지 않은 경우 HS512만 사용.
+	 */
+	private Jws<Claims> parseClaimsDualVerify(String token) {
+		if (jwtProperties.hasRsaKeys()) {
+			try {
+				return Jwts.parser()
+					.verifyWith(jwtProperties.rsaPublicKeyParsed())
+					.build()
+					.parseSignedClaims(token);
+			} catch (JwtException e) {
+				// RS256 실패 → HS512 fallback (기존 토큰 호환)
+				log.debug("RS256 검증 실패, HS512 fallback 시도");
+				return Jwts.parser()
+					.verifyWith(jwtProperties.secretKey())
+					.build()
+					.parseSignedClaims(token);
+			}
+		}
 		return Jwts.parser()
 			.verifyWith(jwtProperties.secretKey())
 			.build()
-			.parseSignedClaims(token)
-			.getPayload();
+			.parseSignedClaims(token);
 	}
 
 	private String createJwtId() {
 		return UUID.randomUUID().toString();
 	}
-
-
 }

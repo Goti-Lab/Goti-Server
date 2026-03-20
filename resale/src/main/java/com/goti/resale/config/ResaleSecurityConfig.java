@@ -1,5 +1,7 @@
 package com.goti.resale.config;
 
+import com.goti.security.MeshAuthenticationFilter;
+
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -8,6 +10,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 @EnableWebSecurity
@@ -27,7 +30,11 @@ public class ResaleSecurityConfig {
 					"/v3/api-docs/**"
 				).permitAll()
 				.requestMatchers("/api/v1/resales/histories/**").permitAll()
-				.anyRequest().permitAll() // TODO: JWT 인증 도입 시 listings/holds/orders → authenticated()
+				.anyRequest().authenticated()
+			)
+			.addFilterBefore(
+				new MeshAuthenticationFilter(),
+				UsernamePasswordAuthenticationFilter.class
 			);
 
 		return http.build();

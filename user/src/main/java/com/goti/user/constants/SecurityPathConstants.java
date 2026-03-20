@@ -18,6 +18,7 @@ public final class SecurityPathConstants {
 		"/actuator/**",
 		"/swagger-ui/**",
 		"/v3/api-docs/**",
+		"/.well-known/**",
 	};
 
 	public static final String[] MEMBER_URLS = {

@@ -1,5 +1,7 @@
 package com.goti.stadium.config;
 
+import com.goti.security.MeshAuthenticationFilter;
+
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -8,6 +10,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 @EnableWebSecurity
@@ -28,7 +31,11 @@ public class StadiumSecurityConfig {
 				).permitAll()
 				.requestMatchers("/api/v1/stadiums/**").permitAll()
 				.requestMatchers("/api/v1/baseball-teams/**").permitAll()
-				.anyRequest().permitAll() // TODO: JWT 인증 도입 시 authenticated()로 변경
+				.anyRequest().authenticated()
+			)
+			.addFilterBefore(
+				new MeshAuthenticationFilter(),
+				UsernamePasswordAuthenticationFilter.class
 			);
 
 		return http.build();
