@@ -3,10 +3,11 @@ package com.goti.ticketing.seat.service.domain;
 import java.util.List;
 import java.util.UUID;
 
-import com.goti.ticketing.seat.dto.response.SeatGradeResponse;
+import com.goti.ticketing.seat.dto.response.SeatGradeRegisterResponse;
+import com.goti.ticketing.seat.dto.response.SeatGradeSearchResponse;
 
 public interface SeatGradeService {
-	SeatGradeResponse create(UUID stadiumId, String name, String displayColorHex);
+	SeatGradeRegisterResponse create(UUID stadiumId, String name, String displayColorHex);
 
-	List<SeatGradeResponse> get(UUID stadiumId, UUID userId);
+	List<SeatGradeSearchResponse> get(UUID stadiumId, UUID gameId, UUID userId);
 }

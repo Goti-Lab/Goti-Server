@@ -12,11 +12,17 @@ import com.goti.infra.api.dto.response.common.SocialStateResponse;
 
 import com.goti.user.service.auth.application.SocialAuthService;
 
+import com.goti.user.util.CookieProvider;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
+import org.springframework.data.util.Pair;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -34,6 +40,7 @@ import static com.goti.global.api.ApiSuccessResponse.*;
 public class AuthController {
 
 	private final SocialAuthService socialAuthService;
+	private final CookieProvider cookieProvider;
 
 	@Operation(
 		summary = "소셜 인증 State 발급",
@@ -68,11 +75,19 @@ public class AuthController {
 	)
 	@PostMapping("/login")
 	public ResponseEntity<ApiSuccessResponse<TokenResponse>> login(
-		@RequestBody @Valid LoginRequest request
+		@RequestBody @Valid LoginRequest request, HttpServletResponse response
 	) {
-		String accessToken = socialAuthService.login(
+
+		Pair<String, String> tokens = socialAuthService.login(
 			request.socialVerifyToken()
-		).getFirst();
+		);
+
+		String accessToken = tokens.getFirst();
+		String refreshToken = tokens.getSecond();
+
+		ResponseCookie cookie = cookieProvider.createRefreshTokenCookie(refreshToken);
+		response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+
 		return wrap(new TokenResponse(accessToken));
 	}
 
@@ -82,17 +97,20 @@ public class AuthController {
 	)
 	@PostMapping("/signup")
 	public ResponseEntity<ApiSuccessResponse<TokenResponse>> signup(
-		@RequestBody @Valid SignupRequest request
+		@RequestBody @Valid SignupRequest request, HttpServletResponse response
 	) {
-		String accessToken = socialAuthService.signup(
+		Pair<String, String> tokens = socialAuthService.signup(
 			request.socialVerifyToken(),
 			request.name(),
 			request.mobile(),
 			request.gender(),
 			request.birthDate(),
 			request.authCode()
-		).getFirst();
-
+		);
+		String accessToken = tokens.getFirst();
+		String refreshToken = tokens.getSecond();
+		ResponseCookie cookie = cookieProvider.createRefreshTokenCookie(refreshToken);
+		response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
 		return wrap(new TokenResponse(accessToken));
 	}
 

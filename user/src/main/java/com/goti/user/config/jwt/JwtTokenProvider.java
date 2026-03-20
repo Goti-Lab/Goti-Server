@@ -3,6 +3,7 @@ package com.goti.user.config.jwt;
 import com.goti.user.config.properties.JwtProperties;
 
 import com.goti.constants.OAuthProvider;
+import com.goti.user.constants.TokenType;
 import com.goti.user.constants.UserRole;
 
 import com.goti.constants.messages.ErrorCode;
@@ -45,10 +46,12 @@ public class JwtTokenProvider {
 	private static final String PROVIDER_EMAIL_KEY = "provider_email";
 	static final String SOCIAL_VERIFY_SUBJECT = "social_verify";
 
-	public String create(UUID id, String mobile, UserRole role) {
+	public String create(UUID id, String mobile, UserRole role, TokenType tokenType) {
 		Date issuedAt = new Date();
-		Date expireAt = new Date(issuedAt.getTime() + jwtProperties.accessValidTime().toMillis());
-		String jwtId = getJwtId();
+		Duration validTime = tokenType == TokenType.ACCESS ?
+			jwtProperties.accessValidTime() : jwtProperties.refreshValidTime();
+		Date expireAt = new Date(issuedAt.getTime() + validTime.toMillis());
+		String jwtId = createJwtId();
 		return Jwts.builder()
 			.subject(id.toString())
 			.id(jwtId)
@@ -63,7 +66,7 @@ public class JwtTokenProvider {
 	public String createSocialVerifyToken(OAuthProvider provider, String providerId, String email) {
 		Date issuedAt = new Date();
 		Date expireAt = new Date(issuedAt.getTime() + Duration.ofMinutes(10).toMillis());
-		String jwtId = getJwtId();
+		String jwtId = createJwtId();
 		return Jwts.builder()
 			.subject(SOCIAL_VERIFY_SUBJECT)
 			.id(jwtId)
@@ -117,6 +120,10 @@ public class JwtTokenProvider {
 		);
 	}
 
+	public String extractJti(String token) {
+		return getClaims(token).getId();
+	}
+
 	private Claims getClaims(String token) {
 		return Jwts.parser()
 			.verifyWith(jwtProperties.secretKey())
@@ -125,7 +132,9 @@ public class JwtTokenProvider {
 			.getPayload();
 	}
 
-	private String getJwtId() {
+	private String createJwtId() {
 		return UUID.randomUUID().toString();
 	}
+
+
 }

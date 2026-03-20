@@ -23,7 +23,7 @@ import lombok.RequiredArgsConstructor;
 @Tag(name = "Game Seat Status", description = "경기별 좌석 상태 API")
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/games")
+@RequestMapping("/api/v1/game-seats")
 public class GameSeatStatusController {
 	private final SeatStatusService seatStatusService;
 

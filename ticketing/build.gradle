@@ -1,3 +1,7 @@
+ext {
+    set('springCloudVersion', "2023.0.3")
+}
+
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
@@ -23,6 +27,7 @@ dependencies {
     runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.13.0'
     runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.13.0'
 
+    testImplementation 'org.springframework.cloud:spring-cloud-contract-wiremock'
 
     implementation project(':common')
     implementation project(':integration')
@@ -30,4 +35,10 @@ dependencies {
 
     // TODO: MSA 분리 시 테스트용 Security 설정을 각 모듈에 별도로 두고 제거
     testImplementation project(':user')
+}
+
+dependencyManagement {
+    imports {
+        mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
+    }
 }

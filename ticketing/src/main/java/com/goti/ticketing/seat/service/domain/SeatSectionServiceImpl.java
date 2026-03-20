@@ -3,6 +3,8 @@ package com.goti.ticketing.seat.service.domain;
 import java.util.List;
 import java.util.UUID;
 
+import com.goti.ticketing.seat.dto.response.SeatSectionResponse;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -11,7 +13,6 @@ import com.goti.ticketing.domain.entity.seat.SeatGradeEntity;
 import com.goti.ticketing.domain.entity.seat.SeatSectionEntity;
 import com.goti.exception.CustomException;
 import com.goti.global.validation.Preconditions;
-import com.goti.ticketing.seat.dto.response.SeatSectionResponse;
 import com.goti.ticketing.seat.repository.SeatGradeRepository;
 import com.goti.ticketing.seat.repository.SeatSectionRepository;
 

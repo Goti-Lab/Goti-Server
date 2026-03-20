@@ -1,5 +1,7 @@
 package com.goti.user.config.security;
 
+import static com.goti.user.constants.SecurityPathConstants.*;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -29,25 +31,6 @@ public class SecurityConfig {
 	private final JwtAuthenticationEntryPoint entryPoint;
 	private final JwtAccessDeniedHandler accessDeniedHandler;
 
-	public static final String[] PERMIT_PUBLIC_PATH = {
-		"/api/v1/auth/**",
-		"/api/v1/stadiums/**",
-		"/api/v1/games/**",
-		"/api/v1/resales/histories/**",
-		"/api/v1/baseball-teams/**",
-		"/actuator/**",
-		"/swagger-ui/**",
-		"/v3/api-docs/**",
-		"/api/v1/payments/resales/**"
-	};
-
-	public static final String[] PERMIT_MEMBER_PATH = {
-		"/api/v1/resales/listings/**",
-		"/api/v1/resales/holds/**",
-		"/api/v1/resales/orders/**",
-		"/api/v1/orders/**"
-	};
-
 	@Bean
 	public PasswordEncoder passwordEncoder() {
 		return new BCryptPasswordEncoder();
@@ -70,8 +53,8 @@ public class SecurityConfig {
 					.accessDeniedHandler(accessDeniedHandler)
 			).authorizeHttpRequests(
 				auth -> auth
-					.requestMatchers(PERMIT_PUBLIC_PATH).permitAll()
-					.requestMatchers(PERMIT_MEMBER_PATH).hasRole("MEMBER")
+					.requestMatchers(PUBLIC_URLS).permitAll()
+					.requestMatchers(MEMBER_URLS).hasRole("MEMBER")
 					.anyRequest().authenticated()
 			).addFilterBefore(
 				jwtAuthenticationFilter,

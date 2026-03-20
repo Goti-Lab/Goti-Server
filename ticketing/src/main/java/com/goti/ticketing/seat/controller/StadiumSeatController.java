@@ -5,9 +5,7 @@ import static com.goti.global.api.ApiSuccessResponse.*;
 import java.util.List;
 import java.util.UUID;
 
-import com.goti.ticketing.seat.dto.request.CreateSeatSectionRequest;
-import com.goti.ticketing.seat.dto.response.SeatSectionResponse;
-import com.goti.ticketing.seat.service.domain.SeatSectionService;
+import com.goti.ticketing.seat.dto.response.SeatGradeRegisterResponse;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -20,8 +18,11 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.goti.global.api.ApiSuccessResponse;
 import com.goti.ticketing.seat.dto.request.CreateSeatGradeRequest;
-import com.goti.ticketing.seat.dto.response.SeatGradeResponse;
+import com.goti.ticketing.seat.dto.request.CreateSeatSectionRequest;
+import com.goti.ticketing.seat.dto.response.SeatGradeSearchResponse;
+import com.goti.ticketing.seat.dto.response.SeatSectionResponse;
 import com.goti.ticketing.seat.service.domain.SeatGradeService;
+import com.goti.ticketing.seat.service.domain.SeatSectionService;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -31,7 +32,7 @@ import lombok.RequiredArgsConstructor;
 @Tag(name = "Seat Grade", description = "구장 별 좌석 등급 및 구역 API")
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/stadiums")
+@RequestMapping("/api/v1/stadium-seats")
 public class StadiumSeatController {
 	private final SeatGradeService seatGradeService;
 	private final SeatSectionService seatSectionService;
@@ -41,11 +42,11 @@ public class StadiumSeatController {
 		description = "구장별 좌석 등급 생성 API"
 	)
 	@PostMapping("/seat-grades")
-	public ResponseEntity<ApiSuccessResponse<SeatGradeResponse>> createGrade(
+	public ResponseEntity<ApiSuccessResponse<SeatGradeRegisterResponse>> createGrade(
 		@Valid @RequestBody CreateSeatGradeRequest request
 	) {
 		// TODO: 관리자용 API 분리 예정
-		SeatGradeResponse response = seatGradeService.create(
+		SeatGradeRegisterResponse response = seatGradeService.create(
 			request.stadiumId(),
 			request.name(),
 			request.displayColorHex()
@@ -57,12 +58,13 @@ public class StadiumSeatController {
 		summary = "좌석 등급 조회",
 		description = "구장별 좌석 등급 조회 API"
 	)
-	@GetMapping("/{stadiumId}/seat-grades")
-	public ResponseEntity<ApiSuccessResponse<List<SeatGradeResponse>>> getSeatGrades(
+	@GetMapping("/stadiums/{stadiumId}/games/{gameId}/seat-grades")
+	public ResponseEntity<ApiSuccessResponse<List<SeatGradeSearchResponse>>> getSeatGrades(
 		@AuthenticationPrincipal(expression = "id") UUID userId,
-		@PathVariable UUID stadiumId
+		@PathVariable UUID stadiumId,
+		@PathVariable UUID gameId
 	) {
-		return wrap(seatGradeService.get(stadiumId, userId));
+		return wrap(seatGradeService.get(stadiumId, gameId, userId));
 	}
 
 	@Operation(
@@ -87,7 +89,7 @@ public class StadiumSeatController {
 		summary = "좌석 구역 조회",
 		description = "구장별 좌석 구역 목록 조회 API"
 	)
-	@GetMapping("/{stadiumId}/seat-sections")
+	@GetMapping("/stadiums/{stadiumId}/seat-sections")
 	public ResponseEntity<ApiSuccessResponse<List<SeatSectionResponse>>> getSeatSections(
 		@AuthenticationPrincipal(expression = "id") UUID userId,
 		@PathVariable UUID stadiumId

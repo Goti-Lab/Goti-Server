@@ -25,3 +25,7 @@ spring:
     import:
       - application-integration.yml
       - optional:file:.env.test[.properties]
+infra:
+  api:
+    endpoints:
+      stadium: ${STADIUM_API_URL:http://localhost:8080}

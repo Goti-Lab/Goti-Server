@@ -4,6 +4,7 @@ import com.goti.user.config.jwt.JwtTokenProvider;
 import com.goti.constants.Gender;
 import com.goti.constants.OAuthProvider;
 import com.goti.constants.messages.ErrorCode;
+import com.goti.user.constants.TokenType;
 import com.goti.user.domain.entity.user.MemberEntity;
 import com.goti.user.dto.response.SocialVerifyResponse;
 import com.goti.exception.CustomException;
@@ -90,12 +91,10 @@ public class SocialAuthService {
 				return new CustomException(ErrorCode.MEMBER_NOT_FOUND);
 			}
 		);
-		String accessToken = jwtTokenProvider.create(
-			member.getId(),
-			member.getMobile(),
-			member.getRole()
-		);
-		return Pair.of(accessToken, "");
+		String accessToken = createToken(member, TokenType.ACCESS);
+		String refreshToken = createToken(member, TokenType.REFRESH);
+		saveRefreshTokenJti(member.getId(), refreshToken);
+		return Pair.of(accessToken, refreshToken);
 	}
 
 	public Pair<String, String> signup(
@@ -112,12 +111,10 @@ public class SocialAuthService {
 
 		createSocialProvider(member, verifiedSocialInfo);
 
-		String accessToken = jwtTokenProvider.create(
-			member.getId(),
-			member.getMobile(),
-			member.getRole()
-		);
-		return Pair.of(accessToken, "");
+		String accessToken = createToken(member, TokenType.ACCESS);
+		String refreshToken = createToken(member, TokenType.REFRESH);
+		saveRefreshTokenJti(member.getId(), refreshToken);
+		return Pair.of(accessToken, refreshToken);
 	}
 
 	public void sendSignupSmsCode(String socialVerifyToken, String mobile) {
@@ -193,6 +190,20 @@ public class SocialAuthService {
 				}
 			}
 		);
+	}
+
+	private String createToken(MemberEntity member, TokenType tokenType) {
+		return jwtTokenProvider.create(
+			member.getId(),
+			member.getMobile(),
+			member.getRole(),
+			tokenType
+		);
+	}
+
+	private void saveRefreshTokenJti(UUID memberId, String token) {
+		String refreshJti = jwtTokenProvider.extractJti(token);
+		redisCache.set(RedisKey.REFRESH_TOKEN, memberId, refreshJti);
 	}
 
 

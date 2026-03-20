@@ -12,12 +12,15 @@ import com.goti.ticketing.game.service.application.GameScheduleSearchService;
 import com.goti.stadium.repository.BaseballTeamRepository;
 import com.goti.stadium.repository.StadiumRepository;
 
+import com.goti.ticketing.infra.api.StadiumClient;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
@@ -44,6 +47,9 @@ public class GameScheduleSearchServiceTest {
 
 	@Autowired
 	StadiumRepository stadiumRepository;
+
+	@MockitoBean
+	private StadiumClient stadiumClient;
 
 	private BaseballTeamEntity kia;
 	private BaseballTeamEntity samsung;
