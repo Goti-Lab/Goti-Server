@@ -92,20 +92,8 @@ public class ResaleOrderService {
 
 	@Transactional
 	public void completeSettlement(UUID resaleOrderId) {
-		List<ResaleTransactionEntity> transactions = resaleTransactionRepository.findAllByResaleOrderId(resaleOrderId);
-
 		eventPublisher.publishEvent(new SettlementCompletedEvent(resaleOrderId));
-		log.info("리셀 정산 완료 처리 및 이벤트 발행 - 주문 ID: {}", resaleOrderId);
-
-		List<ResaleListingEntity> listings = transactions.stream()
-			.map(transaction -> {
-				ResaleListingEntity listing = transaction.getListing();
-				listing.settle();
-				return listing;
-			})
-			.collect(Collectors.toList());
-
-		resaleListingRepository.saveAll(listings);
+		log.info("리셀 정산 완료 이벤트 발행 - 주문 ID: {}", resaleOrderId);
 	}
 
 	@Transactional(readOnly = true)

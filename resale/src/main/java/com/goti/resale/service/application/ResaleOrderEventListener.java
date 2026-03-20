@@ -5,6 +5,7 @@ import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
@@ -16,6 +17,7 @@ import org.springframework.transaction.event.TransactionalEventListener;
 import com.goti.constants.messages.ErrorCode;
 import com.goti.dto.internal.ResaleOrderCreatedEvent;
 import com.goti.dto.internal.ResaleOrderPaymentCompletedEvent;
+import com.goti.dto.internal.SettlementCompletedEvent;
 import com.goti.exception.CustomException;
 import com.goti.resale.domain.entity.resale.ResaleListingEntity;
 import com.goti.resale.domain.entity.resale.ResalePriceHistoryEntity;
@@ -107,6 +109,24 @@ public class ResaleOrderEventListener {
 		for (ResaleListingEntity listing : resaleListings) {
 			transferOwnershipAsync(listing.getTicketId(), event.buyerId());
 		}
+	}
+
+	@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+	@Transactional(propagation = Propagation.REQUIRES_NEW)
+	public void handleSettlementCompleted(SettlementCompletedEvent event) {
+		log.info("정산 완료 이벤트 수신 및 처리: 주문ID {}", event.resaleOrderId());
+
+		List<ResaleTransactionEntity> transactions = transactionRepository.findAllByResaleOrderId(event.resaleOrderId());
+
+		List<ResaleListingEntity> listings = transactions.stream()
+			.map(transaction -> {
+				ResaleListingEntity listing = transaction.getListing();
+				listing.settle();
+				return listing;
+			})
+			.collect(Collectors.toList());
+
+		listingRepository.saveAll(listings);
 	}
 
 	// TODO: 티켓이 나오면 구현
