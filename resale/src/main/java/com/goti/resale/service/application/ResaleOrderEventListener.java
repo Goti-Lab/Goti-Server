@@ -1,7 +1,10 @@
 package com.goti.resale.service.application;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
@@ -10,8 +13,10 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 
+import com.goti.constants.messages.ErrorCode;
 import com.goti.dto.internal.ResaleOrderCreatedEvent;
 import com.goti.dto.internal.ResaleOrderPaymentCompletedEvent;
+import com.goti.exception.CustomException;
 import com.goti.resale.domain.entity.resale.ResaleListingEntity;
 import com.goti.resale.domain.entity.resale.ResalePriceHistoryEntity;
 import com.goti.resale.domain.entity.resale.ResaleRestrictionEntity;
@@ -62,36 +67,56 @@ public class ResaleOrderEventListener {
 
 		List<ResaleTransactionEntity> transactions = transactionRepository.findAllByResaleOrderId(event.resaleOrderId());
 
-		List<ResaleListingEntity> listingsToUpdate = new ArrayList<>();
+		List<ResaleListingEntity> resaleListings = new ArrayList<>();
 		List<ResalePriceHistoryEntity> priceHistories = new ArrayList<>();
 
 		ResaleRestrictionEntity restriction = restrictionService.getOrCreateRestriction(event.buyerId());
 
 		for (ResaleTransactionEntity transaction : transactions) {
-			ResaleListingEntity listing = transaction.getListing();
+			ResaleListingEntity resaleListing = transaction.getListing();
 
-			listing.SoldOut(transaction.getTransactionPrice());
-			listingsToUpdate.add(listing);
+			resaleListing.soldOut(transaction.getTransactionPrice());
+			resaleListings.add(resaleListing);
+
+			BigDecimal basePrice = BigDecimal.valueOf(resaleListing.getDailyBasePrice());
+			BigDecimal transactionPrice = BigDecimal.valueOf(transaction.getTransactionPrice());
+
+			BigDecimal changePercent = transactionPrice.subtract(basePrice)
+				.divide(basePrice, 2, RoundingMode.HALF_UP)
+				.multiply(BigDecimal.valueOf(100));
 
 			priceHistories.add(
 				ResalePriceHistoryEntity.create(
-					listing.getGameId(),
-					listing.getSeatId(),
-					listing.getSectionId(),
-					listing.getGradeId(),
-					transaction.getTransactionPrice()
+					resaleListing.getGameId(),
+					resaleListing.getSeatId(),
+					resaleListing.getSectionId(),
+					resaleListing.getGradeId(),
+					transaction.getTransactionPrice(),
+					changePercent
 				));
 
-			restrictionHandler.handleAfterBuy(restriction, listing.getGameId());
-
-			log.info("티켓 소유권 이전 처리 티켓ID: {}, 구매자: {}", listing.getTicketId(), event.buyerId());
-			ticketClient.transferOwnership(listing.getTicketId(), event.buyerId());
+			restrictionHandler.handleAfterBuy(restriction, resaleListing.getGameId());
 		}
 
-		listingRepository.saveAll(listingsToUpdate);
+		listingRepository.saveAll(resaleListings);
 		priceHistoryRepository.saveAll(priceHistories);
 		restrictionRepository.save(restriction);
 
 		paymentService.releaseEscrow(event.resaleOrderId());
+
+		for (ResaleListingEntity listing : resaleListings) {
+			transferOwnershipAsync(listing.getTicketId(), event.buyerId());
+		}
+	}
+
+	// TODO: 티켓이 나오면 구현
+	@Async
+	public void transferOwnershipAsync(UUID ticketId, UUID buyerId) {
+		try {
+			log.info("비동기 티켓 소유권 이전 시작 - 티켓ID: {}, 구매자: {}", ticketId, buyerId);
+			ticketClient.transferOwnership(ticketId, buyerId);
+		} catch (Exception e) {
+			throw new CustomException(ErrorCode.TRANSFER_OWNERSHIP_FAILED);
+		}
 	}
 }
