@@ -37,14 +37,14 @@ public class SecurityConfig {
 		"/api/v1/baseball-teams/**",
 		"/actuator/**",
 		"/swagger-ui/**",
-		"/v3/api-docs/**"
+		"/v3/api-docs/**",
+		"/api/v1/payments/resales/**"
 	};
 
 	public static final String[] PERMIT_MEMBER_PATH = {
 		"/api/v1/resales/listings/**",
 		"/api/v1/resales/holds/**",
 		"/api/v1/resales/orders/**",
-		"/api/v1/resales/payments/**",
 		"/api/v1/orders/**"
 	};
 
