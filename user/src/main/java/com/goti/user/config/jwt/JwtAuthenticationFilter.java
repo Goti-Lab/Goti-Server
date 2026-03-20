@@ -1,6 +1,6 @@
 package com.goti.user.config.jwt;
 
-import com.goti.user.config.security.SecurityConfig;
+import static com.goti.user.constants.SecurityPathConstants.*;
 
 import com.goti.constants.messages.ErrorCode;
 
@@ -41,7 +41,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
 		String requestURI = request.getRequestURI();
 
-		boolean isPublic = Arrays.stream(SecurityConfig.PERMIT_PUBLIC_PATH)
+		boolean isPublic = Arrays.stream(PUBLIC_URLS)
 			.anyMatch(pattern -> matches(pattern, requestURI));
 
 		if (isPublic) {
