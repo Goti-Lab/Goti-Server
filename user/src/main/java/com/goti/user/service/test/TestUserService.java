@@ -2,6 +2,8 @@ package com.goti.user.service.test;
 
 import java.time.LocalDate;
 
+import com.goti.user.constants.TokenType;
+
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -41,7 +43,7 @@ public class TestUserService {
 			));
 
 		String accessToken = jwtTokenProvider.create(
-			member.getId(), member.getMobile(), UserRole.MEMBER
+			member.getId(), member.getMobile(), UserRole.MEMBER, TokenType.ACCESS
 		);
 
 		return new TestUserResponse(
@@ -85,7 +87,7 @@ public class TestUserService {
 			.orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
 
 		String accessToken = jwtTokenProvider.create(
-			member.getId(), member.getMobile(), UserRole.MEMBER
+			member.getId(), member.getMobile(), UserRole.MEMBER, TokenType.ACCESS
 		);
 
 		return new TokenResponse(accessToken);
