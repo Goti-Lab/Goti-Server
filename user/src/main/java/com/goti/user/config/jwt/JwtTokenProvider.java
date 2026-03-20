@@ -13,19 +13,23 @@ import com.goti.user.security.ExtendedUserDetailsService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jws;
-import io.jsonwebtoken.JwtException;
+import io.jsonwebtoken.JwtParser;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.security.SignatureException;
+import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpServletRequest;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
+import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
 import java.time.Duration;
 import java.util.Date;
@@ -38,6 +42,9 @@ public class JwtTokenProvider {
 	private final JwtProperties jwtProperties;
 	private final ExtendedUserDetailsService userDetailsService;
 
+	@Value("${spring.application.name}")
+	private String applicationName;
+
 	private static final String TOKEN_PREFIX = "Bearer ";
 	private static final String ROLE_CLAIM_KEY = "role";
 	private static final String MOBILE_CLAIM_KEY = "mobile";
@@ -47,7 +54,32 @@ public class JwtTokenProvider {
 	private static final String PROVIDER_EMAIL_KEY = "provider_email";
 	static final String SOCIAL_VERIFY_SUBJECT = "social_verify";
 
-	static final String ISSUER = "goti-user-service";
+	// @PostConstruct에서 초기화 — 매 요청마다 PEM 파싱/파서 재생성 방지
+	private RSAPrivateKey rsaPrivateKey;
+	private RSAPublicKey rsaPublicKey;
+	private JwtParser rsaParser;
+	private JwtParser hmacParser;
+	private boolean rsaEnabled;
+
+	@PostConstruct
+	void initKeys() {
+		hmacParser = Jwts.parser()
+			.verifyWith(jwtProperties.secretKey())
+			.build();
+
+		if (jwtProperties.hasRsaKeys()) {
+			rsaPrivateKey = jwtProperties.rsaPrivateKeyParsed();
+			rsaPublicKey = jwtProperties.rsaPublicKeyParsed();
+			rsaParser = Jwts.parser()
+				.verifyWith(rsaPublicKey)
+				.build();
+			rsaEnabled = true;
+			log.info("JWT RS256 키 초기화 완료");
+		} else {
+			rsaEnabled = false;
+			log.info("JWT HS512 단독 모드 (RSA 키 미설정)");
+		}
+	}
 
 	public String create(UUID id, String mobile, UserRole role, TokenType tokenType) {
 		Date issuedAt = new Date();
@@ -59,14 +91,14 @@ public class JwtTokenProvider {
 		var builder = Jwts.builder()
 			.subject(id.toString())
 			.id(jwtId)
-			.issuer(ISSUER)
+			.issuer(applicationName)
 			.claim(ROLE_CLAIM_KEY, role.name())
 			.claim(MOBILE_CLAIM_KEY, mobile)
 			.issuedAt(issuedAt)
 			.expiration(expireAt);
 
-		if (jwtProperties.hasRsaKeys()) {
-			builder.signWith(jwtProperties.rsaPrivateKeyParsed());
+		if (rsaEnabled) {
+			builder.signWith(rsaPrivateKey);
 		} else {
 			builder.signWith(jwtProperties.secretKey());
 		}
@@ -82,15 +114,15 @@ public class JwtTokenProvider {
 		var builder = Jwts.builder()
 			.subject(SOCIAL_VERIFY_SUBJECT)
 			.id(jwtId)
-			.issuer(ISSUER)
+			.issuer(applicationName)
 			.claim(PROVIDER_EMAIL_KEY, email)
 			.claim(PROVIDER_TYPE_KEY, provider)
 			.claim(PROVIDER_ID_KEY, providerId)
 			.issuedAt(issuedAt)
 			.expiration(expireAt);
 
-		if (jwtProperties.hasRsaKeys()) {
-			builder.signWith(jwtProperties.rsaPrivateKeyParsed());
+		if (rsaEnabled) {
+			builder.signWith(rsaPrivateKey);
 		} else {
 			builder.signWith(jwtProperties.secretKey());
 		}
@@ -98,9 +130,9 @@ public class JwtTokenProvider {
 		return builder.compact();
 	}
 
-	public void validateToken(String token) throws JwtException {
+	public void validateToken(String token) {
 		Jws<Claims> claims = parseClaimsDualVerify(token);
-		log.info("ExpiredAt :: {}", claims.getPayload().getExpiration());
+		log.debug("ExpiredAt :: {}", claims.getPayload().getExpiration());
 	}
 
 	public Claims getSocialVerifyClaims(String token) {
@@ -141,10 +173,7 @@ public class JwtTokenProvider {
 	 * JWKS 엔드포인트용 RSA public key 반환.
 	 */
 	public RSAPublicKey getRsaPublicKey() {
-		if (!jwtProperties.hasRsaKeys()) {
-			return null;
-		}
-		return jwtProperties.rsaPublicKeyParsed();
+		return rsaPublicKey;
 	}
 
 	private Claims getClaims(String token) {
@@ -152,29 +181,21 @@ public class JwtTokenProvider {
 	}
 
 	/**
-	 * RS256 우선 검증, 실패 시 HS512 fallback (전환기 호환).
+	 * RS256 우선 검증, 서명 불일치 시에만 HS512 fallback (전환기 호환).
+	 * ExpiredJwtException 등 서명 외 오류는 fallback 없이 즉시 throw.
 	 * RSA 키가 설정되지 않은 경우 HS512만 사용.
 	 */
 	private Jws<Claims> parseClaimsDualVerify(String token) {
-		if (jwtProperties.hasRsaKeys()) {
+		if (rsaEnabled) {
 			try {
-				return Jwts.parser()
-					.verifyWith(jwtProperties.rsaPublicKeyParsed())
-					.build()
-					.parseSignedClaims(token);
-			} catch (JwtException e) {
-				// RS256 실패 → HS512 fallback (기존 토큰 호환)
-				log.debug("RS256 검증 실패, HS512 fallback 시도");
-				return Jwts.parser()
-					.verifyWith(jwtProperties.secretKey())
-					.build()
-					.parseSignedClaims(token);
+				return rsaParser.parseSignedClaims(token);
+			} catch (SignatureException e) {
+				// RS256 서명 불일치만 fallback — algorithm confusion attack 방지
+				log.warn("RS256 서명 불일치, HS512 fallback 시도");
+				return hmacParser.parseSignedClaims(token);
 			}
 		}
-		return Jwts.parser()
-			.verifyWith(jwtProperties.secretKey())
-			.build()
-			.parseSignedClaims(token);
+		return hmacParser.parseSignedClaims(token);
 	}
 
 	private String createJwtId() {
