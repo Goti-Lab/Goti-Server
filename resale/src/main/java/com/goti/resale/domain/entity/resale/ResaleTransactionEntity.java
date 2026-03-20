@@ -136,7 +136,7 @@ public class ResaleTransactionEntity extends ModificationTimestampEntity {
 	}
 
 	private static void validate(
-		String ResaleTicketNumber,
+		String resaleTicketNumber,
 		UUID buyerId,
 		UUID sellerId,
 		Integer transactionPrice,
@@ -145,7 +145,7 @@ public class ResaleTransactionEntity extends ModificationTimestampEntity {
 		Integer buyerTotal,
 		Integer sellerTotal
 	) {
-		Preconditions.domainValidate(ResaleTicketNumber != null, "리셀 티켓 번호는 비어 있을 수 없습니다.");
+		Preconditions.domainValidate(resaleTicketNumber != null, "리셀 티켓 번호는 비어 있을 수 없습니다.");
 		Preconditions.domainValidate(buyerId != null, "구매자 ID는 비어 있을 수 없습니다.");
 		Preconditions.domainValidate(sellerId != null, "판매자 ID는 비어 있을 수 없습니다.");
 		Preconditions.domainValidate(!buyerId.equals(sellerId), "구매자와 판매자는 같을 수 없습니다.");

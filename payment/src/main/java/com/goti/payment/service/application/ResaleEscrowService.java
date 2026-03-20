@@ -8,6 +8,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.goti.payment.constants.EscrowStatus;
 import com.goti.payment.domain.entity.payment.EscrowAccountEntity;
 import com.goti.payment.dto.internal.SettlementCompletedEvent;
 import com.goti.payment.infra.MockResaleEscrowClient;
@@ -36,12 +37,20 @@ public class ResaleEscrowService {
 	// 에스크로 정산 및 이벤트 발행
 	@Transactional
 	public void processSettlement(UUID orderId, List<EscrowAccountEntity> escrows) {
+		List<EscrowAccountEntity> holdingEscrows = escrows.stream()
+			.filter(escrow -> escrow.getEscrowStatus() == EscrowStatus.HOLDING)
+			.toList();
 
-		for (EscrowAccountEntity escrow : escrows) {
+		if (holdingEscrows.isEmpty()) {
+			return;
+		}
+
+		LocalDateTime releaseTime = LocalDateTime.now();
+
+		for (EscrowAccountEntity escrow : holdingEscrows) {
 			if (escrow.getExternalEscrowId() != null) {
 				escrowClient.requestSettlement(escrow.getExternalEscrowId());
 			}
-			LocalDateTime releaseTime = LocalDateTime.now();
 			escrow.settle(releaseTime);
 		}
 

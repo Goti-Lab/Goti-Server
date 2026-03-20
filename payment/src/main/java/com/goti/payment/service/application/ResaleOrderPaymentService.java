@@ -1,13 +1,11 @@
 package com.goti.payment.service.application;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.goti.payment.constants.EscrowStatus;
 import com.goti.payment.constants.PaymentStatus;
 import com.goti.payment.domain.entity.payment.EscrowAccountEntity;
 import com.goti.payment.dto.request.ResalePaymentRequest;
@@ -82,20 +80,7 @@ public class ResaleOrderPaymentService {
 
 		List<EscrowAccountEntity> escrows = escrowAccountRepository.findAllByTransactionIdIn(transactionIds);
 
-		List<EscrowAccountEntity> holdingEscrows = escrows.stream()
-			.filter(escrow -> escrow.getEscrowStatus() == EscrowStatus.HOLDING)
-			.toList();
-
-		if (holdingEscrows.isEmpty()) {
-			return;
-		}
-
-		for (EscrowAccountEntity escrow : holdingEscrows) {
-			LocalDateTime releaseTime = LocalDateTime.now();
-			escrow.settle(releaseTime);
-		}
-
-		escrowService.processSettlement(orderId, holdingEscrows);
-		escrowAccountRepository.saveAll(holdingEscrows);
+		escrowService.processSettlement(orderId, escrows);
+		escrowAccountRepository.saveAll(escrows);
 	}
 }
