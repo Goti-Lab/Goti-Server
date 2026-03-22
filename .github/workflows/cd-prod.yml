@@ -120,8 +120,11 @@ jobs:
           ref: main
 
       # [CR-003] sed 대신 yq로 YAML-aware 수정
+      # [CR-010] Go yq (mikefarah) 사용 — pip yq(Python)와 문법 다름
       - name: Install yq
-        run: pip install yq --break-system-packages
+        run: |
+          wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
+          chmod +x /usr/local/bin/yq
 
       - name: Update prod image tags
         run: |
@@ -162,4 +165,3 @@ jobs:
           base: main
           labels: chore,prod
 
-# [CR-006] 파일 끝 newline
