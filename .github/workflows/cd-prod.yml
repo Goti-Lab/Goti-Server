@@ -99,6 +99,10 @@ jobs:
 
       - name: Build and push ${{ matrix.service }}
         uses: docker/build-push-action@v6
+        env:
+          # GHA 캐시 토큰을 Harbor oauth endpoint가 가로채는 문제 방지
+          ACTIONS_CACHE_URL: ${{ env.ACTIONS_CACHE_URL }}
+          ACTIONS_RUNTIME_TOKEN: ${{ env.ACTIONS_RUNTIME_TOKEN }}
         with:
           context: .
           push: true
@@ -165,3 +169,4 @@ jobs:
           base: main
           labels: chore,prod
 
+# [CR-006] 파일 끝 newline
