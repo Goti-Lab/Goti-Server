@@ -104,11 +104,11 @@ public class ResaleOrderEventListener {
 		priceHistoryRepository.saveAll(priceHistories);
 		restrictionRepository.save(restriction);
 
-		paymentService.releaseEscrow(event.resaleOrderId());
-
 		for (ResaleListingEntity listing : resaleListings) {
 			transferOwnershipAsync(listing.getTicketId(), event.buyerId());
 		}
+
+		paymentService.releaseEscrow(event.resaleOrderId());
 	}
 
 	@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
