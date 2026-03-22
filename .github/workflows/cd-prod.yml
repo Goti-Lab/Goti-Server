@@ -1,4 +1,4 @@
-name: CICD (prod)
+name: CD (prod)
 
 on:
   push:
@@ -30,19 +30,24 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 2
+          fetch-depth: 0  # [CR-007] squash merge 등 대응을 위해 full history
 
       - name: Detect changed services
         id: set-matrix
+        # [CR-001] workflow_dispatch 입력값을 환경변수로 전달해 script injection 방지
+        env:
+          INPUT_SERVICES: ${{ github.event.inputs.services }}
+          BEFORE_SHA: ${{ github.event.before }}
+          CURRENT_SHA: ${{ github.sha }}
         run: |
           SERVICES="user stadium ticketing payment resale"
 
-          # workflow_dispatch에서 수동 지정한 경우
-          if [ -n "${{ github.event.inputs.services }}" ]; then
-            INPUT="${{ github.event.inputs.services }}"
-            TARGETS=$(echo "$INPUT" | tr ',' '\n' | xargs)
+          if [ -n "$INPUT_SERVICES" ]; then
+            # workflow_dispatch 수동 지정
+            TARGETS=$(echo "$INPUT_SERVICES" | tr ',' '\n' | xargs)
           else
-            CHANGED=$(git diff --name-only HEAD~1 HEAD)
+            # [CR-004] merge commit 대응: event.before → sha 범위로 diff
+            CHANGED=$(git diff --name-only "$BEFORE_SHA" "$CURRENT_SHA")
             TARGETS=""
             for svc in $SERVICES; do
               if echo "$CHANGED" | grep -q "^${svc}/"; then
@@ -72,8 +77,7 @@ jobs:
     strategy:
       matrix: ${{ fromJson(needs.detect-changes.outputs.matrix) }}
       fail-fast: false
-    outputs:
-      image_tag: ${{ steps.image.outputs.tag }}
+    # [CR-002] image_tag output 제거 — update-k8s에서 직접 재계산하므로 dead code였음
     steps:
       - uses: actions/checkout@v4
 
@@ -115,6 +119,10 @@ jobs:
           token: ${{ secrets.GH_PAT }}
           ref: main
 
+      # [CR-003] sed 대신 yq로 YAML-aware 수정
+      - name: Install yq
+        run: pip install yq --break-system-packages
+
       - name: Update prod image tags
         run: |
           IMAGE_TAG="prod-${GITHUB_RUN_NUMBER}-${GITHUB_SHA::7}"
@@ -123,22 +131,27 @@ jobs:
           for svc in $SERVICES; do
             FILE="environments/prod/goti-${svc}/values.yaml"
             NEW_REPO="${{ env.HARBOR_REGISTRY }}/${{ env.HARBOR_PROJECT }}/goti-${svc}"
-            sed -i "s|repository: \".*\"|repository: \"${NEW_REPO}\"|" "$FILE"
-            sed -i "s|tag: \".*\"|tag: \"${IMAGE_TAG}\"|" "$FILE"
-            sed -i "s|name: ecr-creds|name: harbor-creds|" "$FILE"
+            yq -i ".image.repository = \"${NEW_REPO}\"" "$FILE"
+            yq -i ".image.tag = \"${IMAGE_TAG}\"" "$FILE"
+            yq -i ".imagePullSecrets[0].name = \"harbor-creds\"" "$FILE"
             echo "Updated ${FILE} → ${NEW_REPO}:${IMAGE_TAG}"
           done
+
+      # [CR-005] 브랜치명 / 커밋 메시지 / 타이틀에 short SHA(7자)만 사용
+      - name: Set short SHA
+        id: short_sha
+        run: echo "value=${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
 
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v7
         with:
           token: ${{ secrets.GH_PAT }}
-          branch: chore/prod-image-prod-${{ github.run_number }}-${{ github.sha }}
-          commit-message: "[CHORE] prod 이미지 태그 업데이트: prod-${{ github.run_number }}-${{ github.sha }}"
-          title: "[CHORE] prod 이미지 태그 업데이트: prod-${{ github.run_number }}-${{ github.sha }}"
+          branch: chore/prod-image-${{ github.run_number }}-${{ steps.short_sha.outputs.value }}
+          commit-message: "[CHORE] prod 이미지 태그 업데이트: prod-${{ github.run_number }}-${{ steps.short_sha.outputs.value }}"
+          title: "[CHORE] prod 이미지 태그 업데이트: prod-${{ github.run_number }}-${{ steps.short_sha.outputs.value }}"
           body: |
             ## 변경 사항
-            - 이미지 태그: `prod-${{ github.run_number }}-${{ github.sha }}`
+            - 이미지 태그: `prod-${{ github.run_number }}-${{ steps.short_sha.outputs.value }}`
             - 레지스트리: `${{ env.HARBOR_REGISTRY }}/${{ env.HARBOR_PROJECT }}/`
             - 업데이트된 서비스: `${{ needs.detect-changes.outputs.matrix }}`
 
@@ -148,3 +161,5 @@ jobs:
             - 워크플로우: [#${{ github.run_number }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
           base: main
           labels: chore,prod
+
+# [CR-006] 파일 끝 newline
