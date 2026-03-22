@@ -99,17 +99,14 @@ jobs:
 
       - name: Build and push ${{ matrix.service }}
         uses: docker/build-push-action@v6
-        env:
-          # GHA 캐시 토큰을 Harbor oauth endpoint가 가로채는 문제 방지
-          ACTIONS_CACHE_URL: ${{ env.ACTIONS_CACHE_URL }}
-          ACTIONS_RUNTIME_TOKEN: ${{ env.ACTIONS_RUNTIME_TOKEN }}
         with:
           context: .
           push: true
           build-args: MODULE=${{ matrix.service }}
           tags: ${{ env.HARBOR_REGISTRY }}/${{ env.HARBOR_PROJECT }}/goti-${{ matrix.service }}:${{ steps.image.outputs.tag }}
-          cache-from: type=gha,scope=${{ matrix.service }}
-          cache-to: type=gha,scope=${{ matrix.service }},mode=max
+          # type=gha는 Harbor /service/token과 충돌 → Harbor registry 캐시로 전환
+          cache-from: type=registry,ref=${{ env.HARBOR_REGISTRY }}/${{ env.HARBOR_PROJECT }}/goti-${{ matrix.service }}:cache
+          cache-to: type=registry,ref=${{ env.HARBOR_REGISTRY }}/${{ env.HARBOR_PROJECT }}/goti-${{ matrix.service }}:cache,mode=max,image-manifest=true,oci-mediatypes=true
 
   update-k8s:
     runs-on: ubuntu-latest
