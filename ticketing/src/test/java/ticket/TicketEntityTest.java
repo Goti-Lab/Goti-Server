@@ -47,7 +47,7 @@ class TicketEntityTest {
 		SeatGradeEntity seatGrade = SeatGradeEntity.create(UUID.randomUUID(), "VIP", "#FFAA00");
 		SeatSectionEntity seatSection = SeatSectionEntity.create(seatGrade, UUID.randomUUID(), "101", 120);
 		SeatEntity seat = SeatEntity.create(seatSection, "A", 1);
-		orderItem = OrderItemEntity.create(order, seat, TicketType.ADULT, 12000);
+		orderItem = OrderItemEntity.create(order, seat, UUID.randomUUID(), TicketType.ADULT, 12000);
 		orderItemId = UUID.randomUUID();
 		gameId = UUID.randomUUID();
 		userId = UUID.randomUUID();

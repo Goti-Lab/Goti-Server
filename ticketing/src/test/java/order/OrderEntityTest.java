@@ -79,6 +79,38 @@ class OrderEntityTest {
 		assertThat(order.getConfirmedAt()).isNotNull();
 	}
 
+	@Test
+	void 주문_만료처리_성공() {
+		OrderEntity order = OrderEntity.create(
+			orderNumber,
+			userId,
+			gameSchedule,
+			totalQuantity,
+			totalAmount
+		);
+
+		order.expire();
+
+		assertThat(order.getOrderStatus()).isEqualTo(OrderStatus.CANCELED);
+		assertThat(order.getCanceledAt()).isNotNull();
+	}
+
+	@Test
+	void 주문_만료처리_실패_확정후만료처리() {
+		OrderEntity order = OrderEntity.create(
+			orderNumber,
+			userId,
+			gameSchedule,
+			totalQuantity,
+			totalAmount
+		);
+		order.confirm();
+
+		assertThatThrownBy(order::expire)
+			.isInstanceOf(FieldValidationException.class)
+			.hasMessageContaining("PENDING 상태에서만 주문 만료 처리가 가능합니다.");
+	}
+
 	@ParameterizedTest
 	@NullAndEmptySource
 	@ValueSource(strings = {" ", "   "})

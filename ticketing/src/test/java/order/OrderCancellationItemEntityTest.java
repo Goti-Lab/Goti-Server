@@ -2,9 +2,11 @@ package order;
 
 import static org.assertj.core.api.Assertions.*;
 
+import java.lang.reflect.Field;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+import com.goti.domain.base.BaseUuidEntity;
 import com.goti.ticketing.constants.LeagueType;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -19,6 +21,7 @@ import com.goti.ticketing.domain.entity.order.OrderEntity;
 import com.goti.ticketing.domain.entity.order.OrderItemEntity;
 import com.goti.ticketing.domain.entity.seat.SeatEntity;
 import com.goti.ticketing.domain.entity.seat.SeatGradeEntity;
+import com.goti.ticketing.domain.entity.seat.SeatHoldEntity;
 import com.goti.ticketing.domain.entity.seat.SeatSectionEntity;
 import com.goti.exception.FieldValidationException;
 
@@ -53,7 +56,21 @@ class OrderCancellationItemEntityTest {
 		SeatGradeEntity seatGrade = SeatGradeEntity.create(UUID.randomUUID(), "VIP", "#FFAA00");
 		SeatSectionEntity seatSection = SeatSectionEntity.create(seatGrade, UUID.randomUUID(), "101", 120);
 		SeatEntity seat = SeatEntity.create(seatSection, "A", 1);
-		item = OrderItemEntity.create(order, seat, com.goti.ticketing.constants.TicketType.ADULT, 12000);
+		SeatHoldEntity seatHold = SeatHoldEntity.create(
+			seat,
+			gameSchedule,
+			order.getMemberId(),
+			"queue-token-jti",
+			LocalDateTime.now().plusMinutes(10)
+		);
+		assignId(seatHold, UUID.randomUUID());
+		item = OrderItemEntity.create(
+			order,
+			seat,
+			seatHold.getId(),
+			com.goti.ticketing.constants.TicketType.ADULT,
+			12000
+		);
 	}
 
 	@Test
@@ -86,5 +103,15 @@ class OrderCancellationItemEntityTest {
 			() -> OrderCancellationItemEntity.create(cancellation, item, 11000, -1)
 		).isInstanceOf(FieldValidationException.class)
 			.hasMessageContaining("수수료는 0 이상이어야 합니다.");
+	}
+
+	private void assignId(SeatHoldEntity seatHold, UUID holdId) {
+		try {
+			Field idField = BaseUuidEntity.class.getDeclaredField("id");
+			idField.setAccessible(true);
+			idField.set(seatHold, holdId);
+		} catch (ReflectiveOperationException e) {
+			throw new IllegalStateException("테스트용 SeatHold ID 설정에 실패했습니다.", e);
+		}
 	}
 }

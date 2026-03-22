@@ -3,12 +3,27 @@ package com.goti.ticketing.seat.service.domain;
 import com.goti.ticketing.domain.entity.seat.SeatHoldEntity;
 import com.goti.ticketing.domain.entity.seat.SeatStatusEntity;
 import com.goti.global.validation.Preconditions;
+import com.goti.ticketing.seat.repository.SeatHoldRepository;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
+import lombok.RequiredArgsConstructor;
 
 @Service
+@RequiredArgsConstructor
 public class SeatHoldExpiryServiceImpl implements SeatHoldExpiryService {
+	private final SeatHoldRepository seatHoldRepository;
+
+	@Override
+	public Map<UUID, SeatHoldEntity> getByIds(List<UUID> holdIds) {
+		return seatHoldRepository.findAllWithDetailsByIdIn(holdIds).stream()
+			.collect(Collectors.toMap(SeatHoldEntity::getId, seatHold -> seatHold));
+	}
 
 	@Override
 	public void expire(

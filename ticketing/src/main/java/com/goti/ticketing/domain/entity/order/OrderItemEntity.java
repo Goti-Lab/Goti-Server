@@ -2,12 +2,13 @@ package com.goti.ticketing.domain.entity.order;
 
 import static lombok.AccessLevel.*;
 
+import java.util.UUID;
+
+import com.goti.domain.base.ModificationTimestampEntity;
+import com.goti.global.validation.Preconditions;
 import com.goti.ticketing.constants.OrderItemStatus;
 import com.goti.ticketing.constants.TicketType;
-import com.goti.domain.base.CreationTimestampEntity;
-import com.goti.domain.base.ModificationTimestampEntity;
 import com.goti.ticketing.domain.entity.seat.SeatEntity;
-import com.goti.global.validation.Preconditions;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -51,6 +52,9 @@ public class OrderItemEntity extends ModificationTimestampEntity {
 	@Column(nullable = false)
 	private Integer ticketPrice;
 
+	@Column(nullable = false)
+	private UUID holdId;
+
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false)
 	private OrderItemStatus itemStatus;
@@ -58,11 +62,13 @@ public class OrderItemEntity extends ModificationTimestampEntity {
 	private OrderItemEntity(
 		OrderEntity order,
 		SeatEntity seat,
+		UUID holdId,
 		TicketType ticketType,
 		Integer ticketPrice
 	) {
 		this.order = order;
 		this.seat = seat;
+		this.holdId = holdId;
 		this.ticketType = ticketType;
 		this.ticketPrice = ticketPrice;
 		this.itemStatus = OrderItemStatus.RESERVED;
@@ -71,11 +77,12 @@ public class OrderItemEntity extends ModificationTimestampEntity {
 	public static OrderItemEntity create(
 		OrderEntity order,
 		SeatEntity seat,
+		UUID holdId,
 		TicketType ticketType,
 		Integer ticketPrice
 	) {
-		validate(ticketType, ticketPrice);
-		return new OrderItemEntity(order, seat, ticketType, ticketPrice);
+		validate(holdId, ticketType, ticketPrice);
+		return new OrderItemEntity(order, seat, holdId, ticketType, ticketPrice);
 	}
 
 	public void pay() {
@@ -86,10 +93,23 @@ public class OrderItemEntity extends ModificationTimestampEntity {
 		this.itemStatus = OrderItemStatus.PAID;
 	}
 
+	public void expire() {
+		Preconditions.domainValidate(
+			this.itemStatus == OrderItemStatus.RESERVED,
+			"RESERVED 상태에서만 주문 상세 만료 처리가 가능합니다."
+		);
+		this.itemStatus = OrderItemStatus.CANCELED;
+	}
+
 	private static void validate(
+		UUID holdId,
 		TicketType ticketType,
 		Integer ticketPrice
 	) {
+		Preconditions.domainValidate(
+			holdId != null,
+			"좌석 점유 ID는 필수입니다."
+		);
 		Preconditions.domainValidate(
 			ticketType != null,
 			"권종은 필수입니다."

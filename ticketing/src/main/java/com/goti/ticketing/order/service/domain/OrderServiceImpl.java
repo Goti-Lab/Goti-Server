@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.UUID;
 
 import com.goti.constants.messages.ErrorCode;
+import com.goti.exception.CustomException;
 import com.goti.global.validation.Preconditions;
 import com.goti.ticketing.order.dto.response.OrderListResponse;
 
@@ -43,6 +44,18 @@ public class OrderServiceImpl implements OrderService {
 		);
 
 		return orderRepository.save(order);
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public OrderEntity get(UUID orderId) {
+		return orderRepository.findById(orderId)
+			.orElseThrow(() -> new CustomException(ErrorCode.ORDER_NOT_FOUND));
+	}
+
+	@Override
+	public void expire(OrderEntity order) {
+		order.expire();
 	}
 
 	@Override

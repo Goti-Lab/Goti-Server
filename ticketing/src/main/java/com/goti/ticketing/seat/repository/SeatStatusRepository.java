@@ -18,7 +18,7 @@ import com.goti.ticketing.constants.SeatStatus;
 import com.goti.ticketing.seat.repository.dto.SeatGradeAvailableSeatCount;
 
 @Repository
-public interface SeatStatusRepository extends JpaRepository<SeatStatusEntity, UUID> {
+public interface SeatStatusRepository extends JpaRepository<SeatStatusEntity, UUID>, SeatStatusRepositoryCustom {
 
 	@Query("""
 		SELECT ss
@@ -38,7 +38,7 @@ public interface SeatStatusRepository extends JpaRepository<SeatStatusEntity, UU
 			ss.seat.seatSection.seatGrade.id,
 			COUNT(ss)
 		)
-		FROM SeatStatusEntity ss
+			FROM SeatStatusEntity ss
 		WHERE ss.game.id = :gameId
 		  AND ss.seat.seatSection.seatGrade.id IN :seatGradeIds
 		  AND ss.status = :status
