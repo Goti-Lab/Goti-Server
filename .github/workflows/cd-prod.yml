@@ -1,0 +1,167 @@
+name: CD (prod)
+
+on:
+  push:
+    branches: [deploy/prod]
+  workflow_dispatch:
+    inputs:
+      services:
+        description: "빌드할 서비스 (쉼표 구분, 비우면 변경 감지 자동). 예: user,stadium"
+        required: false
+        default: ""
+
+concurrency:
+  group: deploy-prod
+  cancel-in-progress: false
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  HARBOR_REGISTRY: ${{ secrets.HARBOR_REGISTRY }}
+  HARBOR_PROJECT: prod
+
+jobs:
+  detect-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # [CR-007] squash merge 등 대응을 위해 full history
+
+      - name: Detect changed services
+        id: set-matrix
+        # [CR-001] workflow_dispatch 입력값을 환경변수로 전달해 script injection 방지
+        env:
+          INPUT_SERVICES: ${{ github.event.inputs.services }}
+          BEFORE_SHA: ${{ github.event.before }}
+          CURRENT_SHA: ${{ github.sha }}
+        run: |
+          SERVICES="user stadium ticketing payment resale"
+
+          if [ -n "$INPUT_SERVICES" ]; then
+            # workflow_dispatch 수동 지정
+            TARGETS=$(echo "$INPUT_SERVICES" | tr ',' '\n' | xargs)
+          else
+            # [CR-004] merge commit 대응: event.before → sha 범위로 diff
+            CHANGED=$(git diff --name-only "$BEFORE_SHA" "$CURRENT_SHA")
+            TARGETS=""
+            for svc in $SERVICES; do
+              if echo "$CHANGED" | grep -q "^${svc}/"; then
+                TARGETS="$TARGETS $svc"
+              fi
+            done
+            # core/common/integration 변경 시 전체 빌드
+            if echo "$CHANGED" | grep -qE "^(core|common|integration)/"; then
+              TARGETS="$SERVICES"
+            fi
+            TARGETS=$(echo "$TARGETS" | xargs)
+          fi
+
+          if [ -z "$TARGETS" ]; then
+            echo "변경된 서비스 없음 — 빌드 스킵"
+            echo 'matrix={"include":[]}' >> "$GITHUB_OUTPUT"
+          else
+            echo "빌드 대상: $TARGETS"
+            JSON=$(echo "$TARGETS" | tr ' ' '\n' | jq -R '{service: .}' | jq -sc '{include: .}')
+            echo "matrix=${JSON}" >> "$GITHUB_OUTPUT"
+          fi
+
+  build-and-push:
+    runs-on: ubuntu-latest
+    needs: detect-changes
+    if: ${{ needs.detect-changes.outputs.matrix != '{"include":[]}' }}
+    strategy:
+      matrix: ${{ fromJson(needs.detect-changes.outputs.matrix) }}
+      fail-fast: false
+    # [CR-002] image_tag output 제거 — update-k8s에서 직접 재계산하므로 dead code였음
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set image tag
+        id: image
+        run: |
+          IMAGE_TAG="prod-${GITHUB_RUN_NUMBER}-${GITHUB_SHA::7}"
+          echo "tag=${IMAGE_TAG}" >> "$GITHUB_OUTPUT"
+
+      - name: Login to Harbor
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.HARBOR_REGISTRY }}
+          username: ${{ secrets.HARBOR_USERNAME }}
+          password: ${{ secrets.HARBOR_PASSWORD }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push ${{ matrix.service }}
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          build-args: MODULE=${{ matrix.service }}
+          tags: ${{ env.HARBOR_REGISTRY }}/${{ env.HARBOR_PROJECT }}/goti-${{ matrix.service }}:${{ steps.image.outputs.tag }}
+          cache-from: type=gha,scope=${{ matrix.service }}
+          cache-to: type=gha,scope=${{ matrix.service }},mode=max
+
+  update-k8s:
+    runs-on: ubuntu-latest
+    needs: [detect-changes, build-and-push]
+    if: ${{ needs.detect-changes.outputs.matrix != '{"include":[]}' }}
+    steps:
+      - name: Checkout Goti-k8s
+        uses: actions/checkout@v4
+        with:
+          repository: Team-Ikujo/Goti-k8s
+          token: ${{ secrets.GH_PAT }}
+          ref: main
+
+      # [CR-003] sed 대신 yq로 YAML-aware 수정
+      # [CR-010] Go yq (mikefarah) 사용 — pip yq(Python)와 문법 다름
+      - name: Install yq
+        run: |
+          wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
+          chmod +x /usr/local/bin/yq
+
+      - name: Update prod image tags
+        run: |
+          IMAGE_TAG="prod-${GITHUB_RUN_NUMBER}-${GITHUB_SHA::7}"
+          SERVICES=$(echo '${{ needs.detect-changes.outputs.matrix }}' | jq -r '.include[].service' | tr '\n' ' ')
+
+          for svc in $SERVICES; do
+            FILE="environments/prod/goti-${svc}/values.yaml"
+            NEW_REPO="${{ env.HARBOR_REGISTRY }}/${{ env.HARBOR_PROJECT }}/goti-${svc}"
+            yq -i ".image.repository = \"${NEW_REPO}\"" "$FILE"
+            yq -i ".image.tag = \"${IMAGE_TAG}\"" "$FILE"
+            yq -i ".imagePullSecrets[0].name = \"harbor-creds\"" "$FILE"
+            echo "Updated ${FILE} → ${NEW_REPO}:${IMAGE_TAG}"
+          done
+
+      # [CR-005] 브랜치명 / 커밋 메시지 / 타이틀에 short SHA(7자)만 사용
+      - name: Set short SHA
+        id: short_sha
+        run: echo "value=${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v7
+        with:
+          token: ${{ secrets.GH_PAT }}
+          branch: chore/prod-image-${{ github.run_number }}-${{ steps.short_sha.outputs.value }}
+          commit-message: "[CHORE] prod 이미지 태그 업데이트: prod-${{ github.run_number }}-${{ steps.short_sha.outputs.value }}"
+          title: "[CHORE] prod 이미지 태그 업데이트: prod-${{ github.run_number }}-${{ steps.short_sha.outputs.value }}"
+          body: |
+            ## 변경 사항
+            - 이미지 태그: `prod-${{ github.run_number }}-${{ steps.short_sha.outputs.value }}`
+            - 레지스트리: `${{ env.HARBOR_REGISTRY }}/${{ env.HARBOR_PROJECT }}/`
+            - 업데이트된 서비스: `${{ needs.detect-changes.outputs.matrix }}`
+
+            ## 트리거
+            - 브랜치: `${{ github.ref_name }}`
+            - 커밋: ${{ github.sha }}
+            - 워크플로우: [#${{ github.run_number }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+          base: main
+          labels: chore,prod
+
