@@ -16,6 +16,9 @@ import java.util.Map;
  * MSA 서비스 SecurityConfig 공통 설정.
  * CSRF disable, STATELESS 세션, MeshAuthenticationFilter 등록,
  * 401/403 JSON 응답 핸들링을 한 곳에서 관리한다.
+ *
+ * <p>{@code meshEnabled=true}: Istio mesh 환경. MeshAuthenticationFilter 등록 + authenticated().
+ * {@code meshEnabled=false}: 로컬/테스트 환경. 필터 미등록 + permitAll().</p>
  */
 public final class MeshSecuritySupport {
 
@@ -26,33 +29,41 @@ public final class MeshSecuritySupport {
 
 	/**
 	 * MSA 서비스 공통 보안 설정을 적용한다.
-	 * 호출 측에서 authorizeHttpRequests()로 서비스별 permitAll 경로를 추가로 설정할 수 있다.
+	 *
+	 * @param http        HttpSecurity
+	 * @param meshEnabled true면 mesh 인증 활성화, false면 전체 permitAll (로컬 개발용)
 	 */
-	public static HttpSecurity applyDefaults(HttpSecurity http) throws Exception {
-		return http
+	public static HttpSecurity applyDefaults(HttpSecurity http, boolean meshEnabled) throws Exception {
+		http
 			.csrf(AbstractHttpConfigurer::disable)
 			.sessionManagement(session ->
 				session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-			)
-			.exceptionHandling(exceptions -> exceptions
-				.authenticationEntryPoint((request, response, authException) -> {
-					response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-					response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-					response.setCharacterEncoding("UTF-8");
-					OBJECT_MAPPER.writeValue(response.getWriter(),
-						Map.of("code", "UNAUTHORIZED", "message", "인증이 필요합니다."));
-				})
-				.accessDeniedHandler((request, response, accessDeniedException) -> {
-					response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-					response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-					response.setCharacterEncoding("UTF-8");
-					OBJECT_MAPPER.writeValue(response.getWriter(),
-						Map.of("code", "FORBIDDEN", "message", "접근 권한이 없습니다."));
-				})
-			)
-			.addFilterBefore(
-				new MeshAuthenticationFilter(),
-				UsernamePasswordAuthenticationFilter.class
 			);
+
+		if (meshEnabled) {
+			http
+				.exceptionHandling(exceptions -> exceptions
+					.authenticationEntryPoint((request, response, authException) -> {
+						response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+						response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+						response.setCharacterEncoding("UTF-8");
+						OBJECT_MAPPER.writeValue(response.getWriter(),
+							Map.of("code", "UNAUTHORIZED", "message", "인증이 필요합니다."));
+					})
+					.accessDeniedHandler((request, response, accessDeniedException) -> {
+						response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+						response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+						response.setCharacterEncoding("UTF-8");
+						OBJECT_MAPPER.writeValue(response.getWriter(),
+							Map.of("code", "FORBIDDEN", "message", "접근 권한이 없습니다."));
+					})
+				)
+				.addFilterBefore(
+					new MeshAuthenticationFilter(),
+					UsernamePasswordAuthenticationFilter.class
+				);
+		}
+
+		return http;
 	}
 }
