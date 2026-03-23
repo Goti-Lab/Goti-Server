@@ -5,6 +5,8 @@ import static com.goti.global.api.ApiSuccessResponse.*;
 import java.util.UUID;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -14,7 +16,9 @@ import org.springframework.web.bind.annotation.RestController;
 import com.goti.global.api.ApiSuccessResponse;
 import com.goti.ticketing.pricing.dto.request.TicketPricingPolicyCreateRequest;
 import com.goti.ticketing.pricing.dto.response.TicketPricingPolicyCreateResponse;
+import com.goti.ticketing.pricing.dto.response.TicketPricingPolicyResponse;
 import com.goti.ticketing.pricing.service.domain.TicketPricingPolicyService;
+import com.goti.ticketing.pricing.service.domain.command.TicketPriceCreateCommand;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -30,7 +34,7 @@ public class TicketPricingPolicyController {
 
 	@Operation(
 		summary = "가격 정책 생성",
-		description = "관리자가 가격 정책과 티켓 가격 상세를 함께 생성하는 API"
+		description = "가격 정책 및 티켓 가격 상세 생성 API"
 	)
 	@PostMapping
 	public ResponseEntity<ApiSuccessResponse<TicketPricingPolicyCreateResponse>> create(
@@ -43,7 +47,7 @@ public class TicketPricingPolicyController {
 			request.policyStartAt(),
 			request.policyEndAt(),
 			request.prices().stream()
-				.map(price -> new TicketPricingPolicyService.TicketPriceCreateParam(
+				.map(price -> new TicketPriceCreateCommand(
 					price.gradeId(),
 					price.ticketType(),
 					price.dayType(),
@@ -53,5 +57,17 @@ public class TicketPricingPolicyController {
 				.toList()
 		);
 		return wrap(response);
+	}
+
+	@Operation(
+		summary = "가격 정책 조회",
+		description = "가격 정책 및 티켓 가격 조회 API"
+	)
+	@GetMapping
+	public ResponseEntity<ApiSuccessResponse<TicketPricingPolicyResponse>> get(
+		@PathVariable UUID teamId,
+		@AuthenticationPrincipal(expression = "id") UUID memberId
+	) {
+		return wrap(ticketPricingPolicyService.get(teamId, memberId));
 	}
 }

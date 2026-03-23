@@ -5,6 +5,7 @@ import com.goti.user.domain.entity.user.MemberEntity;
 
 import java.time.LocalDate;
 import java.util.Optional;
+import java.util.UUID;
 
 public interface MemberService {
 
@@ -12,4 +13,5 @@ public interface MemberService {
 
   Optional<MemberEntity> findByMobile(String mobile);
 
+	MemberEntity getById(UUID memberId);
 }

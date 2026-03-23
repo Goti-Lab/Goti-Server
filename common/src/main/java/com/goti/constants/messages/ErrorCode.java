@@ -52,6 +52,7 @@ public enum ErrorCode {
 	AUTH_INVALID(HttpStatus.UNAUTHORIZED, "올바르지 않은 인증 정보입니다."),
 	AUTH_ACCESS_EXPIRED(HttpStatus.UNAUTHORIZED, "엑세스 토큰이 만료되었습니다."),
 	AUTH_SIGNUP_EXPIRED(HttpStatus.GONE, "회원가입 유효 시간이 만료되었습니다. 다시 소셜 로그인을 진행해주세요."),
+	AUTH_REFRESH_EXPIRED(HttpStatus.UNAUTHORIZED, "토큰이 만료되었습니다. 재로그인이 필요합니다."),
 	AUTH_CODE_NOT_FOUND(HttpStatus.UNAUTHORIZED, "인증 시간이 만료되었거나 해당 휴대전화번호로 인증번호 전송 이력이 없습니다."),
 	AUTH_CODE_INVALID(HttpStatus.UNAUTHORIZED, "인증 코드가 일치하지 않습니다."),
 

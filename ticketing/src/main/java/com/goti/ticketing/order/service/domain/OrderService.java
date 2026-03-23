@@ -15,5 +15,9 @@ public interface OrderService {
 		Integer totalAmount
 	);
 
+	OrderEntity get(UUID orderId);
+
+	void expire(OrderEntity order);
+
 	List<OrderListResponse> getMyOrders(UUID memberId);
 }

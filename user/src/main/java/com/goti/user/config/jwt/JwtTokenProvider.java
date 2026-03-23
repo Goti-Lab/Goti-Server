@@ -180,6 +180,10 @@ public class JwtTokenProvider {
 		return rsaPublicKey;
 	}
 
+	public String extractSubject(String token) {
+		return getClaims(token).getSubject();
+	}
+
 	private Claims getClaims(String token) {
 		return parseClaimsDualVerify(token).getPayload();
 	}

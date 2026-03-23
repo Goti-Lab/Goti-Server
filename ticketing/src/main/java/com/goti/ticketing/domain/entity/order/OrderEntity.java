@@ -103,6 +103,15 @@ public class OrderEntity extends ModificationTimestampEntity {
 		this.confirmedAt = LocalDateTime.now();
 	}
 
+	public void expire() {
+		Preconditions.domainValidate(
+			this.orderStatus == OrderStatus.PENDING,
+			"PENDING 상태에서만 주문 만료 처리가 가능합니다."
+		);
+		this.orderStatus = OrderStatus.CANCELED;
+		this.canceledAt = LocalDateTime.now();
+	}
+
 	private static void validate(
 		String orderNumber,
 		UUID userId,

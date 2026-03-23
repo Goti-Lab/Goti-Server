@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -31,5 +32,10 @@ public class MemberServiceImpl implements MemberService {
 	@Override
 	public Optional<MemberEntity> findByMobile(String mobile) {
 		return memberRepository.findByMobile(mobile);
+	}
+
+	@Override
+	public MemberEntity getById(UUID memberId) {
+		return memberRepository.findByIdOrThrow(memberId);
 	}
 }

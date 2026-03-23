@@ -154,6 +154,7 @@ public class OrderCreateService {
 			orderItemService.create(
 				order,
 				pricedHold.hold().getSeat(),
+				pricedHold.hold().getId(),
 				TicketType.ADULT,
 				pricedHold.ticketPrice()
 			);
