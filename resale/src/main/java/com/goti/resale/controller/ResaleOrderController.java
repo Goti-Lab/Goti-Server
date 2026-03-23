@@ -67,7 +67,7 @@ public class ResaleOrderController {
 
 	@Operation(
 		summary = "리셀 정산 최종 완료 처리",
-		description = "실제 은행 지급 완료 후 상태를 정산완료 변경 API"
+		description = "실제 은행 송금이 완료 및 정산 완료 처리 API"
 	)
 	@PatchMapping("/orders/{resaleOrderId}/settled")
 	public ResponseEntity<ApiSuccessResponse<Void>> completeSettlement(

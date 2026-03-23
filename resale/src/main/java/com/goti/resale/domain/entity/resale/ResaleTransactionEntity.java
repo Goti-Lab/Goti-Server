@@ -25,7 +25,7 @@ import lombok.NoArgsConstructor;
 @Entity
 @Table(name = "resale_transactions",
 	indexes = {
-		@Index(name = "unique_idx_resale_ticket_number", columnList = "resale_ticket_number", unique = true),
+		@Index(name = "uk_resale_ticket_number", columnList = "resale_ticket_number", unique = true),
 		@Index(name = "idx_listing_id", columnList = "listing_id"),
 		@Index(name = "idx_resale_order_id", columnList = "resale_order_id"),
 		@Index(name = "idx_buyer_id", columnList = "buyer_id"),

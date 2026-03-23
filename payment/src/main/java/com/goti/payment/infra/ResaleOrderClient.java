@@ -44,7 +44,7 @@ public class ResaleOrderClient {
 					.toUri()
 			)
 			.retrieve()
-			.body(new ParameterizedTypeReference<ApiSuccessResponse<ResaleOrderListResponse>>() {
+			.body(new ParameterizedTypeReference<>() {
 			});
 
 		return response != null ? response.getData().transactionIds() : List.of();
