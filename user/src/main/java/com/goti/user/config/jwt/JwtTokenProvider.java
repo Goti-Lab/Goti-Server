@@ -15,6 +15,7 @@ import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.JwtParser;
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.UnsupportedJwtException;
 import io.jsonwebtoken.security.SignatureException;
 import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.HttpServletRequest;
@@ -53,6 +54,7 @@ public class JwtTokenProvider {
 	private static final String PROVIDER_ID_KEY = "provider_id";
 	private static final String PROVIDER_EMAIL_KEY = "provider_email";
 	static final String SOCIAL_VERIFY_SUBJECT = "social_verify";
+	public static final String RSA_KEY_ID = "goti-jwt-key-1";
 
 	// @PostConstruct에서 초기화 — 매 요청마다 PEM 파싱/파서 재생성 방지
 	private RSAPrivateKey rsaPrivateKey;
@@ -98,7 +100,8 @@ public class JwtTokenProvider {
 			.expiration(expireAt);
 
 		if (rsaEnabled) {
-			builder.signWith(rsaPrivateKey);
+			builder.header().keyId(RSA_KEY_ID).and()
+				.signWith(rsaPrivateKey);
 		} else {
 			builder.signWith(jwtProperties.secretKey());
 		}
@@ -122,7 +125,8 @@ public class JwtTokenProvider {
 			.expiration(expireAt);
 
 		if (rsaEnabled) {
-			builder.signWith(rsaPrivateKey);
+			builder.header().keyId(RSA_KEY_ID).and()
+				.signWith(rsaPrivateKey);
 		} else {
 			builder.signWith(jwtProperties.secretKey());
 		}
@@ -181,17 +185,22 @@ public class JwtTokenProvider {
 	}
 
 	/**
-	 * RS256 우선 검증, 서명 불일치 시에만 HS512 fallback (전환기 호환).
+	 * RS256 우선 검증, 서명/알고리즘 불일치 시에만 HS512 fallback (전환기 호환).
 	 * ExpiredJwtException 등 서명 외 오류는 fallback 없이 즉시 throw.
 	 * RSA 키가 설정되지 않은 경우 HS512만 사용.
+	 *
+	 * <p>TODO: RS256 전환 완료 후 (기존 HS512 토큰 만료 이후) fallback 제거 예정.
+	 * access token TTL 기준 전환 후 최소 1시간 경과 시 안전하게 제거 가능.</p>
 	 */
 	private Jws<Claims> parseClaimsDualVerify(String token) {
 		if (rsaEnabled) {
 			try {
 				return rsaParser.parseSignedClaims(token);
-			} catch (SignatureException e) {
-				// RS256 서명 불일치만 fallback — algorithm confusion attack 방지
-				log.warn("RS256 서명 불일치, HS512 fallback 시도");
+			} catch (SignatureException | UnsupportedJwtException e) {
+				// SignatureException: RS256 서명 불일치
+				// UnsupportedJwtException: HMAC 토큰이 RSA 파서에 진입 (alg 헤더 불일치)
+				// 두 경우 모두 전환기 HS512 fallback 대상
+				log.warn("RS256 검증 실패({}), HS512 fallback 시도", e.getClass().getSimpleName());
 				return hmacParser.parseSignedClaims(token);
 			}
 		}

@@ -2,7 +2,6 @@ package com.goti.user.controller;
 
 import com.goti.user.config.jwt.JwtTokenProvider;
 
-import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.http.CacheControl;
@@ -28,36 +27,39 @@ public class JwksController {
 
 	private final JwtTokenProvider jwtTokenProvider;
 
-	private ResponseEntity<Map<String, Object>> cachedResponse;
+	private volatile ResponseEntity<Map<String, Object>> cachedResponse;
 
-	@PostConstruct
-	void buildJwksResponse() {
+	@GetMapping(value = "/.well-known/jwks.json", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<Map<String, Object>> jwks() {
+		ResponseEntity<Map<String, Object>> response = cachedResponse;
+		if (response == null) {
+			response = buildJwksResponse();
+			cachedResponse = response;
+		}
+		return response;
+	}
+
+	private ResponseEntity<Map<String, Object>> buildJwksResponse() {
 		RSAPublicKey publicKey = jwtTokenProvider.getRsaPublicKey();
 		if (publicKey == null) {
-			cachedResponse = ResponseEntity.ok()
+			return ResponseEntity.ok()
 				.cacheControl(CacheControl.maxAge(1, TimeUnit.HOURS).cachePublic())
 				.body(Map.of("keys", List.of()));
-			return;
 		}
 
 		Map<String, Object> jwk = Map.of(
 			"kty", "RSA",
 			"alg", "RS256",
 			"use", "sig",
-			"kid", "goti-jwt-key-1",
+			"kid", JwtTokenProvider.RSA_KEY_ID,
 			"n", base64UrlEncode(publicKey.getModulus().toByteArray()),
 			"e", base64UrlEncode(publicKey.getPublicExponent().toByteArray())
 		);
 
-		cachedResponse = ResponseEntity.ok()
+		return ResponseEntity.ok()
 			.cacheControl(CacheControl.maxAge(1, TimeUnit.HOURS).cachePublic())
 			.contentType(MediaType.APPLICATION_JSON)
 			.body(Map.of("keys", List.of(jwk)));
-	}
-
-	@GetMapping(value = "/.well-known/jwks.json", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<Map<String, Object>> jwks() {
-		return cachedResponse;
 	}
 
 	private String base64UrlEncode(byte[] bytes) {
@@ -65,7 +67,7 @@ public class JwksController {
 		if (bytes.length > 1 && bytes[0] == 0) {
 			byte[] trimmed = new byte[bytes.length - 1];
 			System.arraycopy(bytes, 1, trimmed, 0, trimmed.length);
-			bytes = trimmed;
+			return Base64.getUrlEncoder().withoutPadding().encodeToString(trimmed);
 		}
 		return Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
 	}

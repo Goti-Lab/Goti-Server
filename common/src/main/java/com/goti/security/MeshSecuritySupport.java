@@ -1,0 +1,58 @@
+package com.goti.security;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import jakarta.servlet.http.HttpServletResponse;
+
+import org.springframework.http.MediaType;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
+import java.util.Map;
+
+/**
+ * MSA 서비스 SecurityConfig 공통 설정.
+ * CSRF disable, STATELESS 세션, MeshAuthenticationFilter 등록,
+ * 401/403 JSON 응답 핸들링을 한 곳에서 관리한다.
+ */
+public final class MeshSecuritySupport {
+
+	private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+
+	private MeshSecuritySupport() {
+	}
+
+	/**
+	 * MSA 서비스 공통 보안 설정을 적용한다.
+	 * 호출 측에서 authorizeHttpRequests()로 서비스별 permitAll 경로를 추가로 설정할 수 있다.
+	 */
+	public static HttpSecurity applyDefaults(HttpSecurity http) throws Exception {
+		return http
+			.csrf(AbstractHttpConfigurer::disable)
+			.sessionManagement(session ->
+				session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+			)
+			.exceptionHandling(exceptions -> exceptions
+				.authenticationEntryPoint((request, response, authException) -> {
+					response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+					response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+					response.setCharacterEncoding("UTF-8");
+					OBJECT_MAPPER.writeValue(response.getWriter(),
+						Map.of("code", "UNAUTHORIZED", "message", "인증이 필요합니다."));
+				})
+				.accessDeniedHandler((request, response, accessDeniedException) -> {
+					response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+					response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+					response.setCharacterEncoding("UTF-8");
+					OBJECT_MAPPER.writeValue(response.getWriter(),
+						Map.of("code", "FORBIDDEN", "message", "접근 권한이 없습니다."));
+				})
+			)
+			.addFilterBefore(
+				new MeshAuthenticationFilter(),
+				UsernamePasswordAuthenticationFilter.class
+			);
+	}
+}

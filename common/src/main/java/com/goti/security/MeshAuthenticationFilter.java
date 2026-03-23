@@ -22,8 +22,10 @@ import java.util.UUID;
  * <p>MSA 분리 서비스(ticketing, payment, resale, stadium)에서 사용한다.
  * user 서비스는 기존 JwtAuthenticationFilter를 유지한다.</p>
  *
- * <p>보안: X-Forwarded-Client-Cert 헤더로 mesh 환경을 확인한다.
- * Istio 미적용 환경에서는 헤더를 신뢰하지 않아 인증 우회를 방지한다.</p>
+ * <p><b>보안 전제조건</b>: Istio PeerAuthentication STRICT mTLS가 필수.
+ * STRICT 모드에서 Istio sidecar는 외부 트래픽의 XFCC 헤더를 sanitize(덮어쓰기)하므로
+ * 외부에서 헤더를 위조할 수 없다. PERMISSIVE 모드에서는 비 mTLS 트래픽이
+ * sidecar를 우회할 수 있어 XFCC 신뢰가 보장되지 않는다.</p>
  *
  * <p>외부 의존성 없으므로 Bean 등록 불필요 — new로 직접 생성한다.</p>
  */
@@ -55,12 +57,13 @@ public class MeshAuthenticationFilter extends OncePerRequestFilter {
 		if (userId != null && !userId.isBlank()) {
 			try {
 				UUID id = UUID.fromString(userId);
-				String role = request.getHeader(HEADER_USER_ROLE);
-				if (role == null || !ALLOWED_ROLES.contains(role.toUpperCase())) {
-					role = DEFAULT_ROLE;
+				String roleHeader = request.getHeader(HEADER_USER_ROLE);
+				String role = DEFAULT_ROLE;
+				if (roleHeader != null && ALLOWED_ROLES.contains(roleHeader.toUpperCase())) {
+					role = roleHeader.toUpperCase();
 				}
 
-				SimpleUserDetails userDetails = new SimpleUserDetails(id, role.toUpperCase());
+				SimpleUserDetails userDetails = new SimpleUserDetails(id, role);
 				UsernamePasswordAuthenticationToken authentication =
 					UsernamePasswordAuthenticationToken.authenticated(
 						userDetails,
