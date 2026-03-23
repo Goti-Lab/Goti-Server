@@ -9,8 +9,10 @@ import com.goti.payment.constants.PaymentMethod;
 import com.goti.payment.constants.PaymentStatus;
 import com.goti.constants.messages.ErrorCode;
 import com.goti.payment.dto.response.PaymentResponse;
+import com.goti.payment.infra.TicketingOrderClient;
 import com.goti.global.validation.Preconditions;
 import com.goti.payment.service.domain.PaymentService;
+import com.goti.payment.service.dto.OrderPaymentConfirmApiRequest;
 import com.goti.payment.service.dto.PaymentOrderInfo;
 
 import lombok.RequiredArgsConstructor;
@@ -18,17 +20,17 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 public class OrderPaymentService {
-	private final PaymentOrderGateway paymentOrderGateway;
+	private final TicketingOrderClient ticketingOrderClient;
 	private final PaymentService paymentService;
 
 	@Transactional
-	public PaymentResponse create(
+	public PaymentResponse initPayment (
 		UUID orderId,
 		UUID memberId,
 		PaymentMethod paymentMethod,
 		String idempotencyKey
 	) {
-		PaymentOrderInfo order = paymentOrderGateway.getPaymentOrder(orderId, memberId);
+		PaymentOrderInfo order = ticketingOrderClient.getPaymentOrder(orderId, memberId);
 
 		Preconditions.validate(
 			order.memberId().equals(memberId),
@@ -44,14 +46,38 @@ public class OrderPaymentService {
 		);
 
 		if (payment.paymentStatus() == PaymentStatus.SUCCESS) {
-			paymentOrderGateway.confirmPayment(
+			ticketingOrderClient.confirmPayment(
 				orderId,
-				memberId,
-				payment.paymentId(),
-				payment.pgTid()
+				new OrderPaymentConfirmApiRequest(
+					memberId,
+					payment.paymentId(),
+					payment.pgTid()
+				)
 			);
 		}
 
 		return payment;
+	}
+
+	@Transactional(readOnly = true)
+	public PaymentResponse getByOrderId(UUID orderId, UUID memberId) {
+		Preconditions.validate(
+			memberId != null,
+			ErrorCode.AUTH_INVALID
+		);
+
+		Preconditions.validate(
+			orderId != null,
+			ErrorCode.MISSING_PARAMETER,
+			"orderId"
+		);
+
+		PaymentOrderInfo order = ticketingOrderClient.getPaymentOrder(orderId, memberId);
+		Preconditions.validate(
+			order.memberId().equals(memberId),
+			ErrorCode.AUTH_PERMISSION_DENIED
+		);
+
+		return paymentService.getByOrderId(orderId);
 	}
 }

@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.goti.global.api.ApiSuccessResponse;
@@ -19,6 +20,7 @@ import com.goti.ticketing.order.dto.request.OrderCreateRequest;
 import com.goti.ticketing.order.dto.request.OrderPaymentConfirmRequest;
 import com.goti.ticketing.order.dto.response.OrderCreateResponse;
 import com.goti.ticketing.order.dto.response.OrderListResponse;
+import com.goti.ticketing.order.dto.response.OrderPaymentInfoResponse;
 import com.goti.ticketing.order.dto.response.OrderPaymentConfirmResponse;
 import com.goti.ticketing.order.service.application.OrderCreateService;
 import com.goti.ticketing.order.service.application.OrderPaymentConfirmService;
@@ -59,6 +61,18 @@ public class OrderController {
 		@AuthenticationPrincipal(expression = "id") UUID memberId
 	) {
 		return wrap(orderService.getMyOrders(memberId));
+	}
+
+	@Operation(
+		summary = "주문 결제 정보 조회 (내부용)",
+		description = "payment 모듈에서 결제 전 주문 정보 조회 API"
+	)
+	@GetMapping("/{orderId}/payment-order")
+	public ResponseEntity<ApiSuccessResponse<OrderPaymentInfoResponse>> getPaymentOrder(
+		@PathVariable UUID orderId,
+		@RequestParam UUID memberId
+	) {
+		return wrap(orderService.getPaymentOrder(orderId, memberId));
 	}
 
 	//TODO: 추후 내부 호출용 API Controller 분리

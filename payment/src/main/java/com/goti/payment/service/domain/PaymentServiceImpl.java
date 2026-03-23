@@ -2,6 +2,8 @@ package com.goti.payment.service.domain;
 
 import java.util.UUID;
 
+import com.goti.exception.CustomException;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -61,18 +63,16 @@ public class PaymentServiceImpl implements PaymentService {
 			paymentRepository.save(payment);
 		}
 
-		return PaymentResponse.from(
-			payment.getId(),
-			payment.getOrderId(),
-			payment.getPaymentType(),
-			payment.getPaymentMethod(),
-			payment.getPaymentAmount(),
-			payment.getPgProvider(),
-			payment.getPgTid(),
-			payment.getPaymentStatus(),
-			payment.getPaidAt(),
-			payment.getFailedReason()
-		);
+		return PaymentResponse.from(payment);
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public PaymentResponse getByOrderId(UUID orderId) {
+		PaymentEntity payment = paymentRepository.findLatestByOrderId(orderId)
+			.orElseThrow(() -> new CustomException(ErrorCode.PAYMENT_NOT_FOUND));
+
+		return PaymentResponse.from(payment);
 	}
 
 	private boolean shouldFail(String idempotencyKey) {

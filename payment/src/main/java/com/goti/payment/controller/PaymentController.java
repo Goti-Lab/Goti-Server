@@ -6,6 +6,7 @@ import java.util.UUID;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -40,12 +41,24 @@ public class PaymentController {
 		@Valid @RequestBody PaymentRequest request
 	) {
 		return wrap(
-			orderPaymentService.create(
+			orderPaymentService.initPayment(
 				orderId,
 				memberId,
 				request.paymentMethod(),
 				request.idempotencyKey()
 			)
 		);
+	}
+
+	@Operation(
+		summary = "결제 정보 조회",
+		description = "특정 주문에 대한 결제 정보 조회 API"
+	)
+	@GetMapping("/orders/{orderId}")
+	public ResponseEntity<ApiSuccessResponse<PaymentResponse>> get(
+		@PathVariable UUID orderId,
+		@AuthenticationPrincipal(expression = "id") UUID memberId
+	) {
+		return wrap(orderPaymentService.getByOrderId(orderId, memberId));
 	}
 }

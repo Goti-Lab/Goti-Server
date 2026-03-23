@@ -13,4 +13,6 @@ public interface PaymentService {
 		String idempotencyKey,
 		Integer paymentAmount
 	);
+
+	PaymentResponse getByOrderId(UUID orderId);
 }

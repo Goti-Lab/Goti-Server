@@ -6,6 +6,7 @@ import java.util.UUID;
 import com.goti.payment.constants.PaymentMethod;
 import com.goti.payment.constants.PaymentStatus;
 import com.goti.payment.constants.PaymentType;
+import com.goti.payment.domain.entity.payment.PaymentEntity;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
@@ -41,29 +42,18 @@ public record PaymentResponse(
 	@Schema(description = "결제 실패 사유", example = "mock 결제 실패")
 	String failedReason
 ) {
-	public static PaymentResponse from(
-		UUID paymentId,
-		UUID orderId,
-		PaymentType paymentType,
-		PaymentMethod paymentMethod,
-		Integer paymentAmount,
-		String pgProvider,
-		String pgTid,
-		PaymentStatus paymentStatus,
-		LocalDateTime paidAt,
-		String failedReason
-	) {
+	public static PaymentResponse from(PaymentEntity payment) {
 		return new PaymentResponse(
-			paymentId,
-			orderId,
-			paymentType,
-			paymentMethod,
-			paymentAmount,
-			pgProvider,
-			pgTid,
-			paymentStatus,
-			paidAt,
-			failedReason
+			payment.getId(),
+			payment.getOrderId(),
+			payment.getPaymentType(),
+			payment.getPaymentMethod(),
+			payment.getPaymentAmount(),
+			payment.getPgProvider(),
+			payment.getPgTid(),
+			payment.getPaymentStatus(),
+			payment.getPaidAt(),
+			payment.getFailedReason()
 		);
 	}
 }

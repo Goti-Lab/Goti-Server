@@ -9,6 +9,7 @@ import com.goti.constants.messages.ErrorCode;
 import com.goti.exception.CustomException;
 import com.goti.global.validation.Preconditions;
 import com.goti.ticketing.order.dto.response.OrderListResponse;
+import com.goti.ticketing.order.dto.response.OrderPaymentInfoResponse;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -69,6 +70,19 @@ public class OrderServiceImpl implements OrderService {
 		return orderRepository.findAllByMemberIdOrderByCreatedAtDesc(memberId).stream()
 			.map(OrderListResponse::from)
 			.toList();
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public OrderPaymentInfoResponse getPaymentOrder(UUID orderId, UUID memberId) {
+		Preconditions.validate(
+			memberId != null,
+			ErrorCode.AUTH_INVALID
+		);
+
+		return orderRepository.findByIdAndMemberId(orderId, memberId)
+			.map(OrderPaymentInfoResponse::from)
+			.orElseThrow(() -> new CustomException(ErrorCode.ORDER_NOT_FOUND));
 	}
 
 	private String generateOrderNumber() {
