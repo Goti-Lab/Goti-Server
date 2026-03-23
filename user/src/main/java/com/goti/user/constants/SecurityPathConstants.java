@@ -15,9 +15,11 @@ public final class SecurityPathConstants {
 		"/api/v1/seats/bulk",
 		"/api/v1/stadium-seats/seat-sections",
 		"/api/v1/stadium-seats/seat-grades",
-		"/actuator/**",
+		"/actuator/health",
+		"/actuator/health/**",
 		"/swagger-ui/**",
-		"/v3/api-docs/**"
+		"/v3/api-docs/**",
+		"/.well-known/**",
 	};
 
 	public static final String[] MEMBER_URLS = {
