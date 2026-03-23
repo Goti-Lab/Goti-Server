@@ -49,6 +49,10 @@ RUN java -Djarmode=layertools -jar app.jar extract
 # ===== Stage 3: Runtime =====
 FROM eclipse-temurin:21-jre-alpine
 
+RUN apk update && apk upgrade --no-cache \
+    libexpat gnutls libpng zlib \
+    && rm -rf /var/cache/apk/*
+
 RUN addgroup -S goti && adduser -S goti -G goti
 
 WORKDIR /app
