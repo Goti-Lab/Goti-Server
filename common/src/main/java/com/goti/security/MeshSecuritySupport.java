@@ -1,7 +1,5 @@
 package com.goti.security;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import jakarta.servlet.http.HttpServletResponse;
 
 import org.springframework.http.MediaType;
@@ -9,8 +7,6 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-
-import java.util.Map;
 
 /**
  * MSA 서비스 SecurityConfig 공통 설정.
@@ -22,7 +18,10 @@ import java.util.Map;
  */
 public final class MeshSecuritySupport {
 
-	private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+	private static final String UNAUTHORIZED_BODY =
+		"{\"code\":\"UNAUTHORIZED\",\"message\":\"인증이 필요합니다.\"}";
+	private static final String FORBIDDEN_BODY =
+		"{\"code\":\"FORBIDDEN\",\"message\":\"접근 권한이 없습니다.\"}";
 
 	/** MSA 서비스 공통 공개 경로 (health + swagger + API docs) */
 	public static final String[] PUBLIC_PATHS = {
@@ -51,20 +50,10 @@ public final class MeshSecuritySupport {
 		if (meshEnabled) {
 			http
 				.exceptionHandling(exceptions -> exceptions
-					.authenticationEntryPoint((request, response, authException) -> {
-						response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-						response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-						response.setCharacterEncoding("UTF-8");
-						OBJECT_MAPPER.writeValue(response.getWriter(),
-							Map.of("code", "UNAUTHORIZED", "message", "인증이 필요합니다."));
-					})
-					.accessDeniedHandler((request, response, accessDeniedException) -> {
-						response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-						response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-						response.setCharacterEncoding("UTF-8");
-						OBJECT_MAPPER.writeValue(response.getWriter(),
-							Map.of("code", "FORBIDDEN", "message", "접근 권한이 없습니다."));
-					})
+					.authenticationEntryPoint((request, response, authException) ->
+						writeJsonError(response, HttpServletResponse.SC_UNAUTHORIZED, UNAUTHORIZED_BODY))
+					.accessDeniedHandler((request, response, accessDeniedException) ->
+						writeJsonError(response, HttpServletResponse.SC_FORBIDDEN, FORBIDDEN_BODY))
 				)
 				.addFilterBefore(
 					new MeshAuthenticationFilter(),
@@ -73,5 +62,13 @@ public final class MeshSecuritySupport {
 		}
 
 		return http;
+	}
+
+	private static void writeJsonError(HttpServletResponse response, int status, String body)
+		throws java.io.IOException {
+		response.setStatus(status);
+		response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+		response.setCharacterEncoding("UTF-8");
+		response.getWriter().write(body);
 	}
 }

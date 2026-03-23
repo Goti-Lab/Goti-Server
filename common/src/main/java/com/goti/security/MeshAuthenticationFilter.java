@@ -8,6 +8,7 @@ import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -39,45 +40,62 @@ public class MeshAuthenticationFilter extends OncePerRequestFilter {
 	private static final Set<String> ALLOWED_ROLES = Set.of("MEMBER", "ADMIN");
 
 	@Override
+	protected boolean shouldNotFilter(@NonNull HttpServletRequest request) {
+		String clientCert = request.getHeader(HEADER_CLIENT_CERT);
+		return clientCert == null || clientCert.isBlank();
+	}
+
+	@Override
 	protected void doFilterInternal(
 		@NonNull HttpServletRequest request,
 		@NonNull HttpServletResponse response,
 		@NonNull FilterChain filterChain
 	) throws ServletException, IOException {
 
-		// mesh 환경 확인: Istio mTLS가 주입하는 XFCC 헤더 존재 여부
-		String clientCert = request.getHeader(HEADER_CLIENT_CERT);
-		if (clientCert == null || clientCert.isBlank()) {
+		String userId = request.getHeader(HEADER_USER_ID);
+		if (userId == null || userId.isBlank()) {
 			filterChain.doFilter(request, response);
 			return;
 		}
 
-		String userId = request.getHeader(HEADER_USER_ID);
-
-		if (userId != null && !userId.isBlank()) {
-			try {
-				UUID id = UUID.fromString(userId);
-				String roleHeader = request.getHeader(HEADER_USER_ROLE);
-				String role = DEFAULT_ROLE;
-				if (roleHeader != null && ALLOWED_ROLES.contains(roleHeader.toUpperCase())) {
-					role = roleHeader.toUpperCase();
-				}
-
-				SimpleUserDetails userDetails = new SimpleUserDetails(id, role);
-				UsernamePasswordAuthenticationToken authentication =
-					UsernamePasswordAuthenticationToken.authenticated(
-						userDetails,
-						null,
-						userDetails.getAuthorities()
-					);
-				SecurityContextHolder.getContext().setAuthentication(authentication);
-
-				log.debug("Mesh 인증 설정: userId={}, role={}", id, role);
-			} catch (IllegalArgumentException e) {
-				log.warn("X-User-Id UUID 파싱 실패: userId={}, path={}", userId, request.getRequestURI());
-			}
+		UUID id = parseUserId(userId, request.getRequestURI());
+		if (id == null) {
+			filterChain.doFilter(request, response);
+			return;
 		}
 
+		String role = resolveRole(request.getHeader(HEADER_USER_ROLE));
+		setAuthentication(id, role);
+		log.debug("Mesh 인증 설정: userId={}, role={}", id, role);
+
 		filterChain.doFilter(request, response);
+	}
+
+	private UUID parseUserId(String userId, String requestUri) {
+		try {
+			return UUID.fromString(userId);
+		} catch (IllegalArgumentException e) {
+			log.warn("X-User-Id UUID 파싱 실패: userId={}, path={}", userId, requestUri);
+			return null;
+		}
+	}
+
+	private String resolveRole(String roleHeader) {
+		if (roleHeader != null && ALLOWED_ROLES.contains(roleHeader.toUpperCase())) {
+			return roleHeader.toUpperCase();
+		}
+		return DEFAULT_ROLE;
+	}
+
+	private void setAuthentication(UUID id, String role) {
+		SimpleUserDetails userDetails = new SimpleUserDetails(id, role);
+		UsernamePasswordAuthenticationToken authentication =
+			UsernamePasswordAuthenticationToken.authenticated(
+				userDetails, null, userDetails.getAuthorities()
+			);
+
+		SecurityContext context = SecurityContextHolder.createEmptyContext();
+		context.setAuthentication(authentication);
+		SecurityContextHolder.setContext(context);
 	}
 }

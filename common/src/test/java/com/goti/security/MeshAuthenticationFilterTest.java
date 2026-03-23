@@ -36,7 +36,7 @@ class MeshAuthenticationFilterTest {
 		request.addHeader("X-User-Role", "MEMBER");
 
 		// When
-		filter.doFilterInternal(request, response, filterChain);
+		filter.doFilter(request, response, filterChain);
 
 		// Then
 		assertThat(SecurityContextHolder.getContext().getAuthentication()).isNull();
@@ -52,7 +52,7 @@ class MeshAuthenticationFilterTest {
 		request.addHeader("X-User-Role", "ADMIN");
 
 		// When
-		filter.doFilterInternal(request, response, filterChain);
+		filter.doFilter(request, response, filterChain);
 
 		// Then
 		var auth = SecurityContextHolder.getContext().getAuthentication();
@@ -76,7 +76,7 @@ class MeshAuthenticationFilterTest {
 		// X-User-Role 없음
 
 		// When
-		filter.doFilterInternal(request, response, filterChain);
+		filter.doFilter(request, response, filterChain);
 
 		// Then
 		var auth = SecurityContextHolder.getContext().getAuthentication();
@@ -96,7 +96,7 @@ class MeshAuthenticationFilterTest {
 		request.addHeader("X-User-Role", "SUPER_ADMIN");
 
 		// When
-		filter.doFilterInternal(request, response, filterChain);
+		filter.doFilter(request, response, filterChain);
 
 		// Then
 		var auth = SecurityContextHolder.getContext().getAuthentication();
@@ -115,7 +115,7 @@ class MeshAuthenticationFilterTest {
 		request.addHeader("X-User-Role", "MEMBER");
 
 		// When
-		filter.doFilterInternal(request, response, filterChain);
+		filter.doFilter(request, response, filterChain);
 
 		// Then
 		assertThat(SecurityContextHolder.getContext().getAuthentication()).isNull();
@@ -129,7 +129,7 @@ class MeshAuthenticationFilterTest {
 		// X-User-Id 없음
 
 		// When
-		filter.doFilterInternal(request, response, filterChain);
+		filter.doFilter(request, response, filterChain);
 
 		// Then
 		assertThat(SecurityContextHolder.getContext().getAuthentication()).isNull();
@@ -145,7 +145,7 @@ class MeshAuthenticationFilterTest {
 		request.addHeader("X-User-Role", "admin");
 
 		// When
-		filter.doFilterInternal(request, response, filterChain);
+		filter.doFilter(request, response, filterChain);
 
 		// Then
 		var auth = SecurityContextHolder.getContext().getAuthentication();
