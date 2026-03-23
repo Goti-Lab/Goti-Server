@@ -17,6 +17,7 @@ public record JwtProperties(
 	String secret,
 	String rsaPrivateKey,
 	String rsaPublicKey,
+	String issuer,
 	Duration accessValidTime,
 	Duration refreshValidTime,
 	Duration socialVerifyValidTime

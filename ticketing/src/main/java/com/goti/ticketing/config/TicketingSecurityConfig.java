@@ -1,6 +1,7 @@
 package com.goti.ticketing.config;
 
 import static com.goti.security.MeshSecuritySupport.PUBLIC_PATHS;
+import static com.goti.ticketing.constants.SecurityPathConstants.PUBLIC_URLS;
 
 import com.goti.security.MeshProperties;
 import com.goti.security.MeshSecuritySupport;
@@ -27,7 +28,7 @@ public class TicketingSecurityConfig {
 		MeshSecuritySupport.applyDefaults(http, meshProperties.enabled())
 			.authorizeHttpRequests(auth -> {
 				auth.requestMatchers(PUBLIC_PATHS).permitAll();
-				auth.requestMatchers("/api/v1/games/**").permitAll();
+				auth.requestMatchers(PUBLIC_URLS).permitAll();
 				if (meshProperties.enabled()) {
 					auth.anyRequest().authenticated();
 				} else {

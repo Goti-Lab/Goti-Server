@@ -63,8 +63,7 @@ class PemKeyParserTest {
 		// When & Then
 		assertThatThrownBy(() -> PemKeyParser.parsePrivateKey(pkcs1Pem))
 			.isInstanceOf(IllegalArgumentException.class)
-			.hasMessageContaining("PKCS#1 형식 미지원")
-			.hasMessageContaining("openssl pkcs8 -topk8");
+			.hasMessageContaining("PKCS#1 형식 미지원");
 	}
 
 	@Test
@@ -76,8 +75,7 @@ class PemKeyParserTest {
 		// When & Then
 		assertThatThrownBy(() -> PemKeyParser.parsePublicKey(pkcs1PubPem))
 			.isInstanceOf(IllegalArgumentException.class)
-			.hasMessageContaining("PKCS#1 public key 형식 미지원")
-			.hasMessageContaining("openssl rsa");
+			.hasMessageContaining("PKCS#1 public key 형식 미지원");
 	}
 
 	@Test

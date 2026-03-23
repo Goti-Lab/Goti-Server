@@ -1,5 +1,7 @@
 package com.goti.security;
 
+import com.goti.constants.UserRole;
+
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -7,14 +9,17 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
+import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
  * Istio sidecar가 JWT를 검증하고 주입한 X-User-Id / X-User-Role 헤더를
@@ -36,8 +41,9 @@ public class MeshAuthenticationFilter extends OncePerRequestFilter {
 	private static final String HEADER_USER_ID = "X-User-Id";
 	private static final String HEADER_USER_ROLE = "X-User-Role";
 	private static final String HEADER_CLIENT_CERT = "X-Forwarded-Client-Cert";
-	private static final String DEFAULT_ROLE = "MEMBER";
-	private static final Set<String> ALLOWED_ROLES = Set.of("MEMBER", "ADMIN");
+	private static final Set<String> ALLOWED_ROLES = Arrays.stream(UserRole.values())
+		.map(Enum::name)
+		.collect(Collectors.toUnmodifiableSet());
 
 	@Override
 	protected boolean shouldNotFilter(@NonNull HttpServletRequest request) {
@@ -58,9 +64,8 @@ public class MeshAuthenticationFilter extends OncePerRequestFilter {
 			return;
 		}
 
-		UUID id = parseUserId(userId, request.getRequestURI());
+		UUID id = parseUserId(userId, request, response);
 		if (id == null) {
-			filterChain.doFilter(request, response);
 			return;
 		}
 
@@ -71,11 +76,17 @@ public class MeshAuthenticationFilter extends OncePerRequestFilter {
 		filterChain.doFilter(request, response);
 	}
 
-	private UUID parseUserId(String userId, String requestUri) {
+	private UUID parseUserId(String userId, HttpServletRequest request, HttpServletResponse response)
+		throws IOException {
 		try {
 			return UUID.fromString(userId);
 		} catch (IllegalArgumentException e) {
-			log.warn("X-User-Id UUID 파싱 실패: userId={}, path={}", userId, requestUri);
+			log.warn("X-User-Id UUID 파싱 실패: userId={}, path={}", userId, request.getRequestURI());
+			response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+			response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+			response.setCharacterEncoding("UTF-8");
+			response.getWriter().write(
+				"{\"code\":\"AUTH_INVALID\",\"message\":\"올바르지 않은 인증 정보입니다.\"}");
 			return null;
 		}
 	}
@@ -84,7 +95,7 @@ public class MeshAuthenticationFilter extends OncePerRequestFilter {
 		if (roleHeader != null && ALLOWED_ROLES.contains(roleHeader.toUpperCase())) {
 			return roleHeader.toUpperCase();
 		}
-		return DEFAULT_ROLE;
+		return UserRole.MEMBER.name();
 	}
 
 	private void setAuthentication(UUID id, String role) {

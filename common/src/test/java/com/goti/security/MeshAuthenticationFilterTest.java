@@ -107,8 +107,8 @@ class MeshAuthenticationFilterTest {
 	}
 
 	@Test
-	@DisplayName("X-User-Id가 UUID 형식이 아니면 인증 설정하지 않는다")
-	void should_skipAuthentication_when_userIdInvalidUuid() throws Exception {
+	@DisplayName("X-User-Id가 UUID 형식이 아니면 401을 반환한다")
+	void should_return401_when_userIdInvalidUuid() throws Exception {
 		// Given
 		request.addHeader("X-Forwarded-Client-Cert", "Hash=abc123");
 		request.addHeader("X-User-Id", "not-a-uuid");
@@ -119,6 +119,8 @@ class MeshAuthenticationFilterTest {
 
 		// Then
 		assertThat(SecurityContextHolder.getContext().getAuthentication()).isNull();
+		assertThat(response.getStatus()).isEqualTo(401);
+		assertThat(response.getContentAsString()).contains("AUTH_INVALID");
 	}
 
 	@Test

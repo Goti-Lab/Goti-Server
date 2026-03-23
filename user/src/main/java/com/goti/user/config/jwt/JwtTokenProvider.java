@@ -23,7 +23,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -42,9 +41,6 @@ import java.util.UUID;
 public class JwtTokenProvider {
 	private final JwtProperties jwtProperties;
 	private final ExtendedUserDetailsService userDetailsService;
-
-	@Value("${spring.application.name}")
-	private String applicationName;
 
 	private static final String TOKEN_PREFIX = "Bearer ";
 	private static final String ROLE_CLAIM_KEY = "role";
@@ -93,7 +89,7 @@ public class JwtTokenProvider {
 		var builder = Jwts.builder()
 			.subject(id.toString())
 			.id(jwtId)
-			.issuer(applicationName)
+			.issuer(jwtProperties.issuer())
 			.claim(ROLE_CLAIM_KEY, role.name())
 			.claim(MOBILE_CLAIM_KEY, mobile)
 			.issuedAt(issuedAt)
@@ -117,7 +113,7 @@ public class JwtTokenProvider {
 		var builder = Jwts.builder()
 			.subject(SOCIAL_VERIFY_SUBJECT)
 			.id(jwtId)
-			.issuer(applicationName)
+			.issuer(jwtProperties.issuer())
 			.claim(PROVIDER_EMAIL_KEY, email)
 			.claim(PROVIDER_TYPE_KEY, provider)
 			.claim(PROVIDER_ID_KEY, providerId)

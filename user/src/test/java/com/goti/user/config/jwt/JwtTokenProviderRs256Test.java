@@ -14,8 +14,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.springframework.test.util.ReflectionTestUtils;
-
 import com.goti.user.config.properties.JwtProperties;
 import com.goti.user.constants.TokenType;
 import com.goti.user.constants.UserRole;
@@ -53,7 +51,7 @@ class JwtTokenProviderRs256Test {
 
 	private JwtTokenProvider createProvider(String privateKey, String publicKey) {
 		JwtProperties properties = new JwtProperties(
-			HMAC_SECRET, privateKey, publicKey,
+			HMAC_SECRET, privateKey, publicKey, "goti-user-service",
 			Duration.ofHours(1), Duration.ofDays(7), Duration.ofMinutes(5)
 		);
 		ExtendedUserDetailsService mockService = new ExtendedUserDetailsService() {
@@ -68,7 +66,6 @@ class JwtTokenProviderRs256Test {
 			}
 		};
 		JwtTokenProvider p = new JwtTokenProvider(properties, mockService);
-		ReflectionTestUtils.setField(p, "applicationName", "goti-user");
 		p.initKeys();
 		return p;
 	}
@@ -174,7 +171,7 @@ class JwtTokenProviderRs256Test {
 		void should_throwExpired_when_tokenExpired() {
 			// Given: 이미 만료된 토큰을 생성하기 위해 유효시간 0인 provider
 			JwtProperties properties = new JwtProperties(
-				HMAC_SECRET, rsaPrivateKeyPem, rsaPublicKeyPem,
+				HMAC_SECRET, rsaPrivateKeyPem, rsaPublicKeyPem, "goti-user-service",
 				Duration.ZERO, Duration.ZERO, Duration.ZERO
 			);
 			ExtendedUserDetailsService mockService = new ExtendedUserDetailsService() {
@@ -189,7 +186,6 @@ class JwtTokenProviderRs256Test {
 				}
 			};
 			JwtTokenProvider expiredProvider = new JwtTokenProvider(properties, mockService);
-			ReflectionTestUtils.setField(expiredProvider, "applicationName", "goti-user");
 			expiredProvider.initKeys();
 
 			UUID userId = UUID.randomUUID();

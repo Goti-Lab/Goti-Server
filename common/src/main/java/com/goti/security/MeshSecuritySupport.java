@@ -1,5 +1,7 @@
 package com.goti.security;
 
+import com.goti.constants.messages.ErrorCode;
+
 import jakarta.servlet.http.HttpServletResponse;
 
 import org.springframework.http.MediaType;
@@ -18,10 +20,8 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
  */
 public final class MeshSecuritySupport {
 
-	private static final String UNAUTHORIZED_BODY =
-		"{\"code\":\"UNAUTHORIZED\",\"message\":\"인증이 필요합니다.\"}";
-	private static final String FORBIDDEN_BODY =
-		"{\"code\":\"FORBIDDEN\",\"message\":\"접근 권한이 없습니다.\"}";
+	private static final String UNAUTHORIZED_BODY = errorJson(ErrorCode.AUTH_INVALID_ACCESS_PATH);
+	private static final String FORBIDDEN_BODY = errorJson(ErrorCode.AUTH_PERMISSION_DENIED);
 
 	/** MSA 서비스 공통 공개 경로 (health + swagger + API docs) */
 	public static final String[] PUBLIC_PATHS = {
@@ -70,5 +70,9 @@ public final class MeshSecuritySupport {
 		response.setContentType(MediaType.APPLICATION_JSON_VALUE);
 		response.setCharacterEncoding("UTF-8");
 		response.getWriter().write(body);
+	}
+
+	private static String errorJson(ErrorCode errorCode) {
+		return "{\"code\":\"" + errorCode.name() + "\",\"message\":\"" + errorCode.getMessage() + "\"}";
 	}
 }
