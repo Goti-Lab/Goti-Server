@@ -91,10 +91,7 @@ public class SocialAuthService {
 				return new CustomException(ErrorCode.MEMBER_NOT_FOUND);
 			}
 		);
-		String accessToken = createToken(member, TokenType.ACCESS);
-		String refreshToken = createToken(member, TokenType.REFRESH);
-		saveRefreshTokenJti(member.getId(), refreshToken);
-		return Pair.of(accessToken, refreshToken);
+		return authService.issueTokens(member);
 	}
 
 	public Pair<String, String> signup(
@@ -110,15 +107,17 @@ public class SocialAuthService {
 		MemberEntity member = getOrCreateMember(name, mobile, gender, birthDate);
 
 		createSocialProvider(member, verifiedSocialInfo);
-
-		String accessToken = createToken(member, TokenType.ACCESS);
-		String refreshToken = createToken(member, TokenType.REFRESH);
-		saveRefreshTokenJti(member.getId(), refreshToken);
-		return Pair.of(accessToken, refreshToken);
+		return authService.issueTokens(member);
 	}
 
 	public void sendSignupSmsCode(String socialVerifyToken, String mobile) {
 		authService.sendSmsCode(socialVerifyToken, mobile);
+	}
+
+	public Pair<String, String> reissueToken(String refreshToken) {
+		UUID memberId = authService.identifyByToken(refreshToken);
+		MemberEntity member = memberService.getById(memberId);
+		return authService.issueTokens(member);
 	}
 
 	private void validateState(OAuthProvider provider, String state) {
@@ -190,20 +189,6 @@ public class SocialAuthService {
 				}
 			}
 		);
-	}
-
-	private String createToken(MemberEntity member, TokenType tokenType) {
-		return jwtTokenProvider.create(
-			member.getId(),
-			member.getMobile(),
-			member.getRole(),
-			tokenType
-		);
-	}
-
-	private void saveRefreshTokenJti(UUID memberId, String token) {
-		String refreshJti = jwtTokenProvider.extractJti(token);
-		redisCache.set(RedisKey.REFRESH_TOKEN, memberId, refreshJti);
 	}
 
 

@@ -124,6 +124,10 @@ public class JwtTokenProvider {
 		return getClaims(token).getId();
 	}
 
+	public String extractSubject(String token) {
+		return getClaims(token).getSubject();
+	}
+
 	private Claims getClaims(String token) {
 		return Jwts.parser()
 			.verifyWith(jwtProperties.secretKey())
