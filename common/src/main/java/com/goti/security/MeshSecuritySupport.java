@@ -24,6 +24,14 @@ public final class MeshSecuritySupport {
 
 	private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
+	/** MSA 서비스 공통 공개 경로 (health + swagger + API docs) */
+	public static final String[] PUBLIC_PATHS = {
+		"/actuator/health",
+		"/actuator/health/**",
+		"/swagger-ui/**",
+		"/v3/api-docs/**"
+	};
+
 	private MeshSecuritySupport() {
 	}
 
