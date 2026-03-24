@@ -154,6 +154,7 @@ public class GameRegistrationTest {
 	void saveHomeTeam() {
 		homeTeam = BaseballTeamEntity.create(
 			TeamCode.KIA,
+			"KIA",
 			"KIA 타이거즈",
 			"KIA Tigers",
 			"기아",
@@ -175,6 +176,7 @@ public class GameRegistrationTest {
 	void saveAwayTeam() {
 		awayTeam = BaseballTeamEntity.create(
 			TeamCode.SS,
+			"삼성",
 			"삼성 라이온즈",
 			"Samsung Lions",
 			"삼성",

@@ -91,6 +91,7 @@ public class HomeStadiumCreateApiTest {
 	private void saveBaseballTeam() {
 		baseballTeam = BaseballTeamEntity.create(
 			TeamCode.SS,
+			"삼성",
 			"삼성라이온즈",
 			"Samsung Lions",
 			"삼성",

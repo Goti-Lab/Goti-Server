@@ -40,6 +40,7 @@ public class BaseballTeamCreateApiTest {
 		BaseballTeamCreateRequest request =
 			new BaseballTeamCreateRequest(
 				TeamCode.SS,
+				"삼성",
 				"삼성라이온즈",
 				"Samsung Lions",
 				"삼성",

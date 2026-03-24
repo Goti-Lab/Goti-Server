@@ -34,6 +34,9 @@ public class BaseballTeamEntity extends ModificationTimestampEntity {
 	private TeamCode teamCode;
 
 	@Column(nullable = false)
+	private String displayName;
+
+	@Column(nullable = false)
 	private String teamName;
 
 	@Column(nullable = false)
@@ -77,6 +80,7 @@ public class BaseballTeamEntity extends ModificationTimestampEntity {
 
 	private BaseballTeamEntity(
 		TeamCode teamCode,
+		String displayName,
 		String teamName,
 		String teamNameEn,
 		String sponsor,
@@ -93,6 +97,7 @@ public class BaseballTeamEntity extends ModificationTimestampEntity {
 		String logoUrl
 	) {
 		this.teamCode = teamCode;
+		this.displayName = displayName;
 		this.teamName = teamName;
 		this.teamNameEn = teamNameEn;
 		this.sponsor = sponsor;
@@ -111,6 +116,7 @@ public class BaseballTeamEntity extends ModificationTimestampEntity {
 
 	public static BaseballTeamEntity create(
 		TeamCode teamCode,
+		String displayName,
 		String teamName,
 		String teamNameEn,
 		String sponsor,
@@ -128,13 +134,13 @@ public class BaseballTeamEntity extends ModificationTimestampEntity {
 	) {
 
 		validate(
-			teamCode, teamName, teamNameEn, sponsor,
+			teamCode, displayName, teamName, teamNameEn, sponsor,
 			homeGround, foundedYear, officeAddress, zipCode,
 			siteAddress, owner, generalManager, director
 		);
 
 		return new BaseballTeamEntity(
-			teamCode, teamName, teamNameEn, sponsor, homeGround, foundedYear,
+			teamCode, displayName, teamName, teamNameEn, sponsor, homeGround, foundedYear,
 			officeAddress, zipCode, siteAddress, owner,
 			ownerAgency, ceo, generalManager, director, logoUrl
 		);
@@ -143,6 +149,7 @@ public class BaseballTeamEntity extends ModificationTimestampEntity {
 
 	private static void validate(
 		TeamCode teamCode,
+		String displayName,
 		String teamName,
 		String teamNameEn,
 		String sponsor,
@@ -159,6 +166,11 @@ public class BaseballTeamEntity extends ModificationTimestampEntity {
 		Preconditions.domainValidate(
 			teamCode != null,
 			"구단(팀)코드는 비어있을 수 없습니다."
+		);
+
+		Preconditions.domainValidate(
+			StringUtils.hasText(displayName),
+			"구단(팀) 표시명은 비어있을 수 없습니다."
 		);
 
 		Preconditions.domainValidate(

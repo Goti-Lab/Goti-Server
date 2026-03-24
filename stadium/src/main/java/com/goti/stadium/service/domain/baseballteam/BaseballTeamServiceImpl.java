@@ -25,6 +25,7 @@ public class BaseballTeamServiceImpl implements BaseballTeamService {
 	public BaseballTeamCreateResponse create(BaseballTeamCreateCommand command) {
 		BaseballTeamEntity baseballTeam = BaseballTeamEntity.create(
 			command.teamCode(),
+			command.displayName(),
 			command.teamName(),
 			command.teamNameEn(),
 			command.sponsor(),
