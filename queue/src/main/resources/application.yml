@@ -54,3 +54,7 @@ management:
 logging:
   pattern:
     level: "%5p [${spring.application.name:},%X{trace_id:-},%X{span_id:-}]"
+
+queue:
+  max-capacity: ${QUEUE_MAX_CAPACITY:5000}
+  entry-ttl: ${QUEUE_ENTRY_TTL:10m}
