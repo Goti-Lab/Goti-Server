@@ -4,92 +4,86 @@ import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 import java.security.MessageDigest;
 import java.time.Instant;
-import java.util.Base64;
+import java.util.Date;
 import java.util.UUID;
-import java.io.IOException;
 
-import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
-import javax.crypto.spec.GCMParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
-import org.springframework.beans.factory.annotation.Value;
+import jakarta.annotation.PostConstruct;
+
 import org.springframework.stereotype.Component;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.goti.constants.messages.ErrorCode;
 import com.goti.exception.CustomException;
+import com.goti.queue.config.properties.QueueProperties;
 
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtException;
+import io.jsonwebtoken.JwtParser;
+import io.jsonwebtoken.Jwts;
 import lombok.RequiredArgsConstructor;
 
 @Component
 @RequiredArgsConstructor
 public class QueueTokenProvider {
 
-	private static final String TRANSFORMATION = "AES/GCM/NoPadding";
 	private static final String KEY_ALGORITHM = "AES";
-	private static final int IV_LENGTH = 12;
-	private static final int TAG_LENGTH = 128;
+	private static final String GAME_ID_CLAIM = "gameId";
+	private static final String QUEUE_NUMBER_CLAIM = "queueNumber";
 
-	private final ObjectMapper objectMapper;
+	private final QueueProperties queueProperties;
 
-	@Value("${jwt.secret}")
-	private String secret;
+	private SecretKey secretKey;
+	private JwtParser jwtParser;
+
+	@PostConstruct
+	void init() {
+		try {
+			this.secretKey = secretKey();
+			this.jwtParser = Jwts.parser()
+				.decryptWith(secretKey)
+				.build();
+		} catch (GeneralSecurityException e) {
+			throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR, e);
+		}
+	}
 
 	public String createToken(UUID gameId, UUID userId, long queueNumber, Instant issuedAt) {
-		QueueTokenPayload payload = new QueueTokenPayload(
-			UUID.randomUUID(),
-			gameId,
-			userId,
-			queueNumber,
-			issuedAt
-		);
 		try {
-			byte[] iv = UUID.randomUUID().toString().substring(0, IV_LENGTH).getBytes(StandardCharsets.UTF_8);
-			Cipher cipher = Cipher.getInstance(TRANSFORMATION);
-			cipher.init(Cipher.ENCRYPT_MODE, secretKey(), new GCMParameterSpec(TAG_LENGTH, iv));
-			byte[] encrypted = cipher.doFinal(objectMapper.writeValueAsBytes(payload));
-
-			return encode(iv) + "." + encode(encrypted);
-		} catch (GeneralSecurityException | JsonProcessingException e) {
+			return Jwts.builder()
+				.id(UUID.randomUUID().toString())
+				.subject(userId.toString())
+				.claim(GAME_ID_CLAIM, gameId.toString())
+				.claim(QUEUE_NUMBER_CLAIM, queueNumber)
+				.issuedAt(Date.from(issuedAt))
+				.encryptWith(secretKey, Jwts.KEY.DIRECT, Jwts.ENC.A256GCM)
+				.compact();
+		} catch (JwtException e) {
 			throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR, e);
 		}
 	}
 
 	public QueueTokenPayload parse(String token) {
 		try {
-			String[] parts = token.split("\\.");
-			if (parts.length != 2) {
-				throw new CustomException(ErrorCode.AUTH_INVALID);
-			}
-
-			byte[] iv = decode(parts[0]);
-			byte[] encrypted = decode(parts[1]);
-
-			Cipher cipher = Cipher.getInstance(TRANSFORMATION);
-			cipher.init(Cipher.DECRYPT_MODE, secretKey(), new GCMParameterSpec(TAG_LENGTH, iv));
-			byte[] decrypted = cipher.doFinal(encrypted);
-
-			return objectMapper.readValue(decrypted, QueueTokenPayload.class);
+			Claims claims = jwtParser.parseEncryptedClaims(token).getPayload();
+			return new QueueTokenPayload(
+				UUID.fromString(claims.getId()),
+				UUID.fromString(claims.get(GAME_ID_CLAIM, String.class)),
+				UUID.fromString(claims.getSubject()),
+				claims.get(QUEUE_NUMBER_CLAIM, Long.class),
+				claims.getIssuedAt().toInstant()
+			);
 		} catch (CustomException e) {
 			throw e;
-		} catch (GeneralSecurityException | IOException e) {
+		} catch (RuntimeException e) {
 			throw new CustomException(ErrorCode.AUTH_INVALID, e);
 		}
 	}
 
 	private SecretKey secretKey() throws GeneralSecurityException {
 		MessageDigest digest = MessageDigest.getInstance("SHA-256");
-		byte[] keyBytes = digest.digest(secret.getBytes(StandardCharsets.UTF_8));
+		byte[] keyBytes = digest.digest(queueProperties.tokenSecret().getBytes(StandardCharsets.UTF_8));
 		return new SecretKeySpec(keyBytes, KEY_ALGORITHM);
-	}
-
-	private String encode(byte[] value) {
-		return Base64.getUrlEncoder().withoutPadding().encodeToString(value);
-	}
-
-	private byte[] decode(String value) {
-		return Base64.getUrlDecoder().decode(value);
 	}
 }

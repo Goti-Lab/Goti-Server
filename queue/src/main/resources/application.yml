@@ -36,12 +36,6 @@ spring:
     import:
       - optional:file:.env[.properties]
 
-jwt:
-  secret: ${JWT_SECRET_KEY}
-  access-valid-time: ${JWT_ACCESS_TIME}
-  refresh-valid-time: ${JWT_REFRESH_TIME}
-  social-verify-valid-time: ${JWT_SOCIAL_VERIFY_TIME:300000}
-
 management:
   endpoints:
     web:
@@ -58,3 +52,4 @@ logging:
 queue:
   max-capacity: ${QUEUE_MAX_CAPACITY:5000}
   entry-ttl: ${QUEUE_ENTRY_TTL:10m}
+  token-secret: ${QUEUE_TOKEN_SECRET:goti-2026-queue-token-secret-key-minimum-32-chars}
