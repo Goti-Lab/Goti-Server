@@ -59,6 +59,8 @@ public enum ErrorCode {
 	GAME_ALREADY_EXISTS(HttpStatus.CONFLICT, "이미 동일한 경기 일정이 존재합니다."),
 	GAME_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 경기입니다."),
 
+	QUEUE_META_NOT_FOUND(HttpStatus.NOT_FOUND, "대기열 메타 정보를 찾을 수 없습니다."),
+
 	ORDER_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 주문입니다."),
 	ORDER_HISTORY_NOT_FOUND(HttpStatus.NOT_FOUND, "주문자 정보를 찾을 수 없습니다."),
 	ORDER_PAYMENT_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "결제 가능한 주문 상태가 아닙니다."),

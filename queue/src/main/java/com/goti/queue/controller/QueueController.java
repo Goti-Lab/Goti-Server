@@ -6,6 +6,8 @@ import java.util.UUID;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -14,7 +16,9 @@ import org.springframework.web.bind.annotation.RestController;
 import com.goti.global.api.ApiSuccessResponse;
 import com.goti.queue.dto.request.QueueEnterRequest;
 import com.goti.queue.dto.response.QueueEnterResponse;
+import com.goti.queue.dto.response.QueueStatusResponse;
 import com.goti.queue.service.QueueEnterService;
+import com.goti.queue.service.QueueStatusService;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -28,6 +32,7 @@ import lombok.RequiredArgsConstructor;
 public class QueueController {
 
 	private final QueueEnterService queueEnterService;
+	private final QueueStatusService queueStatusService;
 
 	@Operation(
 		summary = "대기열 진입",
@@ -39,5 +44,17 @@ public class QueueController {
 		@Valid @RequestBody QueueEnterRequest request
 	) {
 		return wrap(queueEnterService.enter(request, userId));
+	}
+
+	@Operation(
+		summary = "대기열 상태 조회",
+		description = "현재 입장 가능 순번 계산을 위한 대기열 메타 정보 조회 API"
+	)
+	@GetMapping("/{gameId}/status")
+	public ResponseEntity<ApiSuccessResponse<QueueStatusResponse>> getStatus(
+		@AuthenticationPrincipal(expression = "id") UUID userId,
+		@PathVariable UUID gameId
+	) {
+		return wrap(queueStatusService.getStatus(gameId, userId));
 	}
 }
