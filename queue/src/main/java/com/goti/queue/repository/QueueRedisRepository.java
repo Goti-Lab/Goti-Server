@@ -10,7 +10,8 @@ import org.springframework.stereotype.Repository;
 
 import com.goti.queue.constants.QueueMetaField;
 import com.goti.queue.constants.QueueRedisKey;
-import com.goti.queue.domain.QueueEntry;
+import com.goti.queue.domain.model.QueueEntry;
+import com.goti.queue.domain.model.QueueMeta;
 
 import lombok.RequiredArgsConstructor;
 
@@ -72,5 +73,25 @@ public class QueueRedisRepository {
 			QueueMetaField.LAST_ENTERED_RANK, 0L,
 			QueueMetaField.UPDATED_AT, Instant.now().toString()
 		));
+	}
+
+	public QueueMeta getMeta(UUID gameId) {
+		Map<Object, Object> meta = redisTemplate.opsForHash().entries(QueueRedisKey.META.getKey(gameId));
+		if (meta.isEmpty()) {
+			return null;
+		}
+
+		return new QueueMeta(
+			longValue(meta.get(QueueMetaField.MAX_CAPACITY)),
+			longValue(meta.get(QueueMetaField.ACTIVE_COUNT)),
+			longValue(meta.get(QueueMetaField.PUBLISHED_RANK)),
+			longValue(meta.get(QueueMetaField.CURRENT_ALLOWED_RANK)),
+			longValue(meta.get(QueueMetaField.LAST_ENTERED_RANK)),
+			Instant.parse(String.valueOf(meta.get(QueueMetaField.UPDATED_AT)))
+		);
+	}
+
+	private long longValue(Object value) {
+		return ((Number)value).longValue();
 	}
 }
