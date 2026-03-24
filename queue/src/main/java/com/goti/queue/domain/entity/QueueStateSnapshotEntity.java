@@ -3,8 +3,6 @@ package com.goti.queue.domain.entity;
 import java.time.Instant;
 import java.util.UUID;
 
-import com.goti.domain.base.ModificationTimestampEntity;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -18,7 +16,7 @@ import static lombok.AccessLevel.PROTECTED;
 @Entity
 @Table(name = "queue_state_snapshots")
 @NoArgsConstructor(access = PROTECTED)
-public class QueueStateSnapshotEntity extends ModificationTimestampEntity {
+public class QueueStateSnapshotEntity {
 
 	@Id
 	@Column(nullable = false, updatable = false)
