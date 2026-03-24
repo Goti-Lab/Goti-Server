@@ -53,7 +53,7 @@ public class AuthServiceImpl implements AuthService {
 	}
 
 	@Override
-	public UUID identifyByToken(String token) {
+	public UUID validateTokenAndGetMemberId(String token) {
 		UUID memberId = parseMemberId(token);
 		validateJti(token, memberId);
 		return memberId;
