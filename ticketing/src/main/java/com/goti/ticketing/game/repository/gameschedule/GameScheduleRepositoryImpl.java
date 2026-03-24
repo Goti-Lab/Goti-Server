@@ -1,10 +1,13 @@
 package com.goti.ticketing.game.repository.gameschedule;
 
-import com.goti.ticketing.domain.entity.game.GameScheduleEntity;
+import com.goti.stadium.domain.entity.stadium.QStadiumEntity;
+import com.goti.stadium.domain.entity.team.QBaseballTeamEntity;
 import com.goti.ticketing.domain.entity.game.QGameScheduleEntity;
 import com.goti.ticketing.domain.entity.game.QGameStatusEntity;
 import com.goti.ticketing.domain.entity.game.QGameTicketingStatusEntity;
 import com.goti.ticketing.game.dto.request.GameScheduleSearchCondition;
+import com.goti.ticketing.game.dto.response.GameScheduleSearchResponse;
+import com.goti.ticketing.game.dto.response.QGameScheduleSearchResponse;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 
@@ -28,6 +31,8 @@ public class GameScheduleRepositoryImpl implements GameScheduleRepositoryCustom 
 	private final QGameScheduleEntity gameSchedule = gameScheduleEntity;
 	private final QGameStatusEntity gameStatus = QGameStatusEntity.gameStatusEntity;
 	private final QGameTicketingStatusEntity ticketingStatus = QGameTicketingStatusEntity.gameTicketingStatusEntity;
+
+
 	@Override
 	public boolean existsDuplicateSchedule(
 		UUID homeTeamId,
@@ -45,11 +50,39 @@ public class GameScheduleRepositoryImpl implements GameScheduleRepositoryCustom 
 	}
 
 	@Override
-	public List<GameScheduleEntity> searchSchedules(GameScheduleSearchCondition condition) {
+	public List<GameScheduleSearchResponse> searchSchedules(GameScheduleSearchCondition condition) {
+
+		QBaseballTeamEntity homeTeam = new QBaseballTeamEntity("homeTeam");
+		QBaseballTeamEntity awayTeam = new QBaseballTeamEntity("awayTeam");
+		QStadiumEntity stadium = QStadiumEntity.stadiumEntity;
+
 		return jpaQueryFactory
-			.selectFrom(gameSchedule)
-			.leftJoin(gameStatus).on(gameStatus.gameSchedule.eq(gameSchedule)).fetchJoin()
-			.leftJoin(ticketingStatus).on(ticketingStatus.gameSchedule.eq(gameSchedule)).fetchJoin()
+			.select(
+				new QGameScheduleSearchResponse(
+					gameSchedule.id,
+					gameSchedule.startAt,
+					gameSchedule.leagueType,
+					gameSchedule.homeTeamId,
+					gameSchedule.awayTeamId,
+					gameSchedule.stadiumId,
+					homeTeam.displayName,
+					awayTeam.displayName,
+					stadium.location,
+					gameStatus.gameStatus,
+					gameStatus.homeTeamScore,
+					gameStatus.awayTeamScore,
+					gameStatus.gameResult,
+					ticketingStatus.status,
+					ticketingStatus.ticketingOpenedAt,
+					ticketingStatus.ticketingEndAt
+				)
+			)
+			.from(gameSchedule)
+			.leftJoin(gameStatus).on(gameStatus.gameSchedule.eq(gameSchedule))
+			.leftJoin(ticketingStatus).on(ticketingStatus.gameSchedule.eq(gameSchedule))
+			.leftJoin(homeTeam).on(homeTeam.id.eq(gameSchedule.homeTeamId))
+			.leftJoin(awayTeam).on(awayTeam.id.eq(gameSchedule.awayTeamId))
+			.leftJoin(stadium).on(stadium.id.eq(gameSchedule.stadiumId))
 			.where(
 				teamIdEq(gameSchedule, condition.teamId()),
 				dateFilter(gameSchedule, condition)

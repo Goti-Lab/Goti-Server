@@ -1,10 +1,10 @@
 package com.goti.ticketing.game.service;
 
 import com.goti.ticketing.GotiTicketingApplication;
-import com.goti.ticketing.constants.LeagueType;
 import com.goti.stadium.constants.TeamCode;
 import com.goti.stadium.domain.entity.stadium.StadiumEntity;
 import com.goti.stadium.domain.entity.team.BaseballTeamEntity;
+import com.goti.ticketing.constants.LeagueType;
 import com.goti.ticketing.game.dto.request.GameScheduleSearchCondition;
 import com.goti.ticketing.game.dto.response.GameScheduleSearchResponse;
 import com.goti.ticketing.game.service.application.GameManagementService;
@@ -153,6 +153,7 @@ public class GameScheduleSearchServiceTest {
 	private void saveKia() {
 		kia = BaseballTeamEntity.create(
 			TeamCode.KIA,
+			"KIA",
 			"KIA 타이거즈",
 			"KIA Tigers",
 			"기아",
@@ -174,6 +175,7 @@ public class GameScheduleSearchServiceTest {
 	private void saveSamsung() {
 		samsung = BaseballTeamEntity.create(
 			TeamCode.SS,
+			"삼성",
 			"삼성 라이온즈",
 			"Samsung Lions",
 			"삼성",

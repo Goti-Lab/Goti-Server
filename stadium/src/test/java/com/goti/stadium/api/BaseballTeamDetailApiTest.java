@@ -1,4 +1,5 @@
 package com.goti.stadium.api;
+
 import com.goti.stadium.GotiStadiumApplication;
 
 import com.goti.stadium.constants.TeamCode;
@@ -71,6 +72,7 @@ public class BaseballTeamDetailApiTest {
 		BaseballTeamCreateRequest request =
 			new BaseballTeamCreateRequest(
 				TeamCode.SS,
+				"삼성",
 				"삼성라이온즈",
 				"Samsung Lions",
 				"삼성",

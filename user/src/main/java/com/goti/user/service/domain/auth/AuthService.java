@@ -10,7 +10,8 @@ public interface AuthService {
 
 	void verifySmsCode(String mobile, String authCode);
 
-	UUID identifyByToken(String token);
+	UUID validateTokenAndGetMemberId(String token);
 
 	Pair<String, String> issueTokens(MemberEntity member);
+
 }

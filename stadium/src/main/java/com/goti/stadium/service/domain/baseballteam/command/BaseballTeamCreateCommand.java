@@ -4,6 +4,7 @@ import com.goti.stadium.constants.TeamCode;
 
 public record BaseballTeamCreateCommand(
 	TeamCode teamCode,
+	String displayName,
 	String teamName,
 	String teamNameEn,
 	String sponsor,

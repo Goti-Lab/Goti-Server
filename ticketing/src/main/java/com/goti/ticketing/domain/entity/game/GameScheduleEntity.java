@@ -1,9 +1,10 @@
 package com.goti.ticketing.domain.entity.game;
 
-import com.goti.ticketing.constants.LeagueType;
 import com.goti.domain.base.ModificationTimestampEntity;
 
 import com.goti.global.validation.Preconditions;
+
+import com.goti.ticketing.constants.LeagueType;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

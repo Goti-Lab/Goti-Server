@@ -1,7 +1,7 @@
 package com.goti.ticketing.game.repository.gameschedule;
 
-import com.goti.ticketing.domain.entity.game.GameScheduleEntity;
 import com.goti.ticketing.game.dto.request.GameScheduleSearchCondition;
+import com.goti.ticketing.game.dto.response.GameScheduleSearchResponse;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -15,7 +15,7 @@ public interface GameScheduleRepositoryCustom {
 		LocalDateTime startAt
 	);
 
-	List<GameScheduleEntity> searchSchedules(GameScheduleSearchCondition request);
+	List<GameScheduleSearchResponse> searchSchedules(GameScheduleSearchCondition request);
 
 
 }

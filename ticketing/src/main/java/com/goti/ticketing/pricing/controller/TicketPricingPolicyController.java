@@ -51,7 +51,7 @@ public class TicketPricingPolicyController {
 					price.gradeId(),
 					price.ticketType(),
 					price.dayType(),
-					price.matchType(),
+					price.leagueType(),
 					price.price()
 				))
 				.toList()

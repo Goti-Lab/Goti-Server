@@ -4,9 +4,17 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 
 import com.goti.ticketing.constants.GameResult;
 import com.goti.ticketing.constants.GameStatus;
-import com.goti.ticketing.constants.LeagueType;
 
+import com.goti.ticketing.constants.LeagueType;
 import com.goti.ticketing.constants.TicketingStatus;
+
+import com.goti.ticketing.domain.entity.game.GameScheduleEntity;
+
+import com.goti.ticketing.domain.entity.game.GameStatusEntity;
+
+import com.goti.ticketing.domain.entity.game.GameTicketingStatusEntity;
+
+import com.querydsl.core.annotations.QueryProjection;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
@@ -34,6 +42,15 @@ public record GameScheduleSearchResponse(
 	@Schema(description = "경기장 ID", example = "770g0622-g41d-63e6-c938-668877662222")
 	UUID stadiumId,
 
+	@Schema(description = "홈 팀 표시명", example = "삼성")
+	String homeTeamDisplayName,
+
+	@Schema(description = "원정 팀 표시명", example = "KIA")
+	String awayTeamDisplayName,
+
+	@Schema(description = "구장 위치", example = "대구")
+	String stadiumLocation,
+
 	@Schema(description = "경기 진행 상태", example = "FINISHED")
 	GameStatus gameStatus,
 
@@ -46,10 +63,46 @@ public record GameScheduleSearchResponse(
 	@Schema(description = "경기 결과", example = "WIN")
 	GameResult gameResult,
 
-	@Schema(description = "티켓팅 상태", example = "AVAILABLE")
+	@Schema(description = "예매(티켓팅) 상태", example = "AVAILABLE")
 	TicketingStatus ticketingStatus,
 
-	@Schema(description = "티켓팅 오픈 일시 (yyyy-MM-dd HH:mm)", example = "2026-03-15 11:00")
+	@Schema(description = "예매(티켓팅) 오픈 일시 (yyyy-MM-dd HH:mm)", example = "2026-03-15 11:00")
 	@JsonFormat(pattern = "yyyy-MM-dd HH:mm")
-	LocalDateTime ticketingOpenedAt
-) {}
+	LocalDateTime ticketingOpenedAt,
+
+	@Schema(description = "예매(티켓팅) 마감 일시 (yyyy-MM-dd HH:mm)", example = "2026-03-27 19:00")
+	@JsonFormat(pattern = "yyyy-MM-dd HH:mm")
+	LocalDateTime ticketingEndAt
+) {
+
+	@QueryProjection
+	public GameScheduleSearchResponse {}
+
+	public static GameScheduleSearchResponse of(
+		final GameScheduleEntity game,
+		final String homeTeamDisplayName,
+		final String awayTeamDisplayName,
+		final String stadiumLocation,
+		final GameStatusEntity status,
+		final GameTicketingStatusEntity ticketing
+	) {
+		return new GameScheduleSearchResponse(
+			game.getId(),
+			game.getStartAt(),
+			game.getLeagueType(),
+			game.getHomeTeamId(),
+			game.getAwayTeamId(),
+			game.getStadiumId(),
+			homeTeamDisplayName,
+			awayTeamDisplayName,
+			stadiumLocation,
+			status.getGameStatus(),
+			status.getHomeTeamScore(),
+			status.getAwayTeamScore(),
+			status.getGameResult(),
+			ticketing.getStatus(),
+			ticketing.getTicketingOpenedAt(),
+			ticketing.getTicketingEndAt()
+		);
+	}
+}

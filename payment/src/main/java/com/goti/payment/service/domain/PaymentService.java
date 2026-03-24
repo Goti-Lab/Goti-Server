@@ -15,4 +15,9 @@ public interface PaymentService {
 	);
 
 	PaymentResponse getByOrderId(UUID orderId);
+
+	PaymentResponse cancel(
+		UUID orderId,
+		UUID cancellationId
+	);
 }

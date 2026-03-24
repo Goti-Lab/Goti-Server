@@ -2,6 +2,7 @@ package com.goti.ticketing.seat.service.domain;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -10,6 +11,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.goti.constants.messages.ErrorCode;
 import com.goti.global.validation.Preconditions;
+import com.goti.ticketing.domain.entity.game.GameScheduleEntity;
+import com.goti.ticketing.domain.entity.seat.SeatEntity;
 import com.goti.ticketing.domain.entity.seat.SeatStatusEntity;
 import com.goti.ticketing.seat.dto.response.GameSeatStatusResponse;
 import com.goti.ticketing.seat.repository.SeatStatusRepository;
@@ -44,6 +47,27 @@ public class SeatStatusServiceImpl implements SeatStatusService {
 		return seatStatusRepository.findAllByGameAndSeatIds(gameId, seatIds)
 			.stream()
 			.collect(Collectors.toMap(seatStatus -> seatStatus.getSeat().getId(), seatStatus -> seatStatus));
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public Set<UUID> getSeatIdsByGameId(UUID gameId) {
+		return Set.copyOf(seatStatusRepository.findSeatIdsByGameId(gameId));
+	}
+
+	@Override
+	@Transactional
+	public List<SeatStatusEntity> createMissingStatuses(
+		GameScheduleEntity game,
+		List<SeatEntity> seats,
+		Set<UUID> existingSeatIds
+	) {
+		List<SeatStatusEntity> newSeatStatuses = seats.stream()
+			.filter(seat -> !existingSeatIds.contains(seat.getId()))
+			.map(seat -> SeatStatusEntity.create(game, seat))
+			.toList();
+
+		return seatStatusRepository.saveAll(newSeatStatuses);
 	}
 
 	@Override

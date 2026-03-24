@@ -24,6 +24,7 @@ import org.springframework.data.util.Pair;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -75,20 +76,11 @@ public class AuthController {
 	)
 	@PostMapping("/login")
 	public ResponseEntity<ApiSuccessResponse<TokenResponse>> login(
-		@RequestBody @Valid LoginRequest request, HttpServletResponse response
+		@RequestBody @Valid LoginRequest request,
+		HttpServletResponse response
 	) {
-
-		Pair<String, String> tokens = socialAuthService.login(
-			request.socialVerifyToken()
-		);
-
-		String accessToken = tokens.getFirst();
-		String refreshToken = tokens.getSecond();
-
-		ResponseCookie cookie = cookieProvider.createRefreshTokenCookie(refreshToken);
-		response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
-
-		return wrap(new TokenResponse(accessToken));
+		var tokens = socialAuthService.login(request.socialVerifyToken());
+		return handleTokenResponse(tokens, response);
 	}
 
 	@Operation(
@@ -99,7 +91,7 @@ public class AuthController {
 	public ResponseEntity<ApiSuccessResponse<TokenResponse>> signup(
 		@RequestBody @Valid SignupRequest request, HttpServletResponse response
 	) {
-		Pair<String, String> tokens = socialAuthService.signup(
+		var tokens = socialAuthService.signup(
 			request.socialVerifyToken(),
 			request.name(),
 			request.mobile(),
@@ -107,11 +99,7 @@ public class AuthController {
 			request.birthDate(),
 			request.authCode()
 		);
-		String accessToken = tokens.getFirst();
-		String refreshToken = tokens.getSecond();
-		ResponseCookie cookie = cookieProvider.createRefreshTokenCookie(refreshToken);
-		response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
-		return wrap(new TokenResponse(accessToken));
+		return handleTokenResponse(tokens, response);
 	}
 
 	@Operation(
@@ -126,5 +114,30 @@ public class AuthController {
 			request.socialVerifyToken(), request.mobile()
 		);
 		return empty();
+	}
+
+	@Operation(
+		summary = "토큰 재발급",
+		description = "RefreshToken 기반 Access/Refresh Token 재발급 API"
+	)
+	@PostMapping("/reissue")
+	public ResponseEntity<ApiSuccessResponse<TokenResponse>> reissueToken(
+		@CookieValue(name = "refreshToken") String refreshToken,
+		HttpServletResponse response
+	) {
+		var tokens = socialAuthService.reissueToken(refreshToken);
+		return handleTokenResponse(tokens, response);
+	}
+
+	private ResponseEntity<ApiSuccessResponse<TokenResponse>> handleTokenResponse(
+		Pair<String, String> tokens, HttpServletResponse response
+	) {
+		String accessToken = tokens.getFirst();
+		String refreshToken = tokens.getSecond();
+
+		ResponseCookie cookie = cookieProvider.createRefreshTokenCookie(refreshToken);
+		response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+
+		return wrap(new TokenResponse(accessToken));
 	}
 }

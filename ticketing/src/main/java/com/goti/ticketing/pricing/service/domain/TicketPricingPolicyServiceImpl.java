@@ -11,11 +11,11 @@ import java.util.stream.Collectors;
 
 import com.goti.exception.CustomException;
 
+import com.goti.ticketing.constants.LeagueType;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.goti.ticketing.constants.TicketPricingDayType;
-import com.goti.ticketing.constants.TicketPricingMatchType;
 import com.goti.constants.messages.ErrorCode;
 import com.goti.ticketing.domain.entity.pricing.TicketPriceEntity;
 import com.goti.ticketing.domain.entity.pricing.TicketPricingPolicyEntity;
@@ -62,7 +62,7 @@ public class TicketPricingPolicyServiceImpl implements TicketPricingPolicyServic
 				policy,
 				price.ticketType(),
 				price.dayType(),
-				price.matchType(),
+				price.leagueType(),
 				price.price()
 			))
 			.toList();
@@ -115,7 +115,7 @@ public class TicketPricingPolicyServiceImpl implements TicketPricingPolicyServic
 					new TicketPriceCondition(
 						price.gradeId(),
 						price.dayType(),
-						price.matchType()
+						price.leagueType()
 					)
 				),
 				ErrorCode.TICKET_PRICE_CONDITION_ALREADY_EXISTS
@@ -126,7 +126,7 @@ public class TicketPricingPolicyServiceImpl implements TicketPricingPolicyServic
 	private record TicketPriceCondition(
 		UUID gradeId,
 		TicketPricingDayType dayType,
-		TicketPricingMatchType matchType
+		LeagueType leagueType
 	) {
 	}
 }

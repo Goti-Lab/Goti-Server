@@ -20,9 +20,9 @@ import com.goti.exception.FieldValidationException;
 @ActiveProfiles("test")
 class PaymentEntityTest {
 
-	UUID orderId;
-	Integer paymentAmount;
-	String idempotencyKey;
+	private UUID orderId;
+	private Integer paymentAmount;
+	private String idempotencyKey;
 
 	@BeforeEach
 	void setup() {
@@ -96,6 +96,27 @@ class PaymentEntityTest {
 		assertThat(payment.getPaymentStatus()).isEqualTo(PaymentStatus.FAILED);
 		assertThat(payment.getPaidAt()).isNull();
 		assertThat(payment.getFailedReason()).isEqualTo("mock 결제 실패");
+	}
+
+	@Test
+	void 결제_취소_처리() {
+		PaymentEntity payment = PaymentEntity.create(
+			orderId,
+			null,
+			PaymentType.PAYMENT,
+			PaymentMethod.CARD,
+			paymentAmount,
+			"MOCK",
+			null,
+			idempotencyKey
+		);
+		payment.succeed("mock-tid-001");
+
+		payment.cancel(UUID.randomUUID());
+
+		assertThat(payment.getPaymentStatus()).isEqualTo(PaymentStatus.CANCELED);
+		assertThat(payment.getPaidAt()).isNotNull();
+		assertThat(payment.getFailedReason()).isNull();
 	}
 
 	@Test

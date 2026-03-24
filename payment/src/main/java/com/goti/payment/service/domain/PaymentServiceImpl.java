@@ -75,6 +75,20 @@ public class PaymentServiceImpl implements PaymentService {
 		return PaymentResponse.from(payment);
 	}
 
+	@Override
+	@Transactional
+	public PaymentResponse cancel(
+		UUID orderId,
+		UUID cancellationId
+	) {
+		PaymentEntity payment = paymentRepository.findLatestByOrderId(orderId)
+			.orElseThrow(() -> new CustomException(ErrorCode.PAYMENT_NOT_FOUND));
+
+		payment.cancel(cancellationId);
+
+		return PaymentResponse.from(payment);
+	}
+
 	private boolean shouldFail(String idempotencyKey) {
 		return idempotencyKey.toLowerCase().contains("fail");
 	}

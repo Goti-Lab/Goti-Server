@@ -2,10 +2,10 @@ package com.goti.ticketing.game.api.game;
 
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.goti.ticketing.GotiTicketingApplication;
-import com.goti.ticketing.constants.LeagueType;
 import com.goti.stadium.constants.TeamCode;
 import com.goti.stadium.domain.entity.stadium.StadiumEntity;
 import com.goti.stadium.domain.entity.team.BaseballTeamEntity;
+import com.goti.ticketing.constants.LeagueType;
 import com.goti.ticketing.game.service.application.GameManagementService;
 import com.goti.stadium.repository.BaseballTeamRepository;
 import com.goti.stadium.repository.StadiumRepository;
@@ -21,6 +21,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
@@ -117,7 +118,7 @@ public class GameSchedulesSearchApiTest {
 			samsung.getId(), kia.getId(), stadium.getId(), secondGameDate, LeagueType.REGULAR
 		);
 
-		mockMvc.perform(
+		MvcResult result = mockMvc.perform(
 				get("/api/v1/games/schedules")
 					.with(csrf())
 					.param("year", String.valueOf(testYear))
@@ -126,12 +127,18 @@ public class GameSchedulesSearchApiTest {
 					.contentType(MediaType.APPLICATION_JSON)
 			)
 			.andExpect(status().isOk())
-			.andExpect(jsonPath("$.data.length()").value(2));
+			.andExpect(
+				jsonPath("$.data.length()").value(2)
+			).andReturn();
+
+		String responseJson = result.getResponse().getContentAsString();
+		log.info("response : {}", responseJson);
 	}
 
 	private void saveSamsung() {
 		samsung = BaseballTeamEntity.create(
 			TeamCode.SS,
+			"삼성",
 			"삼성 라이온즈",
 			"Samsung Lions",
 			"삼성",
@@ -153,6 +160,7 @@ public class GameSchedulesSearchApiTest {
 	private void saveKia() {
 		kia = BaseballTeamEntity.create(
 			TeamCode.KIA,
+			"KIA",
 			"KIA 타이거즈",
 			"KIA Tigers",
 			"기아",

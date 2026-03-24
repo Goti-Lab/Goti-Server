@@ -32,6 +32,7 @@ public class BaseballTeamServiceTest {
 	void setup() {
 		baseballTeamCreateRequest = new BaseballTeamCreateRequest(
 			TeamCode.SS,
+			"삼성",
 			"삼성라이온즈",
 			"Samsung Lions",
 			"삼성",

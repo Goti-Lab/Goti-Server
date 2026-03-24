@@ -13,6 +13,7 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -33,7 +34,7 @@ public class OrderCancellationItemEntity extends ModificationTimestampEntity {
 	@JoinColumn(name = "cancellation_id", nullable = false)
 	private OrderCancellationEntity cancellation;
 
-	@ManyToOne(fetch = FetchType.LAZY)
+	@OneToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "item_id", nullable = false)
 	private OrderItemEntity item;
 
@@ -64,7 +65,7 @@ public class OrderCancellationItemEntity extends ModificationTimestampEntity {
 		Integer refundAmount,
 		Integer feeAmount
 	) {
-		validate(refundAmount, feeAmount);
+		validate(cancellation, item, refundAmount, feeAmount);
 		return new OrderCancellationItemEntity(
 			cancellation,
 			item,
@@ -74,9 +75,19 @@ public class OrderCancellationItemEntity extends ModificationTimestampEntity {
 	}
 
 	private static void validate(
+		OrderCancellationEntity cancellation,
+		OrderItemEntity item,
 		Integer refundAmount,
 		Integer feeAmount
 	) {
+		Preconditions.domainValidate(
+			cancellation != null,
+			"취소 정보는 필수입니다."
+		);
+		Preconditions.domainValidate(
+			item != null,
+			"주문 상세는 필수입니다."
+		);
 		Preconditions.domainValidate(
 			refundAmount != null && refundAmount >= 0,
 			"환불액은 0 이상이어야 합니다."

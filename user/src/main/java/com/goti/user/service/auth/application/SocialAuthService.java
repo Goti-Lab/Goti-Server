@@ -27,6 +27,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.util.Pair;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.UUID;
@@ -77,6 +78,7 @@ public class SocialAuthService {
 		return SocialVerifyResponse.of(isRegistered, socialVerifyToken);
 	}
 
+	@Transactional
 	public Pair<String, String> login(String socialVerifyToken) {
 		SocialInfo verifiedSocialInfo = getSocialInfoByToken(socialVerifyToken);
 		MemberEntity member = socialProviderService.findMemberBySocialInfo(
@@ -94,6 +96,7 @@ public class SocialAuthService {
 		return authService.issueTokens(member);
 	}
 
+	@Transactional
 	public Pair<String, String> signup(
 		String socialVerifyToken,
 		String name,
@@ -114,8 +117,9 @@ public class SocialAuthService {
 		authService.sendSmsCode(socialVerifyToken, mobile);
 	}
 
+	@Transactional
 	public Pair<String, String> reissueToken(String refreshToken) {
-		UUID memberId = authService.identifyByToken(refreshToken);
+		UUID memberId = authService.validateTokenAndGetMemberId(refreshToken);
 		MemberEntity member = memberService.getById(memberId);
 		return authService.issueTokens(member);
 	}
