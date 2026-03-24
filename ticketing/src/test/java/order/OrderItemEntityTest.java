@@ -93,7 +93,17 @@ class OrderItemEntityTest {
 
 		assertThatThrownBy(item::expire)
 			.isInstanceOf(FieldValidationException.class)
-			.hasMessageContaining("RESERVED 상태에서만 주문 상세 만료 처리가 가능합니다.");
+			.hasMessageContaining("예약 상태에서만 주문 상세 만료 처리가 가능합니다.");
+	}
+
+	@Test
+	void 주문상세_취소_성공() {
+		OrderItemEntity item = OrderItemEntity.create(order, seat, holdId, TicketType.ADULT, 12000);
+		item.pay();
+
+		item.cancel();
+
+		assertThat(item.getItemStatus()).isEqualTo(OrderItemStatus.CANCELED);
 	}
 
 	@Test

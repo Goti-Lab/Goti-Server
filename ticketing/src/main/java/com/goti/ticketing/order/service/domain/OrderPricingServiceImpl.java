@@ -21,6 +21,8 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 public class OrderPricingServiceImpl implements OrderPricingService {
+	private static final int PAYMENT_FEE = 1000;
+
 	private final TicketPriceRepository ticketPriceRepository;
 
 	@Override
@@ -39,9 +41,10 @@ public class OrderPricingServiceImpl implements OrderPricingService {
 			))
 			.toList();
 
-		int totalAmount = pricedHolds.stream()
+		int ticketTotalAmount = pricedHolds.stream()
 			.mapToInt(OrderPricingResult.PricedHold::ticketPrice)
 			.sum();
+		int totalAmount = ticketTotalAmount + PAYMENT_FEE;
 
 		return new OrderPricingResult(totalAmount, pricedHolds);
 	}

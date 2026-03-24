@@ -124,7 +124,7 @@ public class PaymentEntity extends ModificationTimestampEntity {
 	public void succeed(String pgTid) {
 		Preconditions.domainValidate(
 			this.paymentStatus == PaymentStatus.PENDING,
-			"PENDING 상태에서만 결제 성공 처리할 수 있습니다."
+			"결제 대기 상태에서만 결제 성공 처리할 수 있습니다."
 		);
 		this.paymentStatus = PaymentStatus.SUCCESS;
 		this.pgTid = pgTid;
@@ -135,7 +135,7 @@ public class PaymentEntity extends ModificationTimestampEntity {
 	public void fail(String failedReason) {
 		Preconditions.domainValidate(
 			this.paymentStatus == PaymentStatus.PENDING,
-			"PENDING 상태에서만 결제 실패 처리할 수 있습니다."
+			"결제 대기 상태에서만 결제 실패 처리할 수 있습니다."
 		);
 		Preconditions.domainValidate(
 			StringUtils.hasText(failedReason),
@@ -144,6 +144,20 @@ public class PaymentEntity extends ModificationTimestampEntity {
 		this.paymentStatus = PaymentStatus.FAILED;
 		this.paidAt = null;
 		this.failedReason = failedReason;
+	}
+
+	public void cancel(UUID cancellationId) {
+		Preconditions.domainValidate(
+			this.paymentStatus == PaymentStatus.SUCCESS,
+			"결제 성공 상태에서만 결제 취소가 가능합니다."
+		);
+		Preconditions.domainValidate(
+			cancellationId != null,
+			"취소 ID는 필수입니다."
+		);
+		this.cancellationId = cancellationId;
+		this.paymentStatus = PaymentStatus.CANCELED;
+		this.failedReason = null;
 	}
 
 	private static void validate(

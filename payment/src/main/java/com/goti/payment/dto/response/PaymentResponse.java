@@ -9,6 +9,7 @@ import com.goti.payment.constants.PaymentType;
 import com.goti.payment.domain.entity.payment.PaymentEntity;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import com.goti.payment.domain.entity.payment.PaymentEntity;
 
 @Schema(description = "mock 결제 응답")
 public record PaymentResponse(

@@ -13,6 +13,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.context.ActiveProfiles;
 
+import com.goti.exception.FieldValidationException;
+import com.goti.ticketing.constants.LeagueType;
 import com.goti.ticketing.constants.OrderCancellationRequestType;
 import com.goti.ticketing.domain.entity.game.GameScheduleEntity;
 import com.goti.ticketing.domain.entity.order.OrderCancellationEntity;
@@ -46,7 +48,7 @@ class OrderCancellationItemEntityTest {
 		OrderEntity order = OrderEntity.create("ORD-20260309-0001", UUID.randomUUID(), gameSchedule, 2, 24000);
 		cancellation = OrderCancellationEntity.create(
 			order,
-			OrderCancellationRequestType.USER_PARTIAL,
+			OrderCancellationRequestType.ORDER_PARTIAL,
 			UUID.randomUUID(),
 			12000,
 			1000,

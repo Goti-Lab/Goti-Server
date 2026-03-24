@@ -88,7 +88,7 @@ public class OrderItemEntity extends ModificationTimestampEntity {
 	public void pay() {
 		Preconditions.domainValidate(
 			this.itemStatus == OrderItemStatus.RESERVED,
-			"RESERVED 상태에서만 결제 완료 처리할 수 있습니다."
+			"예약 상태에서만 결제 완료 처리할 수 있습니다."
 		);
 		this.itemStatus = OrderItemStatus.PAID;
 	}
@@ -96,7 +96,15 @@ public class OrderItemEntity extends ModificationTimestampEntity {
 	public void expire() {
 		Preconditions.domainValidate(
 			this.itemStatus == OrderItemStatus.RESERVED,
-			"RESERVED 상태에서만 주문 상세 만료 처리가 가능합니다."
+			"예약 상태에서만 주문 상세 만료 처리가 가능합니다."
+		);
+		this.itemStatus = OrderItemStatus.CANCELED;
+	}
+
+	public void cancel() {
+		Preconditions.domainValidate(
+			this.itemStatus == OrderItemStatus.PAID,
+			"결제 완료 상태에서만 주문 상세 취소가 가능합니다."
 		);
 		this.itemStatus = OrderItemStatus.CANCELED;
 	}
