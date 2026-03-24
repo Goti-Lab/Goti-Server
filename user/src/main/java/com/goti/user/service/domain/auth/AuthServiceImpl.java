@@ -61,7 +61,7 @@ public class AuthServiceImpl implements AuthService {
 
 	@Override
 	public Pair<String, String> issueTokens(MemberEntity member) {
-		deleteCachedToken(member.getId());
+		deleteCachedTokenId(member.getId());
 		String accessToken = createToken(member, TokenType.ACCESS);
 		String refreshToken = createToken(member, TokenType.REFRESH);
 		saveTokenJti(member.getId(), refreshToken);
@@ -124,7 +124,7 @@ public class AuthServiceImpl implements AuthService {
 		);
 	}
 
-	private void deleteCachedToken(UUID memberId) {
+	private void deleteCachedTokenId(UUID memberId) {
 		redisCache.delete(
 			RedisKey.REFRESH_TOKEN.getKey(memberId)
 		);
