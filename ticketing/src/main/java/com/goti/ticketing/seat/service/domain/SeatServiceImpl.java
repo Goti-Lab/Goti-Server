@@ -97,4 +97,10 @@ public class SeatServiceImpl implements SeatService {
 			.map(SeatResponse::from)
 			.toList();
 	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public List<SeatEntity> getByStadiumId(UUID stadiumId) {
+		return seatRepository.findAllByStadiumId(stadiumId);
+	}
 }

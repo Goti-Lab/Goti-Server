@@ -3,6 +3,7 @@ package com.goti.ticketing.game.service.domain;
 import com.goti.ticketing.constants.LeagueType;
 import com.goti.constants.messages.ErrorCode;
 import com.goti.ticketing.domain.entity.game.GameScheduleEntity;
+import com.goti.exception.CustomException;
 
 import com.goti.ticketing.game.repository.gameschedule.GameScheduleRepository;
 
@@ -41,5 +42,12 @@ public class GameScheduleServiceImpl implements GameScheduleService {
 		);
 
 		return gameScheduleRepository.save(gameSchedule);
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public GameScheduleEntity get(UUID gameId) {
+		return gameScheduleRepository.findById(gameId)
+			.orElseThrow(() -> new CustomException(ErrorCode.GAME_NOT_FOUND));
 	}
 }

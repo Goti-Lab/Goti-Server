@@ -7,4 +7,6 @@ import com.goti.ticketing.domain.entity.seat.SeatEntity;
 
 public interface SeatRepositoryCustom {
 	List<SeatEntity> findAllBySection(UUID sectionId);
+
+	List<SeatEntity> findAllByStadiumId(UUID stadiumId);
 }
