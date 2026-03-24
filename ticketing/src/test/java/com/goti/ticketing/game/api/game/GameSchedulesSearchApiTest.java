@@ -2,10 +2,10 @@ package com.goti.ticketing.game.api.game;
 
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.goti.ticketing.GotiTicketingApplication;
-import com.goti.ticketing.constants.LeagueType;
 import com.goti.stadium.constants.TeamCode;
 import com.goti.stadium.domain.entity.stadium.StadiumEntity;
 import com.goti.stadium.domain.entity.team.BaseballTeamEntity;
+import com.goti.ticketing.constants.LeagueType;
 import com.goti.ticketing.game.service.application.GameManagementService;
 import com.goti.stadium.repository.BaseballTeamRepository;
 import com.goti.stadium.repository.StadiumRepository;

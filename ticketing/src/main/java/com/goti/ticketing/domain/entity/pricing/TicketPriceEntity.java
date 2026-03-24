@@ -2,10 +2,8 @@ package com.goti.ticketing.domain.entity.pricing;
 
 import static lombok.AccessLevel.*;
 
-import java.util.UUID;
-
+import com.goti.ticketing.constants.LeagueType;
 import com.goti.ticketing.constants.TicketPricingDayType;
-import com.goti.ticketing.constants.TicketPricingMatchType;
 import com.goti.ticketing.constants.TicketType;
 import com.goti.domain.base.ModificationTimestampEntity;
 import com.goti.ticketing.domain.entity.seat.SeatGradeEntity;
@@ -53,7 +51,7 @@ public class TicketPriceEntity extends ModificationTimestampEntity {
 
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false)
-	private TicketPricingMatchType matchType;
+	private LeagueType leagueType;
 
 	@Column(nullable = false)
 	private Integer price;
@@ -63,14 +61,14 @@ public class TicketPriceEntity extends ModificationTimestampEntity {
 		TicketPricingPolicyEntity policy,
 		TicketType ticketType,
 		TicketPricingDayType dayType,
-		TicketPricingMatchType matchType,
+		LeagueType leagueType,
 		Integer price
 	) {
 		this.grade = grade;
 		this.policy = policy;
 		this.ticketType = ticketType;
 		this.dayType = dayType;
-		this.matchType = matchType;
+		this.leagueType = leagueType;
 		this.price = price;
 	}
 
@@ -79,16 +77,16 @@ public class TicketPriceEntity extends ModificationTimestampEntity {
 		TicketPricingPolicyEntity policy,
 		TicketType ticketType,
 		TicketPricingDayType dayType,
-		TicketPricingMatchType matchType,
+		LeagueType leagueType,
 		Integer price
 	) {
-		validate(ticketType, dayType, matchType, price);
+		validate(ticketType, dayType, leagueType, price);
 		return new TicketPriceEntity(
 			grade,
 			policy,
 			ticketType,
 			dayType,
-			matchType,
+			leagueType,
 			price
 		);
 	}
@@ -96,7 +94,7 @@ public class TicketPriceEntity extends ModificationTimestampEntity {
 	private static void validate(
 		TicketType ticketType,
 		TicketPricingDayType dayType,
-		TicketPricingMatchType matchType,
+		LeagueType leagueType,
 		Integer price
 	) {
 		Preconditions.domainValidate(
@@ -108,8 +106,8 @@ public class TicketPriceEntity extends ModificationTimestampEntity {
 			"요일 유형은 필수입니다."
 		);
 		Preconditions.domainValidate(
-			matchType != null,
-			"매치 유형은 필수입니다."
+			leagueType != null,
+			"리그 유형은 필수입니다."
 		);
 		Preconditions.domainValidate(
 			price != null && price >= 0,

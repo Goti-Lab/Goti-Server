@@ -7,9 +7,9 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum LeagueType {
 
-	PRE_SEASON("프리시즌"),
+	EXHIBITION("시범 경기"),
 	REGULAR("정규리그"),
-	POSTSEASON("포스트시즌");
+	POST_SEASON("포스트시즌");
 
 	private final String description;
 }

@@ -2,13 +2,11 @@ package order;
 
 import static org.assertj.core.api.Assertions.*;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.UUID;
 
-import com.goti.ticketing.domain.entity.order.OrderHistoryEntity;
 import com.goti.ticketing.constants.LeagueType;
+import com.goti.ticketing.domain.entity.order.OrderHistoryEntity;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

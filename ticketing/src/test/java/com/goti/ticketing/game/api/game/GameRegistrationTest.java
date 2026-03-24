@@ -2,8 +2,8 @@ package com.goti.ticketing.game.api.game;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.goti.ticketing.GotiTicketingApplication;
-import com.goti.ticketing.constants.LeagueType;
 import com.goti.stadium.constants.TeamCode;
+import com.goti.ticketing.constants.LeagueType;
 import com.goti.ticketing.constants.TicketingStatus;
 import com.goti.stadium.domain.entity.stadium.StadiumEntity;
 

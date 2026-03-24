@@ -5,12 +5,13 @@ import static org.assertj.core.api.Assertions.*;
 import java.time.LocalDate;
 import java.util.UUID;
 
+import com.goti.ticketing.constants.LeagueType;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.context.ActiveProfiles;
 
 import com.goti.ticketing.constants.TicketPricingDayType;
-import com.goti.ticketing.constants.TicketPricingMatchType;
 import com.goti.ticketing.constants.TicketType;
 import com.goti.ticketing.domain.entity.pricing.TicketPriceEntity;
 import com.goti.ticketing.domain.entity.pricing.TicketPricingPolicyEntity;
@@ -40,7 +41,7 @@ class TicketPriceEntityTest {
 			policy,
 			TicketType.ADULT,
 			TicketPricingDayType.WEEKDAY,
-			TicketPricingMatchType.REGULAR,
+			LeagueType.REGULAR,
 			15000
 		);
 
@@ -48,7 +49,7 @@ class TicketPriceEntityTest {
 		assertThat(ticketPrice.getPolicy()).isEqualTo(policy);
 		assertThat(ticketPrice.getTicketType()).isEqualTo(TicketType.ADULT);
 		assertThat(ticketPrice.getDayType()).isEqualTo(TicketPricingDayType.WEEKDAY);
-		assertThat(ticketPrice.getMatchType()).isEqualTo(TicketPricingMatchType.REGULAR);
+		assertThat(ticketPrice.getLeagueType()).isEqualTo(LeagueType.REGULAR);
 		assertThat(ticketPrice.getPrice()).isEqualTo(15000);
 	}
 
@@ -60,7 +61,7 @@ class TicketPriceEntityTest {
 				policy,
 				null,
 				TicketPricingDayType.WEEKDAY,
-				TicketPricingMatchType.REGULAR,
+				LeagueType.REGULAR,
 				15000
 			)
 		).isInstanceOf(FieldValidationException.class)
@@ -75,7 +76,7 @@ class TicketPriceEntityTest {
 				policy,
 				TicketType.ADULT,
 				null,
-				TicketPricingMatchType.REGULAR,
+				LeagueType.REGULAR,
 				15000
 			)
 		).isInstanceOf(FieldValidationException.class)
@@ -83,7 +84,7 @@ class TicketPriceEntityTest {
 	}
 
 	@Test
-	void 티켓요금_생성_실패_매치유형_null() {
+	void 티켓요금_생성_실패_리그유형_null() {
 		assertThatThrownBy(
 			() -> TicketPriceEntity.create(
 				grade,
@@ -94,7 +95,7 @@ class TicketPriceEntityTest {
 				15000
 			)
 		).isInstanceOf(FieldValidationException.class)
-			.hasMessageContaining("매치 유형은 필수입니다.");
+			.hasMessageContaining("리그 유형은 필수입니다.");
 	}
 
 	@Test
@@ -105,7 +106,7 @@ class TicketPriceEntityTest {
 				policy,
 				TicketType.ADULT,
 				TicketPricingDayType.WEEKDAY,
-				TicketPricingMatchType.REGULAR,
+				LeagueType.REGULAR,
 				-1
 			)
 		).isInstanceOf(FieldValidationException.class)

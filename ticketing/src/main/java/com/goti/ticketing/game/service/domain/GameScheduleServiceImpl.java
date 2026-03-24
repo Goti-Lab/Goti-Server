@@ -1,7 +1,7 @@
 package com.goti.ticketing.game.service.domain;
 
-import com.goti.ticketing.constants.LeagueType;
 import com.goti.constants.messages.ErrorCode;
+import com.goti.ticketing.constants.LeagueType;
 import com.goti.ticketing.domain.entity.game.GameScheduleEntity;
 import com.goti.exception.CustomException;
 

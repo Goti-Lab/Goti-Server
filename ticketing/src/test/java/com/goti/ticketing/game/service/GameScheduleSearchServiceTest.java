@@ -1,10 +1,10 @@
 package com.goti.ticketing.game.service;
 
 import com.goti.ticketing.GotiTicketingApplication;
-import com.goti.ticketing.constants.LeagueType;
 import com.goti.stadium.constants.TeamCode;
 import com.goti.stadium.domain.entity.stadium.StadiumEntity;
 import com.goti.stadium.domain.entity.team.BaseballTeamEntity;
+import com.goti.ticketing.constants.LeagueType;
 import com.goti.ticketing.game.dto.request.GameScheduleSearchCondition;
 import com.goti.ticketing.game.dto.response.GameScheduleSearchResponse;
 import com.goti.ticketing.game.service.application.GameManagementService;

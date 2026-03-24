@@ -4,8 +4,8 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 
 import com.goti.ticketing.constants.GameResult;
 import com.goti.ticketing.constants.GameStatus;
-import com.goti.ticketing.constants.LeagueType;
 
+import com.goti.ticketing.constants.LeagueType;
 import com.goti.ticketing.constants.TicketingStatus;
 
 import com.goti.ticketing.domain.entity.game.GameScheduleEntity;
