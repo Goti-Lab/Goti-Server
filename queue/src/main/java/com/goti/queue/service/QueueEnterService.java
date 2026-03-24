@@ -11,7 +11,7 @@ import com.goti.exception.CustomException;
 import com.goti.infra.lock.DistributedLockManager;
 import com.goti.queue.config.properties.QueueProperties;
 import com.goti.queue.constants.QueueStatus;
-import com.goti.queue.domain.QueueEntry;
+import com.goti.queue.domain.model.QueueEntry;
 import com.goti.queue.dto.request.QueueEnterRequest;
 import com.goti.queue.dto.response.QueueEnterResponse;
 import com.goti.queue.infra.QueueTokenProvider;

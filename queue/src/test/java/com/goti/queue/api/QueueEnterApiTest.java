@@ -30,7 +30,7 @@ import com.goti.queue.GotiQueueApplication;
 import com.goti.queue.constants.QueueMetaField;
 import com.goti.queue.constants.QueueRedisKey;
 import com.goti.queue.constants.QueueStatus;
-import com.goti.queue.domain.QueueEntry;
+import com.goti.queue.domain.model.QueueEntry;
 import com.goti.security.SimpleUserDetails;
 
 @SpringBootTest(classes = GotiQueueApplication.class)

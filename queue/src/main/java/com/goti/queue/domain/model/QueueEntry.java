@@ -1,4 +1,4 @@
-package com.goti.queue.domain;
+package com.goti.queue.domain.model;
 
 import java.io.Serializable;
 import java.time.Instant;
