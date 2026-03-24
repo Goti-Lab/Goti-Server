@@ -25,6 +25,7 @@ dependencies {
     implementation(project(":user"))
     implementation(project(":stadium"))
     implementation(project(":ticketing"))
+    implementation(project(":queue"))
     implementation(project(":resale"))
     implementation(project(":payment"))
 }
