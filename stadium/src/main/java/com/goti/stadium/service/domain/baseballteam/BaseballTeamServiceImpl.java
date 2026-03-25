@@ -3,6 +3,7 @@ package com.goti.stadium.service.domain.baseballteam;
 import com.goti.stadium.domain.entity.team.BaseballTeamEntity;
 import com.goti.stadium.dto.response.BaseballTeamCreateResponse;
 
+import com.goti.stadium.dto.response.internal.BaseballTeamDisplayNameResponse;
 import com.goti.stadium.repository.BaseballTeamRepository;
 
 import com.goti.stadium.service.domain.baseballteam.command.BaseballTeamCreateCommand;
@@ -12,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -57,6 +59,14 @@ public class BaseballTeamServiceImpl implements BaseballTeamService {
 	@Override
 	public BaseballTeamEntity getById(UUID teamId) {
 		return baseballTeamRepository.findByIdOrThrow(teamId);
+	}
+
+	@Override
+	public List<BaseballTeamDisplayNameResponse> getDisplayNamesByIds(List<UUID> teamIds) {
+		return baseballTeamRepository.findAllByIdIn(teamIds)
+			.stream()
+			.map(BaseballTeamDisplayNameResponse::from)
+			.toList();
 	}
 }
 

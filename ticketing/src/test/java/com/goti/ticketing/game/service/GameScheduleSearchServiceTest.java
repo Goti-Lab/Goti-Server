@@ -12,7 +12,7 @@ import com.goti.ticketing.game.service.application.GameScheduleSearchService;
 import com.goti.stadium.repository.BaseballTeamRepository;
 import com.goti.stadium.repository.StadiumRepository;
 
-import com.goti.ticketing.infra.api.StadiumClient;
+import com.goti.ticketing.infra.api.StadiumApiClient;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -49,7 +49,7 @@ public class GameScheduleSearchServiceTest {
 	StadiumRepository stadiumRepository;
 
 	@MockitoBean
-	private StadiumClient stadiumClient;
+	private StadiumApiClient StadiumApiClient;
 
 	private BaseballTeamEntity kia;
 	private BaseballTeamEntity samsung;

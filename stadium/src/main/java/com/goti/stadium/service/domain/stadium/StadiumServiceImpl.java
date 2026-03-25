@@ -2,6 +2,7 @@ package com.goti.stadium.service.domain.stadium;
 
 import com.goti.stadium.domain.entity.stadium.StadiumEntity;
 import com.goti.stadium.dto.response.StadiumCreateResponse;
+import com.goti.stadium.dto.response.internal.StadiumLocationResponse;
 import com.goti.stadium.repository.StadiumRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -10,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -51,5 +53,13 @@ public class StadiumServiceImpl implements StadiumService {
 	@Override
 	public StadiumEntity getById(UUID stadiumId) {
 		return stadiumRepository.findByIdOrThrow(stadiumId);
+	}
+
+	@Override
+	public List<StadiumLocationResponse> getLocationsByIds(List<UUID> stadiumIds) {
+		return stadiumRepository.findAllByIdIn(stadiumIds)
+			.stream()
+			.map(StadiumLocationResponse::from)
+			.toList();
 	}
 }

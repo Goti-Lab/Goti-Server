@@ -14,7 +14,7 @@ import com.goti.stadium.repository.BaseballTeamRepository;
 
 import com.goti.stadium.repository.StadiumRepository;
 
-import com.goti.ticketing.infra.api.StadiumClient;
+import com.goti.ticketing.infra.api.StadiumApiClient;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -51,7 +51,7 @@ public class GameManagementServiceTest {
 	StadiumRepository stadiumRepository;
 
 	@MockitoBean
-	private StadiumClient stadiumClient;
+	private StadiumApiClient StadiumApiClient;
 
 	BaseballTeamEntity homeTeam;
 	BaseballTeamEntity awayTeam;
