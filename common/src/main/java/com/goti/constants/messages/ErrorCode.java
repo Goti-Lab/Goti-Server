@@ -60,6 +60,13 @@ public enum ErrorCode {
 	GAME_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 경기입니다."),
 
 	QUEUE_META_NOT_FOUND(HttpStatus.NOT_FOUND, "대기열 메타 정보를 찾을 수 없습니다."),
+	QUEUE_TOKEN_REQUIRED(HttpStatus.BAD_REQUEST, "대기열 토큰은 필수입니다."),
+	QUEUE_TOKEN_INVALID(HttpStatus.UNAUTHORIZED, "유효하지 않은 대기열 토큰입니다."),
+	QUEUE_ENTRY_NOT_FOUND(HttpStatus.NOT_FOUND, "대기열 엔트리 정보를 찾을 수 없습니다."),
+	QUEUE_ENTRY_MISMATCH(HttpStatus.BAD_REQUEST, "현재 유효한 대기열 정보와 일치하지 않습니다."),
+	QUEUE_NOT_ALLOWED_YET(HttpStatus.FORBIDDEN, "아직 입장 가능한 대기 순번이 아닙니다."),
+	QUEUE_ALREADY_ADMITTED(HttpStatus.CONFLICT, "이미 입장 처리된 사용자입니다."),
+	QUEUE_CAPACITY_FULL(HttpStatus.CONFLICT, "현재 입장 가능 인원이 가득 찼습니다."),
 
 	ORDER_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 주문입니다."),
 	ORDER_HISTORY_NOT_FOUND(HttpStatus.NOT_FOUND, "주문자 정보를 찾을 수 없습니다."),
