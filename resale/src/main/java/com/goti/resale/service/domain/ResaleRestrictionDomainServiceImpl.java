@@ -1,4 +1,4 @@
-package com.goti.resale.service.application;
+package com.goti.resale.service.domain;
 
 import java.util.UUID;
 
@@ -13,10 +13,11 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-public class ResaleRestrictionService {
+public class ResaleRestrictionDomainServiceImpl implements ResaleRestrictionDomainService {
 
 	private final ResaleRestrictionRepository restrictionRepository;
 
+	@Override
 	@Transactional
 	public ResaleRestrictionEntity getOrCreateRestriction(UUID userId) {
 		return restrictionRepository
