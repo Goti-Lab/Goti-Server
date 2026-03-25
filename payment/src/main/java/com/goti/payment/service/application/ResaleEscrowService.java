@@ -24,7 +24,6 @@ public class ResaleEscrowService {
 	private final MockResaleEscrowClient escrowClient;
 	private final ApplicationEventPublisher eventPublisher;
 
-	// 에스크로 생성
 	@Transactional
 	public void createEscrow(EscrowAccountEntity escrow) {
 		String externalId = escrowClient.requestEscrowPayment(
@@ -34,7 +33,6 @@ public class ResaleEscrowService {
 		escrow.updateExternalId(externalId);
 	}
 
-	// 에스크로 정산 및 이벤트 발행
 	@Transactional
 	public void processSettlement(UUID orderId, List<EscrowAccountEntity> escrows) {
 		List<EscrowAccountEntity> holdingEscrows = escrows.stream()
