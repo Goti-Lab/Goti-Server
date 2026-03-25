@@ -26,6 +26,7 @@ public class ResaleSettlementEventListener {
 		try {
 			resaleOrderClient.completeSettlement(event.resaleOrderId());
 		} catch (Exception e) {
+			// TODO: 실제 에스크로 오류 발생시 어떤 오류가 있는지 확인필요, 재시도 작성
 			log.error("정산 실패 - 주문ID: {}, 에러: {}", event.resaleOrderId(), e.getMessage(), e);
 			throw new CustomException(ErrorCode.RESALE_ESCROW_FAILED);
 		}
