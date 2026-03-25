@@ -192,4 +192,12 @@ public class TicketEntity extends ModificationTimestampEntity {
 			"티켓 가격은 0원보다 커야합니다."
 		);
 	}
+
+	public void invalidate() {
+		Preconditions.domainValidate(
+			this.ticketStatus == TicketStatus.ISSUED,
+			"발행 완료 상태의 티켓만 취소할 수 있습니다."
+		);
+		this.ticketStatus = TicketStatus.INVALID;
+	}
 }

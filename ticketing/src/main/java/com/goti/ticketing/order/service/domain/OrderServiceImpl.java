@@ -85,6 +85,30 @@ public class OrderServiceImpl implements OrderService {
 			.orElseThrow(() -> new CustomException(ErrorCode.ORDER_NOT_FOUND));
 	}
 
+	@Override
+	@Transactional(readOnly = true)
+	public OrderEntity get(UUID orderId, UUID memberId) {
+		Preconditions.validate(
+			memberId != null,
+			ErrorCode.AUTH_INVALID
+		);
+
+		return orderRepository.findByIdAndMemberId(orderId, memberId)
+			.orElseThrow(() -> new CustomException(ErrorCode.ORDER_NOT_FOUND));
+	}
+
+	@Override
+	@Transactional
+	public void cancel(OrderEntity order) {
+		order.cancel();
+	}
+
+	@Override
+	@Transactional
+	public void partialCancel(OrderEntity order) {
+		order.partialCancel();
+	}
+
 	private String generateOrderNumber() {
 		String tsidSuffix = TsidCreator.getTsid().toString();
 		return "ORD" + "-" +

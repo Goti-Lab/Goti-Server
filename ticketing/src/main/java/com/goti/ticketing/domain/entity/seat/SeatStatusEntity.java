@@ -85,4 +85,12 @@ public class SeatStatusEntity extends ModificationTimestampEntity {
 		);
 		this.status = SeatStatus.SOLD;
 	}
+
+	public void cancelSale() {
+		Preconditions.domainValidate(
+			this.status == SeatStatus.SOLD,
+			"판매 완료 상태에서만 좌석 점유 가능 상태로 변경할 수 있습니다."
+		);
+		this.status = SeatStatus.AVAILABLE;
+	}
 }
