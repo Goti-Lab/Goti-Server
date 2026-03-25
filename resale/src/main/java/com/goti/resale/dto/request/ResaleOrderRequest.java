@@ -7,7 +7,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotEmpty;
 
 public record ResaleOrderRequest(
-	@Schema(description = "리셀 점유 ID 목록", example = "[\"8df84c70-833e-4374-85ad-fa52f92f939e\"]")
+	@Schema(description = "리셀 점유 ID 목록", example = "[\"8df84c70-833e-4374-85ad-fa52f92f939e\",\"7a727b68-e223-4574-accf-7cba50f85fc8\"]")
 	@NotEmpty(message = "리셀 점유 ID 목록은 필수입니다.")
 	List<UUID> holdIds
 ) {

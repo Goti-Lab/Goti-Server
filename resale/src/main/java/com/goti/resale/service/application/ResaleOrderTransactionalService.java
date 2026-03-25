@@ -23,7 +23,6 @@ import com.goti.resale.dto.request.ResaleTransactionItemRequest;
 import com.goti.resale.dto.response.ResaleOrderCreateResponse;
 import com.goti.resale.infra.TicketClient;
 import com.goti.resale.repository.ResaleOrderRepository;
-import com.goti.resale.repository.ResaleRestrictionRepository;
 import com.goti.resale.repository.ResaleTransactionRepository;
 import com.goti.resale.utils.ResalePricePolicy;
 import com.goti.resale.utils.ResaleRestrictionHandler;
@@ -34,8 +33,8 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class ResaleOrderTransactionalService {
 	private static final DateTimeFormatter ORDER_NUMBER_FORMATTER = DateTimeFormatter.ofPattern("yyMMdd");
+	private static final DateTimeFormatter TICKET_NUMBER_FORMATTER = DateTimeFormatter.ofPattern("MMdd");
 
-	private final ResaleRestrictionRepository resaleRestrictionRepository;
 	private final ResaleOrderRepository resaleOrderRepository;
 	private final ResaleTransactionRepository resaleTransactionRepository;
 	private final ResaleRestrictionHandler resaleRestrictionHandler;
@@ -125,11 +124,16 @@ public class ResaleOrderTransactionalService {
 		UUID buyerId,
 		List<TransactionItemVO> itemVOs
 	) {
+		String tsidSuffix = TsidCreator.getTsid().toString();
+		String resaleSuffix = tsidSuffix.substring(tsidSuffix.length() - 6);
+
 		List<ResaleTransactionEntity> transactions = new ArrayList<>();
-		for (TransactionItemVO item : itemVOs) {
+		for (int i = 0; i < itemVOs.size(); i++) {
+			TransactionItemVO item = itemVOs.get(i);
 			ResaleTransactionEntity transaction = ResaleTransactionEntity.create(
 				order,
 				item.listing(),
+				generateResaleTicketNumber(resaleSuffix, "00" + (i + 1)),
 				buyerId,
 				item.getSellerId(),
 				item.getListingPrice(),
@@ -138,15 +142,22 @@ public class ResaleOrderTransactionalService {
 				item.getBuyerTotal(),
 				item.getSellerTotal()
 			);
-			transactions.add(resaleTransactionRepository.save(transaction));
+			transactions.add(transaction);
 		}
 		return resaleTransactionRepository.saveAll(transactions);
 	}
 
 	private String generateOrderNumber() {
 		String tsidSuffix = TsidCreator.getTsid().toString();
-		return "RES" + "-" +
+		return "ORD" + "-" +
 			LocalDate.now().format(ORDER_NUMBER_FORMATTER) +
 			tsidSuffix.substring(tsidSuffix.length() - 6);
+	}
+
+	private String generateResaleTicketNumber(String resaleSuffix, String num) {
+		return "RST" + "-" +
+			LocalDate.now().format(TICKET_NUMBER_FORMATTER) +
+			resaleSuffix +
+			"-" + num;
 	}
 }

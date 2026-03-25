@@ -46,6 +46,8 @@ public enum ErrorCode {
 	RESALE_HOLD_EXPIRED(HttpStatus.BAD_REQUEST, "리셀 점유 시간이 만료되었습니다."),
 	RESALE_PAYMENT_FAILED(HttpStatus.BAD_REQUEST, "리셀 결제에 실패했습니다."),
 	RESALE_ESCROW_FAILED(HttpStatus.BAD_REQUEST, "리셀 정산에 실패했습니다."),
+	ESCROW_NOT_FOUND(HttpStatus.BAD_REQUEST, "에스크로 정보를 찾을 수 없습니다."),
+	TRANSFER_OWNERSHIP_FAILED(HttpStatus.BAD_REQUEST, "티켓 소유권 전환에 실패했습니다."),
 
 	AUTH_INVALID_ACCESS_PATH(HttpStatus.UNAUTHORIZED, "올바르지 않은 접근 경로입니다."),
 	AUTH_PERMISSION_DENIED(HttpStatus.FORBIDDEN, "접근 권한이 없습니다."),
