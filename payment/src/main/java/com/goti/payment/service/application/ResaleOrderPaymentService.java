@@ -102,7 +102,7 @@ public class ResaleOrderPaymentService {
 		}
 
 		resaleEscrowService.settle(holdingEscrows, LocalDateTime.now());
-		escrowAccountRepository.saveAll(escrows);
+		escrowAccountRepository.saveAll(holdingEscrows);
 
 		eventPublisher.publishEvent(new SettlementCompletedEvent(orderId));
 	}
