@@ -9,8 +9,8 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Repository;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.goti.infra.constants.redis.RedisKey;
 import com.goti.queue.constants.QueueMetaField;
-import com.goti.queue.constants.QueueRedisKey;
 import com.goti.queue.domain.model.QueueEntry;
 import com.goti.queue.domain.model.QueueMeta;
 
@@ -24,7 +24,7 @@ public class QueueRedisRepository {
 	private final ObjectMapper objectMapper;
 
 	public QueueEntry getEntry(UUID gameId, UUID userId) {
-		Object value = redisTemplate.opsForValue().get(QueueRedisKey.ENTRY.getKey(gameId, userId));
+		Object value = redisTemplate.opsForValue().get(RedisKey.QUEUE_ENTRY.getKey(gameId, userId));
 		if (value == null) {
 			return null;
 		}
@@ -36,24 +36,24 @@ public class QueueRedisRepository {
 
 	public void saveEntry(UUID gameId, UUID userId, QueueEntry entry, Duration ttl) {
 		redisTemplate.opsForValue().set(
-			QueueRedisKey.ENTRY.getKey(gameId, userId),
+			RedisKey.QUEUE_ENTRY.getKey(gameId, userId),
 			entry,
 			ttl
 		);
 	}
 
 	public void deleteEntry(UUID gameId, UUID userId) {
-		redisTemplate.delete(QueueRedisKey.ENTRY.getKey(gameId, userId));
+		redisTemplate.delete(RedisKey.QUEUE_ENTRY.getKey(gameId, userId));
 	}
 
 	public long nextSequence(UUID gameId) {
-		Long sequence = redisTemplate.opsForValue().increment(QueueRedisKey.SEQUENCE.getKey(gameId));
+		Long sequence = redisTemplate.opsForValue().increment(RedisKey.QUEUE_SEQUENCE.getKey(gameId));
 		return sequence == null ? 1L : sequence;
 	}
 
 	public void addWaiting(UUID gameId, UUID userId, long queueNumber) {
 		redisTemplate.opsForZSet().add(
-			QueueRedisKey.WAITING.getKey(gameId),
+			RedisKey.QUEUE_WAITING.getKey(gameId),
 			userId.toString(),
 			queueNumber
 		);
@@ -61,34 +61,34 @@ public class QueueRedisRepository {
 
 	public void removeWaiting(UUID gameId, UUID userId) {
 		redisTemplate.opsForZSet().remove(
-			QueueRedisKey.WAITING.getKey(gameId),
+			RedisKey.QUEUE_WAITING.getKey(gameId),
 			userId.toString()
 		);
 	}
 
 	public boolean isActiveUser(UUID gameId, UUID userId) {
 		Boolean member = redisTemplate.opsForSet().isMember(
-			QueueRedisKey.ACTIVE_USERS.getKey(gameId),
+			RedisKey.QUEUE_ACTIVE_USERS.getKey(gameId),
 			userId.toString()
 		);
 		return Boolean.TRUE.equals(member);
 	}
 
 	public void addActiveUser(UUID gameId, UUID userId, Duration ttl) {
-		String key = QueueRedisKey.ACTIVE_USERS.getKey(gameId);
+		String key = RedisKey.QUEUE_ACTIVE_USERS.getKey(gameId);
 		redisTemplate.opsForSet().add(key, userId.toString());
 		redisTemplate.expire(key, ttl);
 	}
 
 	public void removeActiveUser(UUID gameId, UUID userId) {
 		redisTemplate.opsForSet().remove(
-			QueueRedisKey.ACTIVE_USERS.getKey(gameId),
+			RedisKey.QUEUE_ACTIVE_USERS.getKey(gameId),
 			userId.toString()
 		);
 	}
 
 	public void initializeMetaIfAbsent(UUID gameId, long maxCapacity) {
-		String metaKey = QueueRedisKey.META.getKey(gameId);
+		String metaKey = RedisKey.QUEUE_META.getKey(gameId);
 		if (redisTemplate.hasKey(metaKey)) {
 			return;
 		}
@@ -105,7 +105,7 @@ public class QueueRedisRepository {
 	}
 
 	public QueueMeta getMeta(UUID gameId) {
-		Map<Object, Object> meta = redisTemplate.opsForHash().entries(QueueRedisKey.META.getKey(gameId));
+		Map<Object, Object> meta = redisTemplate.opsForHash().entries(RedisKey.QUEUE_META.getKey(gameId));
 		if (meta.isEmpty()) {
 			return null;
 		}
@@ -126,7 +126,7 @@ public class QueueRedisRepository {
 		long lastEnteredRank,
 		Instant updatedAt
 	) {
-		redisTemplate.opsForHash().putAll(QueueRedisKey.META.getKey(gameId), Map.of(
+		redisTemplate.opsForHash().putAll(RedisKey.QUEUE_META.getKey(gameId), Map.of(
 			QueueMetaField.ACTIVE_COUNT, activeCount,
 			QueueMetaField.LAST_ENTERED_RANK, lastEnteredRank,
 			QueueMetaField.UPDATED_AT, updatedAt.toString()
@@ -134,7 +134,7 @@ public class QueueRedisRepository {
 	}
 
 	public void updateLeaveMeta(UUID gameId, long activeCount, Instant updatedAt) {
-		redisTemplate.opsForHash().putAll(QueueRedisKey.META.getKey(gameId), Map.of(
+		redisTemplate.opsForHash().putAll(RedisKey.QUEUE_META.getKey(gameId), Map.of(
 			QueueMetaField.ACTIVE_COUNT, activeCount,
 			QueueMetaField.UPDATED_AT, updatedAt.toString()
 		));
