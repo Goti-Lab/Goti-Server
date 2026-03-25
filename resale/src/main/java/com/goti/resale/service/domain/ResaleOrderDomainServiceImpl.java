@@ -1,4 +1,4 @@
-package com.goti.resale.service.application;
+package com.goti.resale.service.domain;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -31,31 +31,66 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-public class ResaleOrderTransactionalService {
+public class ResaleOrderDomainServiceImpl implements ResaleOrderDomainService {
 	private static final DateTimeFormatter ORDER_NUMBER_FORMATTER = DateTimeFormatter.ofPattern("yyMMdd");
 	private static final DateTimeFormatter TICKET_NUMBER_FORMATTER = DateTimeFormatter.ofPattern("MMdd");
 
 	private final ResaleOrderRepository resaleOrderRepository;
 	private final ResaleTransactionRepository resaleTransactionRepository;
+	private final ResaleRestrictionDomainService restrictionDomainService;
 	private final ResaleRestrictionHandler resaleRestrictionHandler;
-	private final ResaleRestrictionService restrictionService;
 	private final ResalePricePolicy resalePricePolicy;
 	private final TicketClient ticketClient;
 	private final ApplicationEventPublisher eventPublisher;
 
+	@Override
+	public String generateOrderNumber() {
+		String tsidSuffix = TsidCreator.getTsid().toString();
+		return "ORD" + "-" +
+			LocalDate.now().format(ORDER_NUMBER_FORMATTER) +
+			tsidSuffix.substring(tsidSuffix.length() - 6);
+	}
+
+	@Override
+	public String generateResaleTicketNumber(String resaleSuffix, String num) {
+		return "RST" + "-" +
+			LocalDate.now().format(TICKET_NUMBER_FORMATTER) +
+			resaleSuffix +
+			"-" + num;
+	}
+
+	@Override
+	public List<TransactionItemVO> calculateOrderItems(UUID buyerId, List<ResaleHoldEntity> holds, ResaleRestrictionEntity restriction) {
+		List<TransactionItemVO> itemVOs = new ArrayList<>();
+		for (ResaleHoldEntity hold : holds) {
+			ResaleListingEntity listing = hold.getResaleListing();
+
+			resaleRestrictionHandler.validateCanBuy(restriction, listing.getGameId());
+
+			ResalePricePolicy.FeeResult feeResult = resalePricePolicy.validateTransactionFee(
+				listing.getListingPrice()
+			);
+			itemVOs.add(new TransactionItemVO(listing, feeResult));
+		}
+		return itemVOs;
+	}
+
+	@Override
+	public void validatePossessionLimit(int currentOwnedCount, int pendingCount, int requestCount) {
+		resaleRestrictionHandler.validatePossessionLimit(currentOwnedCount, pendingCount, requestCount);
+	}
+
+	@Override
 	@Transactional
-	public ResaleOrderCreateResponse initOrder(
-		UUID buyerId,
-		List<ResaleHoldEntity> holds,
-		UUID gameId
-	) {
+	public ResaleOrderCreateResponse initOrder(UUID buyerId, List<ResaleHoldEntity> holds, UUID gameId) {
 		int ownedCount = ticketClient.getOwnedTicketCount(buyerId, gameId);
 		int pendingCount = resaleTransactionRepository.countByBuyerIdAndListing_GameIdAndTransactionStatus(
 			buyerId, gameId, ResaleTransactionStatus.PENDING);
 
-		resaleRestrictionHandler.validatePossessionLimit(ownedCount, pendingCount, holds.size());
+		validatePossessionLimit(ownedCount, pendingCount, holds.size());
 
-		List<TransactionItemVO> itemVOs = calculateOrderItems(buyerId, holds);
+		ResaleRestrictionEntity restriction = restrictionDomainService.getOrCreateRestriction(buyerId);
+		List<TransactionItemVO> itemVOs = calculateOrderItems(buyerId, holds, restriction);
 
 		int totalBuyerAmount = itemVOs.stream()
 			.mapToInt(TransactionItemVO::getBuyerTotal)
@@ -94,22 +129,6 @@ public class ResaleOrderTransactionalService {
 		);
 	}
 
-	private List<TransactionItemVO> calculateOrderItems(UUID buyerId, List<ResaleHoldEntity> holds) {
-		List<TransactionItemVO> itemVOs = new ArrayList<>();
-		for (ResaleHoldEntity hold : holds) {
-			ResaleListingEntity listing = hold.getResaleListing();
-
-			ResaleRestrictionEntity restriction = restrictionService.getOrCreateRestriction(buyerId);
-			resaleRestrictionHandler.validateCanBuy(restriction, listing.getGameId());
-
-			ResalePricePolicy.FeeResult feeResult = resalePricePolicy.validateTransactionFee(
-				listing.getListingPrice()
-			);
-			itemVOs.add(new TransactionItemVO(listing, feeResult));
-		}
-		return itemVOs;
-	}
-
 	private ResaleOrderEntity createOrder(UUID buyerId, int totalAmount) {
 		ResaleOrderEntity resaleOrder = ResaleOrderEntity.create(
 			generateOrderNumber(),
@@ -145,19 +164,5 @@ public class ResaleOrderTransactionalService {
 			transactions.add(transaction);
 		}
 		return resaleTransactionRepository.saveAll(transactions);
-	}
-
-	private String generateOrderNumber() {
-		String tsidSuffix = TsidCreator.getTsid().toString();
-		return "ORD" + "-" +
-			LocalDate.now().format(ORDER_NUMBER_FORMATTER) +
-			tsidSuffix.substring(tsidSuffix.length() - 6);
-	}
-
-	private String generateResaleTicketNumber(String resaleSuffix, String num) {
-		return "RST" + "-" +
-			LocalDate.now().format(TICKET_NUMBER_FORMATTER) +
-			resaleSuffix +
-			"-" + num;
 	}
 }
