@@ -8,9 +8,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.goti.constants.messages.ErrorCode;
 import com.goti.exception.CustomException;
+import com.goti.global.validation.Preconditions;
 import com.goti.resale.domain.entity.resale.ResaleHoldEntity;
 import com.goti.resale.domain.entity.resale.ResaleListingEntity;
-import com.goti.global.validation.Preconditions;
 import com.goti.resale.repository.hold.ResaleHoldRepository;
 import com.goti.resale.repository.listing.ResaleListingRepository;
 
@@ -53,7 +53,5 @@ public class ResaleHoldExpiryDomainServiceImpl implements ResaleHoldExpiryDomain
 
 		expire(resaleListing, resaleHold, now);
 
-		resaleHoldRepository.save(resaleHold);
-		resaleListingRepository.save(resaleListing);
 	}
 }
