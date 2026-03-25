@@ -1,4 +1,4 @@
-package com.goti.resale.service.application;
+package com.goti.resale.service.domain;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -6,15 +6,15 @@ import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.goti.resale.config.properties.ResaleHoldProperties;
 import com.goti.constants.messages.ErrorCode;
+import com.goti.exception.CustomException;
+import com.goti.global.validation.Preconditions;
+import com.goti.resale.config.properties.ResaleHoldProperties;
 import com.goti.resale.domain.entity.resale.ResaleHoldEntity;
 import com.goti.resale.domain.entity.resale.ResaleListingEntity;
 import com.goti.resale.dto.request.ResaleHoldRequest;
 import com.goti.resale.dto.response.ResaleHoldResponse;
 import com.goti.resale.dto.response.ResaleReleaseResponse;
-import com.goti.exception.CustomException;
-import com.goti.global.validation.Preconditions;
 import com.goti.resale.repository.hold.ResaleHoldRepository;
 import com.goti.resale.repository.listing.ResaleListingRepository;
 
@@ -22,11 +22,23 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-public class ResaleHoldTransactionalService {
+public class ResaleHoldDomainServiceImpl implements ResaleHoldDomainService {
+
 	private final ResaleListingRepository resaleListingRepository;
 	private final ResaleHoldRepository resaleHoldRepository;
 	private final ResaleHoldProperties resaleHoldProperties;
 
+	@Override
+	public void validateHoldable(ResaleListingEntity listing, UUID buyerId) {
+		Preconditions.validate(listing.isPurchasable(), ErrorCode.NOT_PURCHASABLE);
+
+		Preconditions.validate(
+			!listing.getSellerId().equals(buyerId),
+			ErrorCode.NOT_PURCHASABLE_SELF
+		);
+	}
+
+	@Override
 	@Transactional
 	public ResaleHoldResponse hold(UUID buyerId, ResaleHoldRequest request) {
 		ResaleListingEntity resaleListing = resaleListingRepository.findById(request.listingId())
@@ -34,12 +46,7 @@ public class ResaleHoldTransactionalService {
 				() -> new CustomException(ErrorCode.LISTING_NOT_FOUND)
 			);
 
-		Preconditions.validate(resaleListing.isPurchasable(), ErrorCode.NOT_PURCHASABLE);
-
-		Preconditions.validate(
-			!resaleListing.getSellerId().equals(buyerId),
-			ErrorCode.NOT_PURCHASABLE_SELF
-		);
+		validateHoldable(resaleListing, buyerId);
 
 		resaleListing.hold();
 
@@ -57,6 +64,7 @@ public class ResaleHoldTransactionalService {
 		return new ResaleHoldResponse(resaleHold.getId());
 	}
 
+	@Override
 	@Transactional
 	public ResaleReleaseResponse release(UUID holdId) {
 		ResaleHoldEntity resaleHold = resaleHoldRepository.findById(holdId)
