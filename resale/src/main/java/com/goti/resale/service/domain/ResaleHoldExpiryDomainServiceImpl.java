@@ -12,7 +12,6 @@ import com.goti.global.validation.Preconditions;
 import com.goti.resale.domain.entity.resale.ResaleHoldEntity;
 import com.goti.resale.domain.entity.resale.ResaleListingEntity;
 import com.goti.resale.repository.hold.ResaleHoldRepository;
-import com.goti.resale.repository.listing.ResaleListingRepository;
 
 import lombok.RequiredArgsConstructor;
 
@@ -21,7 +20,6 @@ import lombok.RequiredArgsConstructor;
 public class ResaleHoldExpiryDomainServiceImpl implements ResaleHoldExpiryDomainService {
 
 	private final ResaleHoldRepository resaleHoldRepository;
-	private final ResaleListingRepository resaleListingRepository;
 
 	@Override
 	public void expire(
