@@ -46,6 +46,7 @@ public class OrderController {
 	private final OrderCreateService orderCreateService;
 	private final OrderService orderService;
 	private final OrderPaymentConfirmService orderPaymentConfirmService;
+	private final OrderCancelService orderCancelService;
 
 	@Operation(
 		summary = "주문 생성",
