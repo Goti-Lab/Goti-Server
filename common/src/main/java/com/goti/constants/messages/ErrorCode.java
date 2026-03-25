@@ -64,6 +64,9 @@ public enum ErrorCode {
 	ORDER_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 주문입니다."),
 	ORDER_HISTORY_NOT_FOUND(HttpStatus.NOT_FOUND, "주문자 정보를 찾을 수 없습니다."),
 	ORDER_PAYMENT_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "결제 가능한 주문 상태가 아닙니다."),
+	ORDER_CANCELLATION_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "취소 가능한 주문 상태가 아닙니다."),
+	ORDER_CANCELLATION_ITEMS_REQUIRED(HttpStatus.BAD_REQUEST, "부분 취소할 주문 상세를 선택해주세요."),
+	ORDER_CANCELLATION_ITEM_INVALID(HttpStatus.BAD_REQUEST, "취소할 수 없는 주문 상세가 포함되어 있습니다."),
 	PAYMENT_IDEMPOTENCY_KEY_ALREADY_EXISTS(HttpStatus.CONFLICT, "이미 사용된 결제 멱등 키입니다."),
 	PAYMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "결제 정보를 찾을 수 없습니다."),
 
@@ -86,6 +89,7 @@ public enum ErrorCode {
 	TICKET_PRICING_POLICY_NOT_FOUND(HttpStatus.NOT_FOUND, "적용 가능한 가격 정책을 찾을 수 없습니다."),
 	TICKET_PRICE_NOT_FOUND(HttpStatus.NOT_FOUND, "적용 가능한 티켓 가격을 찾을 수 없습니다."),
 	TICKET_NOT_FOUND(HttpStatus.NOT_FOUND, "티켓을 찾을 수 없습니다."),
+	TICKET_ALREADY_USED(HttpStatus.BAD_REQUEST, "이미 사용 완료된 티켓은 환불할 수 없습니다."),
 	DUPLICATE_HOLD_ID_REQUEST(HttpStatus.BAD_REQUEST, "같은 좌석이 중복 선택되었습니다."),
 	ORDER_SEAT_ALREADY_EXISTS(HttpStatus.CONFLICT, "이미 주문된 좌석이 포함되어 있습니다."),
 

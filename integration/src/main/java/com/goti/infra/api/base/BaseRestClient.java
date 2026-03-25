@@ -117,6 +117,20 @@ public abstract class BaseRestClient {
 		return post(uri, body, null, responseType);
 	}
 
+	protected <T> T postGotiResponse(
+		String uri,
+		Object body,
+		ParameterizedTypeReference<ApiSuccessResponse<T>> responseType
+	) {
+		ApiSuccessResponse<T> response = restClient.post()
+			.uri(uriBuilder -> getActualUriBuilder(uri, uriBuilder).build())
+			.contentType(MediaType.APPLICATION_JSON)
+			.body(body)
+			.retrieve()
+			.body(responseType);
+		return response.getData();
+	}
+
 	protected <T> T put(String uri, Object body, Class<T> responseType) {
 		return restClient.put().uri(
 			uriBuilder -> getActualUriBuilder(uri, uriBuilder).build()

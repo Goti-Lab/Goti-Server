@@ -6,6 +6,8 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import com.goti.exception.CustomException;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -68,6 +70,23 @@ public class SeatStatusServiceImpl implements SeatStatusService {
 			.toList();
 
 		return seatStatusRepository.saveAll(newSeatStatuses);
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public SeatStatusEntity get(GameScheduleEntity game, SeatEntity seat) {
+		return seatStatusRepository.findByGameAndSeat(game, seat)
+			.orElseThrow(() -> new CustomException(ErrorCode.SEAT_STATUS_NOT_FOUND));
+	}
+
+	@Override
+	@Transactional
+	public void cancelSale(SeatStatusEntity seatStatus) {
+		Preconditions.domainValidate(
+			seatStatus != null,
+			"좌석 상태는 필수입니다."
+		);
+		seatStatus.cancelSale();
 	}
 
 	@Override

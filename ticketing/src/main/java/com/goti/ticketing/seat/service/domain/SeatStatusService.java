@@ -19,5 +19,9 @@ public interface SeatStatusService {
 
 	List<SeatStatusEntity> createMissingStatuses(GameScheduleEntity game, List<SeatEntity> seats, Set<UUID> existingSeatIds);
 
+	SeatStatusEntity get(GameScheduleEntity game, SeatEntity seat);
+
+	void cancelSale(SeatStatusEntity seatStatus);
+
 	void release(SeatStatusEntity seatStatus);
 }

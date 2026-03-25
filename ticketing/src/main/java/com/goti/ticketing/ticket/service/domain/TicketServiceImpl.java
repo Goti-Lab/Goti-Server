@@ -3,6 +3,8 @@ package com.goti.ticketing.ticket.service.domain;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
@@ -14,6 +16,7 @@ import com.goti.ticketing.domain.entity.ticket.TicketEntity;
 import com.goti.ticketing.ticket.repository.TicketRepository;
 
 import lombok.RequiredArgsConstructor;
+import static java.util.stream.Collectors.toMap;
 
 @Service
 @RequiredArgsConstructor
@@ -53,6 +56,19 @@ public class TicketServiceImpl implements TicketService {
 		);
 
 		return ticketRepository.save(ticket);
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public Map<UUID, TicketEntity> getByOrderItemIds(List<UUID> orderItemIds) {
+		return ticketRepository.findAllByOrderItemIdIn(orderItemIds).stream()
+			.collect(toMap(TicketEntity::getOrderItemId, ticket -> ticket));
+	}
+
+	@Override
+	@Transactional
+	public void invalidate(TicketEntity ticket) {
+		ticket.invalidate();
 	}
 
 	private String generateTicketNumber() {

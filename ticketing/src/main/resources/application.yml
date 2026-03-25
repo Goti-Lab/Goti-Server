@@ -69,3 +69,4 @@ infra:
   api:
     endpoints:
       stadium: ${STADIUM_API_URL:http://localhost:8080}
+      payment: ${PAYMENT_BASE_URL:http://localhost:8080}
