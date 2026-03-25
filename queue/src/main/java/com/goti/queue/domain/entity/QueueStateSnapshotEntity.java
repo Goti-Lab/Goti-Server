@@ -17,7 +17,7 @@ import static lombok.AccessLevel.PROTECTED;
 @Table(name = "queue_state_snapshots")
 @NoArgsConstructor(access = PROTECTED)
 public class QueueStateSnapshotEntity {
-
+	// TODO: kafka로 PostgreSQL snapshot 동기화
 	@Id
 	@Column(nullable = false, updatable = false)
 	private UUID gameId;
