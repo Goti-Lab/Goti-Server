@@ -7,9 +7,9 @@ import java.util.UUID;
 import org.springframework.stereotype.Service;
 
 import com.goti.constants.messages.ErrorCode;
-import com.goti.exception.CustomException;
 import com.goti.global.validation.Preconditions;
 import com.goti.resale.constants.ResaleListingStatus;
+import com.goti.resale.domain.entity.resale.ResaleListingEntity;
 import com.goti.resale.domain.entity.resale.ResaleRestrictionEntity;
 import com.goti.resale.dto.response.ResaleTicketResponse;
 import com.goti.resale.repository.listing.ResaleListingRepository;
@@ -44,15 +44,11 @@ public class ResaleListingDomainServiceImpl implements ResaleListingDomainServic
 	@Override
 	public void validateListingCancellation(
 		UUID sellerId,
-		UUID listingSellerId,
-		boolean isCancelable,
-		String currentStatus,
-		ResaleRestrictionEntity restriction,
-		UUID gameId
+		ResaleListingEntity resaleListing,
+		ResaleRestrictionEntity resaleRestriction
 	) {
-		validateListingOwnership(sellerId, listingSellerId);
-		validateCancelable(isCancelable, currentStatus);
-		restrictionHandler.validateCanCancel(restriction, gameId);
+		validateListingOwnership(sellerId, resaleListing.getSellerId());
+		restrictionHandler.validateCanCancel(resaleRestriction, resaleListing.getGameId());
 	}
 
 	private void validateTicketOwner(ResaleTicketResponse ticketResponse, UUID sellerId) {
@@ -77,14 +73,6 @@ public class ResaleListingDomainServiceImpl implements ResaleListingDomainServic
 			listingSellerId.equals(sellerId),
 			ErrorCode.AUTH_PERMISSION_DENIED,
 			"본인의 리셀만 취소할 수 있습니다"
-		);
-	}
-
-	private void validateCancelable(boolean isCancelable, String currentStatus) {
-		Preconditions.validate(
-			isCancelable,
-			ErrorCode.BAD_REQUEST,
-			"취소할 수 없는 상태입니다 (현재: " + currentStatus + ")"
 		);
 	}
 }

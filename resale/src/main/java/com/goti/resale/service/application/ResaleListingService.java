@@ -87,11 +87,8 @@ public class ResaleListingService {
 
 		listingDomainService.validateListingCancellation(
 			sellerId,
-			resaleListing.getSellerId(),
-			resaleListing.isCancelable(),
-			resaleListing.getListingStatus().toString(),
-			resaleRestriction,
-			resaleListing.getGameId()
+			resaleListing,
+			resaleRestriction
 		);
 
 		resaleListing.cancel();
@@ -143,8 +140,7 @@ public class ResaleListingService {
 			.distinct()
 			.toList();
 
-		Map<UUID, ResaleRestrictionEntity> restrictionMap = sellerIds.stream()
-			.collect(Collectors.toMap(id -> id, restrictionDomainService::getOrCreateRestriction));
+		Map<UUID, ResaleRestrictionEntity> restrictionMap = restrictionDomainService.getOrCreateRestrictions(sellerIds);
 
 		for (ResaleListingEntity listing : listings) {
 			listing.cancelByGameStart();
