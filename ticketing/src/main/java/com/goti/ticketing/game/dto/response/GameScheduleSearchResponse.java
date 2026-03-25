@@ -105,4 +105,18 @@ public record GameScheduleSearchResponse(
 			ticketing.getTicketingEndAt()
 		);
 	}
+
+	public GameScheduleSearchResponse withExternalInfo(
+		String homeTeamName,
+		String awayTeamName,
+		String stadiumLocation
+	) {
+		return new GameScheduleSearchResponse(
+			gameId, startAt, leagueType,
+			homeTeamId, awayTeamId, stadiumId,
+			homeTeamName, awayTeamName, stadiumLocation,
+			gameStatus, homeTeamScore, awayTeamScore, gameResult,
+			ticketingStatus, ticketingOpenedAt, ticketingEndAt
+		);
+	}
 }

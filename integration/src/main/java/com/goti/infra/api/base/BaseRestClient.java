@@ -1,5 +1,8 @@
 package com.goti.infra.api.base;
 
+import com.goti.global.api.ApiSuccessResponse;
+
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.MediaType;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -61,6 +64,37 @@ public abstract class BaseRestClient {
 			})
 			.retrieve()
 			.body(responseType);
+	}
+
+	protected <T> T get(
+		String uri,
+		Map<String, String> headers,
+		Map<String, ?> queryParams,
+		ParameterizedTypeReference<T> responseType
+	) {
+		return restClient.get()
+			.uri(uriBuilder -> {
+				UriBuilder builder = getActualUriBuilder(uri, uriBuilder);
+				if (queryParams != null) {
+					builder.queryParams(toParams(queryParams));
+				}
+				return builder.build();
+			})
+			.headers(header -> {
+				if (headers != null) headers.forEach(header::add);
+			})
+			.retrieve()
+			.body(responseType);
+	}
+
+	protected <T> T getGotiResponse(
+		String uri,
+		Map<String, String> headers,
+		Map<String, ?> queryParams,
+		ParameterizedTypeReference<ApiSuccessResponse<T>> responseType
+	) {
+		ApiSuccessResponse<T> response = get(uri, headers, queryParams, responseType);
+		return response.getData();
 	}
 
 	protected <T> T post(

@@ -4,6 +4,7 @@ import com.goti.stadium.domain.entity.stadium.StadiumEntity;
 import com.goti.stadium.dto.request.StadiumCreateRequest;
 import com.goti.stadium.dto.response.StadiumCreateResponse;
 import com.goti.global.api.ApiSuccessResponse;
+import com.goti.stadium.dto.response.internal.StadiumLocationResponse;
 import com.goti.stadium.service.domain.stadium.StadiumService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -17,8 +18,10 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
 import java.util.UUID;
 
 import static com.goti.global.api.ApiSuccessResponse.wrap;
@@ -63,5 +66,14 @@ public class StadiumController {
 		@PathVariable UUID stadiumId
 	) {
 		return wrap(stadiumService.getById(stadiumId));
+	}
+
+	@GetMapping
+	public ResponseEntity<ApiSuccessResponse<List<StadiumLocationResponse>>> getLocationsByIds(
+		@RequestParam List<UUID> stadiumIds
+	) {
+		return wrap(
+			stadiumService.getLocationsByIds(stadiumIds)
+		);
 	}
 }
