@@ -26,18 +26,19 @@ import org.springframework.test.web.servlet.MvcResult;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.goti.constants.UserRole;
+import com.goti.infra.constants.redis.RedisKey;
 import com.goti.queue.GotiQueueApplication;
 import com.goti.queue.constants.QueueMetaField;
-import com.goti.queue.constants.QueueRedisKey;
 import com.goti.queue.constants.QueueStatus;
 import com.goti.queue.domain.model.QueueEntry;
+import com.goti.queue.support.PostgreSqlContainerSupport;
 import com.goti.security.SimpleUserDetails;
 
 @SpringBootTest(classes = GotiQueueApplication.class)
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 @DisplayName("대기열 진입 통합 테스트 - POST /api/v1/queue/enter")
-class QueueEnterApiTest {
+class QueueEnterApiTest extends PostgreSqlContainerSupport {
 
 	@Autowired
 	private MockMvc mockMvc;
@@ -58,16 +59,16 @@ class QueueEnterApiTest {
 			return;
 		}
 
-		redisTemplate.delete(QueueRedisKey.SEQUENCE.getKey(lastGameId));
-		redisTemplate.delete(QueueRedisKey.WAITING.getKey(lastGameId));
-		redisTemplate.delete(QueueRedisKey.META.getKey(lastGameId));
+		redisTemplate.delete(RedisKey.QUEUE_SEQUENCE.getKey(lastGameId));
+		redisTemplate.delete(RedisKey.QUEUE_WAITING.getKey(lastGameId));
+		redisTemplate.delete(RedisKey.QUEUE_META.getKey(lastGameId));
 
 		if (lastUserId != null) {
-			redisTemplate.delete(QueueRedisKey.ENTRY.getKey(lastGameId, lastUserId));
+			redisTemplate.delete(RedisKey.QUEUE_ENTRY.getKey(lastGameId, lastUserId));
 		}
 
 		if (lastSecondUserId != null) {
-			redisTemplate.delete(QueueRedisKey.ENTRY.getKey(lastGameId, lastSecondUserId));
+			redisTemplate.delete(RedisKey.QUEUE_ENTRY.getKey(lastGameId, lastSecondUserId));
 		}
 	}
 
@@ -91,8 +92,8 @@ class QueueEnterApiTest {
 			.andReturn();
 
 		JsonNode data = readData(result);
-		String waitingKey = QueueRedisKey.WAITING.getKey(lastGameId);
-		String entryKey = QueueRedisKey.ENTRY.getKey(lastGameId, lastUserId);
+		String waitingKey = RedisKey.QUEUE_WAITING.getKey(lastGameId);
+		String entryKey = RedisKey.QUEUE_ENTRY.getKey(lastGameId, lastUserId);
 
 		Double score = redisTemplate.opsForZSet().score(waitingKey, lastUserId.toString());
 		Object saved = redisTemplate.opsForValue().get(entryKey);
@@ -133,9 +134,9 @@ class QueueEnterApiTest {
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.data.queueNumber").value(2));
 
-		assertThat(redisTemplate.opsForZSet().score(QueueRedisKey.WAITING.getKey(lastGameId), lastUserId.toString()))
+		assertThat(redisTemplate.opsForZSet().score(RedisKey.QUEUE_WAITING.getKey(lastGameId), lastUserId.toString()))
 			.isEqualTo(1.0);
-		assertThat(redisTemplate.opsForZSet().score(QueueRedisKey.WAITING.getKey(lastGameId), lastSecondUserId.toString()))
+		assertThat(redisTemplate.opsForZSet().score(RedisKey.QUEUE_WAITING.getKey(lastGameId), lastSecondUserId.toString()))
 			.isEqualTo(2.0);
 	}
 
@@ -171,9 +172,9 @@ class QueueEnterApiTest {
 		JsonNode firstData = readData(firstResult);
 		JsonNode secondData = readData(secondResult);
 
-		Object saved = redisTemplate.opsForValue().get(QueueRedisKey.ENTRY.getKey(lastGameId, lastUserId));
-		Double score = redisTemplate.opsForZSet().score(QueueRedisKey.WAITING.getKey(lastGameId), lastUserId.toString());
-		Long size = redisTemplate.opsForZSet().zCard(QueueRedisKey.WAITING.getKey(lastGameId));
+		Object saved = redisTemplate.opsForValue().get(RedisKey.QUEUE_ENTRY.getKey(lastGameId, lastUserId));
+		Double score = redisTemplate.opsForZSet().score(RedisKey.QUEUE_WAITING.getKey(lastGameId), lastUserId.toString());
+		Long size = redisTemplate.opsForZSet().zCard(RedisKey.QUEUE_WAITING.getKey(lastGameId));
 
 		assertThat(firstData.get("queueToken").asText()).isNotEqualTo(secondData.get("queueToken").asText());
 		QueueEntry entry = objectMapper.convertValue(saved, QueueEntry.class);
@@ -198,7 +199,7 @@ class QueueEnterApiTest {
 			)
 			.andExpect(status().isOk());
 
-		Map<Object, Object> meta = redisTemplate.opsForHash().entries(QueueRedisKey.META.getKey(lastGameId));
+		Map<Object, Object> meta = redisTemplate.opsForHash().entries(RedisKey.QUEUE_META.getKey(lastGameId));
 
 		assertThat(((Number)meta.get(QueueMetaField.MAX_CAPACITY)).longValue()).isEqualTo(5000L);
 		assertThat(((Number)meta.get(QueueMetaField.ACTIVE_COUNT)).longValue()).isEqualTo(0L);

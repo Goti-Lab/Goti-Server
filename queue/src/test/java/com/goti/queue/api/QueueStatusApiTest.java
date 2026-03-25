@@ -23,16 +23,17 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import com.goti.constants.UserRole;
 import com.goti.constants.messages.ErrorCode;
+import com.goti.infra.constants.redis.RedisKey;
 import com.goti.queue.GotiQueueApplication;
 import com.goti.queue.constants.QueueMetaField;
-import com.goti.queue.constants.QueueRedisKey;
+import com.goti.queue.support.PostgreSqlContainerSupport;
 import com.goti.security.SimpleUserDetails;
 
 @SpringBootTest(classes = GotiQueueApplication.class)
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 @DisplayName("대기열 상태 조회 통합 테스트 - GET /api/v1/queue/{gameId}/status")
-class QueueStatusApiTest {
+class QueueStatusApiTest extends PostgreSqlContainerSupport {
 
 	@Autowired
 	private MockMvc mockMvc;
@@ -45,7 +46,7 @@ class QueueStatusApiTest {
 	@AfterEach
 	void tearDown() {
 		if (gameId != null) {
-			redisTemplate.delete(QueueRedisKey.META.getKey(gameId));
+			redisTemplate.delete(RedisKey.QUEUE_META.getKey(gameId));
 		}
 	}
 
@@ -53,7 +54,7 @@ class QueueStatusApiTest {
 	void 대기열_상태_조회_성공() throws Exception {
 		gameId = UUID.randomUUID();
 		UUID userId = UUID.randomUUID();
-		redisTemplate.opsForHash().putAll(QueueRedisKey.META.getKey(gameId), Map.of(
+		redisTemplate.opsForHash().putAll(RedisKey.QUEUE_META.getKey(gameId), Map.of(
 			QueueMetaField.MAX_CAPACITY, 5000L,
 			QueueMetaField.ACTIVE_COUNT, 1900L,
 			QueueMetaField.PUBLISHED_RANK, 0L,
@@ -98,4 +99,3 @@ class QueueStatusApiTest {
 		);
 	}
 }
-

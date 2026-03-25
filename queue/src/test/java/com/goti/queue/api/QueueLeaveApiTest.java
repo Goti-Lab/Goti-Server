@@ -27,18 +27,19 @@ import org.springframework.test.web.servlet.MvcResult;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.goti.constants.UserRole;
+import com.goti.infra.constants.redis.RedisKey;
 import com.goti.queue.GotiQueueApplication;
 import com.goti.queue.constants.QueueMetaField;
-import com.goti.queue.constants.QueueRedisKey;
 import com.goti.queue.constants.QueueStatus;
 import com.goti.queue.domain.model.QueueEntry;
+import com.goti.queue.support.PostgreSqlContainerSupport;
 import com.goti.security.SimpleUserDetails;
 
 @SpringBootTest(classes = GotiQueueApplication.class)
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 @DisplayName("대기열 이탈 통합 테스트 - POST /api/v1/queue/{gameId}/leave")
-class QueueLeaveApiTest {
+class QueueLeaveApiTest extends PostgreSqlContainerSupport {
 
 	@Autowired
 	private MockMvc mockMvc;
@@ -57,12 +58,12 @@ class QueueLeaveApiTest {
 		if (gameId == null) {
 			return;
 		}
-		redisTemplate.delete(QueueRedisKey.SEQUENCE.getKey(gameId));
-		redisTemplate.delete(QueueRedisKey.WAITING.getKey(gameId));
-		redisTemplate.delete(QueueRedisKey.META.getKey(gameId));
-		redisTemplate.delete(QueueRedisKey.ACTIVE_USERS.getKey(gameId));
+		redisTemplate.delete(RedisKey.QUEUE_SEQUENCE.getKey(gameId));
+		redisTemplate.delete(RedisKey.QUEUE_WAITING.getKey(gameId));
+		redisTemplate.delete(RedisKey.QUEUE_META.getKey(gameId));
+		redisTemplate.delete(RedisKey.QUEUE_ACTIVE_USERS.getKey(gameId));
 		if (userId != null) {
-			redisTemplate.delete(QueueRedisKey.ENTRY.getKey(gameId, userId));
+			redisTemplate.delete(RedisKey.QUEUE_ENTRY.getKey(gameId, userId));
 		}
 	}
 
@@ -84,7 +85,7 @@ class QueueLeaveApiTest {
 
 		String queueToken = readData(enterResult).get("queueToken").asText();
 
-		redisTemplate.opsForHash().putAll(QueueRedisKey.META.getKey(gameId), Map.of(
+		redisTemplate.opsForHash().putAll(RedisKey.QUEUE_META.getKey(gameId), Map.of(
 			QueueMetaField.MAX_CAPACITY, 5000L,
 			QueueMetaField.ACTIVE_COUNT, 0L,
 			QueueMetaField.PUBLISHED_RANK, 10L,
@@ -112,14 +113,14 @@ class QueueLeaveApiTest {
 			.andExpect(jsonPath("$.data.released").value(true))
 			.andExpect(jsonPath("$.data.status").value("LEFT"));
 
-		Object saved = redisTemplate.opsForValue().get(QueueRedisKey.ENTRY.getKey(gameId, userId));
+		Object saved = redisTemplate.opsForValue().get(RedisKey.QUEUE_ENTRY.getKey(gameId, userId));
 		QueueEntry entry = objectMapper.convertValue(saved, QueueEntry.class);
 
 		assertThat(entry.status()).isEqualTo(QueueStatus.LEFT);
-		assertThat(redisTemplate.opsForSet().isMember(QueueRedisKey.ACTIVE_USERS.getKey(gameId), userId.toString()))
+		assertThat(redisTemplate.opsForSet().isMember(RedisKey.QUEUE_ACTIVE_USERS.getKey(gameId), userId.toString()))
 			.isFalse();
 		assertThat(((Number)redisTemplate.opsForHash()
-			.get(QueueRedisKey.META.getKey(gameId), QueueMetaField.ACTIVE_COUNT)).longValue()).isZero();
+			.get(RedisKey.QUEUE_META.getKey(gameId), QueueMetaField.ACTIVE_COUNT)).longValue()).isZero();
 	}
 
 	@Test
@@ -140,7 +141,7 @@ class QueueLeaveApiTest {
 
 		String queueToken = readData(enterResult).get("queueToken").asText();
 
-		redisTemplate.opsForHash().putAll(QueueRedisKey.META.getKey(gameId), Map.of(
+		redisTemplate.opsForHash().putAll(RedisKey.QUEUE_META.getKey(gameId), Map.of(
 			QueueMetaField.MAX_CAPACITY, 5000L,
 			QueueMetaField.ACTIVE_COUNT, 0L,
 			QueueMetaField.PUBLISHED_RANK, 10L,
@@ -175,7 +176,7 @@ class QueueLeaveApiTest {
 			.andExpect(jsonPath("$.data.status").value("LEFT"));
 
 		assertThat(((Number)redisTemplate.opsForHash()
-			.get(QueueRedisKey.META.getKey(gameId), QueueMetaField.ACTIVE_COUNT)).longValue()).isZero();
+			.get(RedisKey.QUEUE_META.getKey(gameId), QueueMetaField.ACTIVE_COUNT)).longValue()).isZero();
 	}
 
 	private Authentication auth(UUID userId) {
