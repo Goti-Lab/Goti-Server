@@ -1,6 +1,5 @@
 package com.goti.resale.service.application;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -9,8 +8,9 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.goti.resale.constants.ResaleListingStatus;
 import com.goti.constants.messages.ErrorCode;
+import com.goti.exception.CustomException;
+import com.goti.resale.constants.ResaleListingStatus;
 import com.goti.resale.domain.entity.resale.ResaleListingEntity;
 import com.goti.resale.domain.entity.resale.ResalePriceHistoryEntity;
 import com.goti.resale.domain.entity.resale.ResaleRestrictionEntity;
@@ -18,13 +18,12 @@ import com.goti.resale.dto.request.ResaleListingCancelRequest;
 import com.goti.resale.dto.request.ResaleListingCreateRequest;
 import com.goti.resale.dto.response.ResaleListingResponse;
 import com.goti.resale.dto.response.ResaleTicketResponse;
-import com.goti.exception.CustomException;
-import com.goti.global.validation.Preconditions;
 import com.goti.resale.infra.TicketClient;
 import com.goti.resale.repository.ResaleRestrictionRepository;
 import com.goti.resale.repository.history.ResalePriceHistoryRepository;
 import com.goti.resale.repository.listing.ResaleListingRepository;
-import com.goti.resale.utils.ResalePricePolicy;
+import com.goti.resale.service.domain.ResaleListingDomainService;
+import com.goti.resale.service.domain.ResaleRestrictionDomainService;
 import com.goti.resale.utils.ResaleRestrictionHandler;
 
 import lombok.RequiredArgsConstructor;
@@ -36,27 +35,17 @@ public class ResaleListingService {
 	private final ResaleRestrictionRepository restrictionRepository;
 	private final ResalePriceHistoryRepository priceHistoryRepository;
 	private final ResaleRestrictionHandler restrictionHandler;
-	private final ResaleRestrictionService restrictionService;
-	private final ResalePricePolicy pricePolicy;
+	private final ResaleRestrictionDomainService restrictionDomainService;
+	private final ResaleListingDomainService listingDomainService;
 	private final TicketClient ticketClient;
 
 	@Transactional
 	public ResaleListingResponse createListing(UUID sellerId, ResaleListingCreateRequest request) {
 		ResaleTicketResponse ticketInfo = ticketClient.getTicketInfo(request.ticketId(), sellerId);
 
-		validateTicketOwner(ticketInfo, sellerId);
+		ResaleRestrictionEntity resaleRestriction = restrictionDomainService.getOrCreateRestriction(sellerId);
 
-		validateGameStartedOneHour(ticketInfo.gameDate());
-
-		validateDuplicateListing(ticketInfo.ticketId());
-
-		restrictionHandler.validateReListingLimit(ticketInfo.transactionId(), ticketInfo.createdAt());
-
-		ResaleRestrictionEntity resaleRestriction = restrictionService.getOrCreateRestriction(sellerId);
-
-		restrictionHandler.validateCanSell(resaleRestriction, ticketInfo.gameId());
-
-		pricePolicy.validatePriceRange(ticketInfo.ticketPrice(), request.listingPrice());
+		listingDomainService.validateListingCreation(ticketInfo, sellerId, request.listingPrice(), resaleRestriction);
 
 		Integer lastTransactionPrice = priceHistoryRepository
 			.findLatestByGameAndGrade(ticketInfo.gameId(), ticketInfo.gradeId())
@@ -94,13 +83,16 @@ public class ResaleListingService {
 				() -> new CustomException(ErrorCode.LISTING_NOT_FOUND)
 			);
 
-		validateListingOwnership(resaleListing, sellerId);
+		ResaleRestrictionEntity resaleRestriction = restrictionDomainService.getOrCreateRestriction(sellerId);
 
-		validateCancelable(resaleListing);
-
-		ResaleRestrictionEntity resaleRestriction = restrictionService.getOrCreateRestriction(sellerId);
-
-		restrictionHandler.validateCanCancel(resaleRestriction, resaleListing.getGameId());
+		listingDomainService.validateListingCancellation(
+			sellerId,
+			resaleListing.getSellerId(),
+			resaleListing.isCancelable(),
+			resaleListing.getListingStatus().toString(),
+			resaleRestriction,
+			resaleListing.getGameId()
+		);
 
 		resaleListing.cancel();
 
@@ -152,7 +144,7 @@ public class ResaleListingService {
 			.toList();
 
 		Map<UUID, ResaleRestrictionEntity> restrictionMap = sellerIds.stream()
-			.collect(Collectors.toMap(id -> id, restrictionService::getOrCreateRestriction));
+			.collect(Collectors.toMap(id -> id, restrictionDomainService::getOrCreateRestriction));
 
 		for (ResaleListingEntity listing : listings) {
 			listing.cancelByGameStart();
@@ -164,38 +156,5 @@ public class ResaleListingService {
 
 		listingRepository.saveAll(listings);
 		restrictionRepository.saveAll(restrictionMap.values());
-	}
-
-	private void validateTicketOwner(ResaleTicketResponse ticketResponse, UUID sellerId) {
-		Preconditions.validate(ticketResponse.ownerId().equals(sellerId), ErrorCode.AUTH_PERMISSION_DENIED);
-	}
-
-	private void validateGameStartedOneHour(LocalDateTime gameDate) {
-		LocalDateTime now = LocalDateTime.now();
-		Preconditions.validate(gameDate.isAfter(now.plusHours(1)), ErrorCode.LISTING_ALREADY_CLOSED);
-	}
-
-	private void validateDuplicateListing(UUID ticketId) {
-		Preconditions.validate(
-			!listingRepository.existsByTicketIdAndListingStatusIn(
-				ticketId,
-				List.of(ResaleListingStatus.LISTING, ResaleListingStatus.HOLD, ResaleListingStatus.SOLD)
-			), ErrorCode.ALREADY_LISTED);
-	}
-
-	private void validateListingOwnership(ResaleListingEntity listing, UUID sellerId) {
-		Preconditions.validate(
-			listing.getSellerId().equals(sellerId),
-			ErrorCode.AUTH_PERMISSION_DENIED,
-			"본인의 리셀만 취소할 수 있습니다"
-		);
-	}
-
-	private void validateCancelable(ResaleListingEntity listing) {
-		Preconditions.validate(
-			listing.isCancelable(),
-			ErrorCode.BAD_REQUEST,
-			"취소할 수 없는 상태입니다 (현재: " + listing.getListingStatus() + ")"
-		);
 	}
 }
