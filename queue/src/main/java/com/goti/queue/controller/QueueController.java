@@ -15,9 +15,12 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.goti.global.api.ApiSuccessResponse;
 import com.goti.queue.dto.request.QueueEnterRequest;
+import com.goti.queue.dto.request.QueueSeatEnterRequest;
 import com.goti.queue.dto.response.QueueEnterResponse;
+import com.goti.queue.dto.response.QueueSeatEnterResponse;
 import com.goti.queue.dto.response.QueueStatusResponse;
 import com.goti.queue.service.QueueEnterService;
+import com.goti.queue.service.QueueSeatEnterService;
 import com.goti.queue.service.QueueStatusService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -33,6 +36,7 @@ public class QueueController {
 
 	private final QueueEnterService queueEnterService;
 	private final QueueStatusService queueStatusService;
+	private final QueueSeatEnterService queueSeatEnterService;
 
 	@Operation(
 		summary = "대기열 진입",
@@ -56,5 +60,18 @@ public class QueueController {
 		@PathVariable UUID gameId
 	) {
 		return wrap(queueStatusService.getStatus(gameId, userId));
+	}
+
+	@Operation(
+		summary = "대기열 최종 입장",
+		description = "초기 페이지 진입 가능 여부 판단 API"
+	)
+	@PostMapping("/{gameId}/seat-enter")
+	public ResponseEntity<ApiSuccessResponse<QueueSeatEnterResponse>> seatEnter(
+		@AuthenticationPrincipal(expression = "id") UUID userId,
+		@PathVariable UUID gameId,
+		@Valid @RequestBody QueueSeatEnterRequest request
+	) {
+		return wrap(queueSeatEnterService.enter(gameId, userId, request));
 	}
 }
