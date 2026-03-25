@@ -129,11 +129,12 @@ public class ResaleOrderTransactionalService {
 
 		List<ResaleTransactionEntity> transactions = new ArrayList<>();
 		for (int i = 0; i < itemVOs.size(); i++) {
+			String num = String.format("%03d", i + 1);
 			TransactionItemVO item = itemVOs.get(i);
 			ResaleTransactionEntity transaction = ResaleTransactionEntity.create(
 				order,
 				item.listing(),
-				generateResaleTicketNumber(resaleSuffix, i + 1),
+				generateResaleTicketNumber(resaleSuffix, num),
 				buyerId,
 				item.getSellerId(),
 				item.getListingPrice(),
@@ -154,10 +155,10 @@ public class ResaleOrderTransactionalService {
 			tsidSuffix.substring(tsidSuffix.length() - 6);
 	}
 
-	private String generateResaleTicketNumber(String resaleSuffix, int sequence) {
+	private String generateResaleTicketNumber(String resaleSuffix, String num) {
 		return "RST" + "-" +
 			LocalDate.now().format(TICKET_NUMBER_FORMATTER) +
 			resaleSuffix +
-			"-" + String.format("%03d", sequence);
+			"-" + num;
 	}
 }
