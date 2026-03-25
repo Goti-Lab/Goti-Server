@@ -132,7 +132,7 @@ class ResalePriceHistoryEntityTest {
 			null
 		))
 			.isInstanceOf(FieldValidationException.class)
-			.hasMessageContaining("거래 가격은 0 이상이어야 합니다");
+			.hasMessageContaining("거래 가격은 0원 이상이어야 합니다");
 	}
 
 	@ParameterizedTest
@@ -147,6 +147,6 @@ class ResalePriceHistoryEntityTest {
 			null
 		))
 			.isInstanceOf(FieldValidationException.class)
-			.hasMessageContaining("거래 가격은 0 이상이어야 합니다");
+			.hasMessageContaining("거래 가격은 0원 이상이어야 합니다");
 	}
 }

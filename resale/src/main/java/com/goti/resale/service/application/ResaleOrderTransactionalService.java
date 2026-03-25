@@ -123,12 +123,16 @@ public class ResaleOrderTransactionalService {
 		UUID buyerId,
 		List<TransactionItemVO> itemVOs
 	) {
+		String tsidSuffix = TsidCreator.getTsid().toString();
+		String resaleSuffix = tsidSuffix.substring(tsidSuffix.length() - 6);
+
 		List<ResaleTransactionEntity> transactions = new ArrayList<>();
-		for (TransactionItemVO item : itemVOs) {
+		for (int i = 0; i < itemVOs.size(); i++) {
+			TransactionItemVO item = itemVOs.get(i);
 			ResaleTransactionEntity transaction = ResaleTransactionEntity.create(
 				order,
 				item.listing(),
-				generateResaleTicketNumber(),
+				generateResaleTicketNumber(resaleSuffix, i + 1),
 				buyerId,
 				item.getSellerId(),
 				item.getListingPrice(),
@@ -137,7 +141,7 @@ public class ResaleOrderTransactionalService {
 				item.getBuyerTotal(),
 				item.getSellerTotal()
 			);
-			transactions.add(resaleTransactionRepository.save(transaction));
+			transactions.add(transaction);
 		}
 		return resaleTransactionRepository.saveAll(transactions);
 	}
@@ -149,10 +153,10 @@ public class ResaleOrderTransactionalService {
 			tsidSuffix.substring(tsidSuffix.length() - 6);
 	}
 
-	private String generateResaleTicketNumber() {
-		String tsidSuffix = TsidCreator.getTsid().toString();
+	private String generateResaleTicketNumber(String resaleSuffix, int sequence) {
 		return "RST" + "-" +
 			LocalDate.now().format(ORDER_NUMBER_FORMATTER) +
-			tsidSuffix.substring(tsidSuffix.length() - 6);
+			resaleSuffix +
+			"-" + String.format("%03d", sequence);
 	}
 }

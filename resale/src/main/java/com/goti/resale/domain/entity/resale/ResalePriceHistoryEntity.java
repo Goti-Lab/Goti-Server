@@ -92,7 +92,7 @@ public class ResalePriceHistoryEntity extends ModificationTimestampEntity {
 		Preconditions.domainValidate(seatId != null, "좌석 ID는 비어 있을 수 없습니다");
 		Preconditions.domainValidate(sectionId != null, "구역 ID는 비어 있을 수 없습니다");
 		Preconditions.domainValidate(gradeId != null, "등급 ID는 비어 있을 수 없습니다");
-		Preconditions.domainValidate(transactionPrice != null && transactionPrice >= 0, "거래 가격은 0 이상이어야 합니다");
+		Preconditions.domainValidate(transactionPrice != null && transactionPrice >= 0, "거래 가격은 0원 이상이어야 합니다");
 	}
 
 }
