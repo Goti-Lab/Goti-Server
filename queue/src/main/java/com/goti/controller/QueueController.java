@@ -28,7 +28,7 @@ import java.util.UUID;
 import static com.goti.global.api.ApiSuccessResponse.*;
 
 @Slf4j
-@Tag(name = "Waiting-Queue", description = "대기열 관련 API")
+@Tag(name = "Waiting-Queue", description = "티켓팅 대기열 관리 API (Redis 기반 고성능 큐)")
 @RestController
 @RequestMapping("/api/v1/queue")
 @RequiredArgsConstructor
@@ -37,8 +37,8 @@ public class QueueController {
 	private final QueueService queueService;
 
 	@Operation(
-		summary = "대기열 진입 가능 여부 검증",
-		description = "대기열 "
+		summary = "대기열 진입 및 검증",
+		description = "유저 대기열 진입 및 토큰 발급 검증 API"
 	)
 	@PostMapping("/validate")
 	public ResponseEntity<ApiSuccessResponse<QueueValidateResponse>> create(
@@ -52,7 +52,7 @@ public class QueueController {
 
 	@Operation(
 		summary = "대기열 상태 조회 (Polling)",
-		description = "대기 중인 유저가 자신의 순번이나 통과 여부를 확인하는 API"
+		description = "대기 순번 및 통과 여부 조회 API"
 	)
 	@GetMapping("/status/games/{gameId}")
 	public ResponseEntity<ApiSuccessResponse<QueueStatusResponse>> getStatus(
