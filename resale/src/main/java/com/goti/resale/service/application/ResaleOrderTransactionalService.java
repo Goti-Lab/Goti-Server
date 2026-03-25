@@ -33,6 +33,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class ResaleOrderTransactionalService {
 	private static final DateTimeFormatter ORDER_NUMBER_FORMATTER = DateTimeFormatter.ofPattern("yyMMdd");
+	private static final DateTimeFormatter TICKET_NUMBER_FORMATTER = DateTimeFormatter.ofPattern("MMdd");
 
 	private final ResaleOrderRepository resaleOrderRepository;
 	private final ResaleTransactionRepository resaleTransactionRepository;
@@ -155,7 +156,7 @@ public class ResaleOrderTransactionalService {
 
 	private String generateResaleTicketNumber(String resaleSuffix, int sequence) {
 		return "RST" + "-" +
-			LocalDate.now().format(ORDER_NUMBER_FORMATTER) +
+			LocalDate.now().format(TICKET_NUMBER_FORMATTER) +
 			resaleSuffix +
 			"-" + String.format("%03d", sequence);
 	}
