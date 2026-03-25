@@ -3,7 +3,7 @@ server:
 
 spring:
   application:
-    name: goti-ticketing-service
+    name: goti-queue-service
   profiles:
     include:
       - integration

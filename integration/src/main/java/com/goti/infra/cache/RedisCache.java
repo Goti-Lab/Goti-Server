@@ -1,10 +1,14 @@
 package com.goti.infra.cache;
 
 import java.time.Duration;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
+import org.springframework.data.redis.core.Cursor;
+import org.springframework.data.redis.core.RedisCallback;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ScanOptions;
 import org.springframework.stereotype.Component;
 
 import com.goti.infra.constants.redis.RedisKey;
@@ -34,7 +38,22 @@ public class RedisCache {
 	}
 
 	public Set<String> getKeys(String pattern) {
-		return redisTemplate.keys(pattern);
+		return redisTemplate.execute((RedisCallback<Set<String>>) connection -> {
+			Set<String> keys = new HashSet<>();
+			ScanOptions options = ScanOptions.scanOptions()
+				.match(pattern)
+				.count(100)
+				.build();
+
+			try (Cursor<byte[]> cursor = connection.keyCommands().scan(options)) {
+				while (cursor.hasNext()) {
+					keys.add(new String(cursor.next()));
+				}
+			} catch (Exception e) {
+				throw new RuntimeException("Redis SCAN 중 오류 발생", e);
+			}
+			return keys;
+		});
 	}
 
 	public boolean delete(String key) {
@@ -75,6 +94,25 @@ public class RedisCache {
 	}
 
 	public long countKeys(String pattern) {
-		return redisTemplate.keys(pattern + "*").size();
+		Long count = redisTemplate.execute((RedisCallback<Long>) connection -> {
+			long result = 0;
+			ScanOptions options = ScanOptions.scanOptions()
+				.match(pattern + "*")
+				.count(100)
+				.build();
+
+			try (Cursor<byte[]> cursor = connection.keyCommands().scan(options)) {
+				while (cursor.hasNext()) {
+					cursor.next();
+					result++;
+				}
+			} catch (Exception e) {
+				throw new RuntimeException("Redis SCAN 중 오류 발생", e);
+			}
+			return result;
+		});
+
+		// 💡 null 체크 후 기본값 0L 반환 (NPE 방지)
+		return count != null ? count : 0L;
 	}
 }
