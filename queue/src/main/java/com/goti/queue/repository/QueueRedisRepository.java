@@ -125,6 +125,13 @@ public class QueueRedisRepository {
 		));
 	}
 
+	public void updateLeaveMeta(UUID gameId, long activeCount, Instant updatedAt) {
+		redisTemplate.opsForHash().putAll(QueueRedisKey.META.getKey(gameId), Map.of(
+			QueueMetaField.ACTIVE_COUNT, activeCount,
+			QueueMetaField.UPDATED_AT, updatedAt.toString()
+		));
+	}
+
 	private long longValue(Object value) {
 		return ((Number)value).longValue();
 	}

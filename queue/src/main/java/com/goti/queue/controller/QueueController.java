@@ -17,9 +17,11 @@ import com.goti.global.api.ApiSuccessResponse;
 import com.goti.queue.dto.request.QueueEnterRequest;
 import com.goti.queue.dto.request.QueueSeatEnterRequest;
 import com.goti.queue.dto.response.QueueEnterResponse;
+import com.goti.queue.dto.response.QueueLeaveResponse;
 import com.goti.queue.dto.response.QueueSeatEnterResponse;
 import com.goti.queue.dto.response.QueueStatusResponse;
 import com.goti.queue.service.QueueEnterService;
+import com.goti.queue.service.QueueLeaveService;
 import com.goti.queue.service.QueueSeatEnterService;
 import com.goti.queue.service.QueueStatusService;
 
@@ -37,6 +39,7 @@ public class QueueController {
 	private final QueueEnterService queueEnterService;
 	private final QueueStatusService queueStatusService;
 	private final QueueSeatEnterService queueSeatEnterService;
+	private final QueueLeaveService queueLeaveService;
 
 	@Operation(
 		summary = "대기열 진입",
@@ -73,5 +76,17 @@ public class QueueController {
 		@Valid @RequestBody QueueSeatEnterRequest request
 	) {
 		return wrap(queueSeatEnterService.enter(gameId, userId, request));
+	}
+
+	@Operation(
+		summary = "대기열 이탈",
+		description = "페이지 이탈, 로그아웃, 결제 완료 시 현재 수용 인원 해제 API"
+	)
+	@PostMapping("/{gameId}/leave")
+	public ResponseEntity<ApiSuccessResponse<QueueLeaveResponse>> leave(
+		@AuthenticationPrincipal(expression = "id") UUID userId,
+		@PathVariable UUID gameId
+	) {
+		return wrap(queueLeaveService.leave(gameId, userId));
 	}
 }
