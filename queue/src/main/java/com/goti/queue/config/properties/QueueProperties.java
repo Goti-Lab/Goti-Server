@@ -8,6 +8,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 public record QueueProperties(
 	long maxCapacity,
 	Duration entryTtl,
+	Duration admittedTtl,
 	String tokenSecret
 ) {
 }

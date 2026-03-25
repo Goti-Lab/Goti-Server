@@ -52,4 +52,5 @@ logging:
 queue:
   max-capacity: ${QUEUE_MAX_CAPACITY:5000}
   entry-ttl: ${QUEUE_ENTRY_TTL:10m}
+  admitted-ttl: ${QUEUE_ADMITTED_TTL:15m}
   token-secret: ${QUEUE_TOKEN_SECRET:goti-2026-queue-token-secret-key-minimum-32-chars}

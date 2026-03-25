@@ -52,7 +52,12 @@ class QueueEnterServiceTest {
 
 	@BeforeEach
 	void setUp() {
-		queueProperties = new QueueProperties(5000L, Duration.ofMinutes(10), "queue-token-secret-key-minimum-32-chars-long!!");
+		queueProperties = new QueueProperties(
+			5000L,
+			Duration.ofMinutes(10),
+			Duration.ofMinutes(15),
+			"goti-2026-queue-token-secret-key-minimum-32-chars"
+		);
 		queueEnterService = new QueueEnterService(
 			queueRedisRepository,
 			queueTokenProvider,
