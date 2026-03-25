@@ -8,6 +8,7 @@ import java.util.UUID;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Repository;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.goti.queue.constants.QueueMetaField;
 import com.goti.queue.constants.QueueRedisKey;
 import com.goti.queue.domain.model.QueueEntry;
@@ -20,10 +21,17 @@ import lombok.RequiredArgsConstructor;
 public class QueueRedisRepository {
 
 	private final RedisTemplate<String, Object> redisTemplate;
+	private final ObjectMapper objectMapper;
 
 	public QueueEntry getEntry(UUID gameId, UUID userId) {
 		Object value = redisTemplate.opsForValue().get(QueueRedisKey.ENTRY.getKey(gameId, userId));
-		return value instanceof QueueEntry entry ? entry : null;
+		if (value == null) {
+			return null;
+		}
+		if (value instanceof QueueEntry entry) {
+			return entry;
+		}
+		return objectMapper.convertValue(value, QueueEntry.class);
 	}
 
 	public void saveEntry(UUID gameId, UUID userId, QueueEntry entry, Duration ttl) {

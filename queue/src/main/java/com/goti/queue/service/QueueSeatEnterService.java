@@ -114,7 +114,7 @@ public class QueueSeatEnterService {
 		if (currentEntry.status() != QueueStatus.WAITING) {
 			throw new CustomException(ErrorCode.QUEUE_ENTRY_MISMATCH);
 		}
-		if (currentEntry.queueNumber() != payload.queueNumber() || !currentEntry.issuedAt().equals(payload.issuedAt())) {
+		if (currentEntry.queueNumber() != payload.queueNumber()) {
 			throw new CustomException(ErrorCode.QUEUE_ENTRY_MISMATCH);
 		}
 	}

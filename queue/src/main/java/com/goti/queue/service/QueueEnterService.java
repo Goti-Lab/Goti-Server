@@ -1,6 +1,7 @@
 package com.goti.queue.service;
 
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
@@ -49,7 +50,7 @@ public class QueueEnterService {
 			queueRedisRepository.initializeMetaIfAbsent(request.gameId(), queueProperties.maxCapacity());
 
 			long queueNumber = queueRedisRepository.nextSequence(request.gameId());
-			Instant issuedAt = Instant.now();
+			Instant issuedAt = Instant.now().truncatedTo(ChronoUnit.MILLIS);
 			String queueToken = queueTokenProvider.createToken(request.gameId(), userId, queueNumber, issuedAt);
 
 			QueueEntry queueEntry = new QueueEntry(

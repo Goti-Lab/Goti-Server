@@ -1,5 +1,6 @@
 package com.goti.queue.service;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.BDDMockito.given;
@@ -52,13 +53,13 @@ class QueueStatusServiceTest {
 
 		QueueStatusResponse response = queueStatusService.getStatus(gameId, userId);
 
-		assertThat(response.gameId()).isEqualTo(gameId);
-		assertThat(response.maxCapacity()).isEqualTo(5000L);
-		assertThat(response.activeCount()).isEqualTo(1900L);
-		assertThat(response.availableSlots()).isEqualTo(3100L);
-		assertThat(response.currentAllowedRank()).isEqualTo(2000L);
-		assertThat(response.publishedRank()).isEqualTo(5100L);
-		assertThat(response.updatedAt()).isEqualTo(queueMeta.updatedAt());
+		assertEquals(gameId, response.gameId());
+		assertEquals(5000L, response.maxCapacity());
+		assertEquals(1900L, response.activeCount());
+		assertEquals(3100L, response.availableSlots());
+		assertEquals(2000L, response.currentAllowedRank());
+		assertEquals(5100L, response.publishedRank());
+		assertEquals(queueMeta.updatedAt(), response.updatedAt());
 	}
 
 	@Test
@@ -76,7 +77,7 @@ class QueueStatusServiceTest {
 		QueueStatusResponse response = queueStatusService.getStatus(gameId, userId);
 
 		assertThat(response.availableSlots()).isZero();
-		assertThat(response.publishedRank()).isEqualTo(200L);
+		assertEquals(200L, response.publishedRank());
 	}
 
 	@Test
@@ -97,4 +98,3 @@ class QueueStatusServiceTest {
 			.isEqualTo(ErrorCode.QUEUE_META_NOT_FOUND);
 	}
 }
-
