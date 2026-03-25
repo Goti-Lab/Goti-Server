@@ -129,12 +129,11 @@ public class ResaleOrderTransactionalService {
 
 		List<ResaleTransactionEntity> transactions = new ArrayList<>();
 		for (int i = 0; i < itemVOs.size(); i++) {
-			String num = String.format("%03d", i + 1);
 			TransactionItemVO item = itemVOs.get(i);
 			ResaleTransactionEntity transaction = ResaleTransactionEntity.create(
 				order,
 				item.listing(),
-				generateResaleTicketNumber(resaleSuffix, num),
+				generateResaleTicketNumber(resaleSuffix, "00" + (i + 1)),
 				buyerId,
 				item.getSellerId(),
 				item.getListingPrice(),
