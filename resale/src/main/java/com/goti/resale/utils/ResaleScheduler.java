@@ -39,7 +39,7 @@ public class ResaleScheduler {
 		}
 	}
 
-	@Scheduled(cron = "0 0 0 * * *")
+	// @Scheduled(cron = "0 0 0 * * *")
 	public void updateDailyBasePrices() {
 		List<TicketGameInfo> upcomingGames = ticketClient.getUpcomingGames();
 		for (TicketGameInfo info : upcomingGames) {

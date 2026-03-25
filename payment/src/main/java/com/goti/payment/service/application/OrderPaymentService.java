@@ -2,6 +2,11 @@ package com.goti.payment.service.application;
 
 import java.util.UUID;
 
+import com.goti.dto.event.BookingCompletedEvent;
+import com.goti.payment.dto.response.GameIdResponse;
+import com.goti.payment.infra.OrderClient;
+
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,7 +19,6 @@ import com.goti.global.validation.Preconditions;
 import com.goti.payment.service.domain.PaymentService;
 import com.goti.payment.service.dto.OrderPaymentConfirmApiRequest;
 import com.goti.payment.service.dto.PaymentOrderInfo;
-
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -22,6 +26,8 @@ import lombok.RequiredArgsConstructor;
 public class OrderPaymentService {
 	private final TicketingOrderClient ticketingOrderClient;
 	private final PaymentService paymentService;
+	private final OrderClient orderClient;
+	private final ApplicationEventPublisher eventPublisher;
 
 	@Transactional
 	public PaymentResponse initPayment (
@@ -53,6 +59,11 @@ public class OrderPaymentService {
 					payment.paymentId(),
 					payment.pgTid()
 				)
+			);
+			GameIdResponse gameIdResponse = orderClient.orderDetail(orderId);
+			UUID gameId = gameIdResponse.gameId();
+			eventPublisher.publishEvent(
+				new BookingCompletedEvent(gameId, memberId)
 			);
 		}
 

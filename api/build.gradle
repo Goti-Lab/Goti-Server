@@ -14,6 +14,8 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+
     // OpenTelemetry (metrics + traces + logs 자동 설정)
     implementation 'io.opentelemetry.instrumentation:opentelemetry-spring-boot-starter'
 
@@ -27,6 +29,7 @@ dependencies {
     implementation(project(":ticketing"))
     implementation(project(":resale"))
     implementation(project(":payment"))
+    implementation(project(":queue"))
 }
 
 // 메인 애플리케이션만 실행 가능한 JAR 생성

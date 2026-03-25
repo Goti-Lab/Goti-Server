@@ -28,7 +28,7 @@ public class ResaleHoldScheduler {
 	private final DistributedLockManager distributedLockManager;
 	private final ResaleHoldExpiryProperties resaleHoldExpiryProperties;
 
-	@Scheduled(fixedDelayString = "${seat.hold-expiry.fixed-delay-ms}")
+	// @Scheduled(fixedDelayString = "${seat.hold-expiry.fixed-delay-ms}")
 	public void expireHolds() {
 		boolean acquired = distributedLockManager.withLockIfAvailable(
 			EXPIRY_JOB_LOCK_KEY,

@@ -25,7 +25,8 @@ import com.goti.user.GotiUserApplication;
 			GotiStadiumApplication.class,
 			GotiTicketingApplication.class,
 			GotiPaymentApplication.class,
-			GotiResaleApplication.class
+			GotiResaleApplication.class,
+			GotiQueueApplication.class
 		}
 	)
 )

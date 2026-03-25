@@ -12,6 +12,7 @@ PORT_STADIUM  := 8082
 PORT_TICKETING:= 8083
 PORT_PAYMENT  := 8084
 PORT_RESALE   := 8085
+PORT_QUEUE    := 8086
 
 help: ## 도움말
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-18s\033[0m %s\n", $$1, $$2}'
@@ -52,7 +53,7 @@ clean: ## 볼륨 포함 전체 정리
 # === MSA (Docker Compose) ===
 
 msa-build: ## [MSA] 모듈별 bootJar 빌드 (Gradle)
-	./gradlew $(foreach m,user stadium ticketing payment resale,:$(m):bootJar) -Pmsa --no-daemon -x test
+	./gradlew $(foreach m,user stadium ticketing payment resale queue,:$(m):bootJar) -Pmsa --no-daemon -x test
 
 msa-up: ## [MSA] Docker로 전체 서비스 시작 (5개 서비스 + DB + Redis)
 	$(COMPOSE_MSA) up -d --build
@@ -88,3 +89,6 @@ run-payment: ## [MSA] payment 서비스 로컬 실행 (port $(PORT_PAYMENT))
 
 run-resale: ## [MSA] resale 서비스 로컬 실행 (port $(PORT_RESALE))
 	SERVER_PORT=$(PORT_RESALE) ./gradlew :resale:bootRun -Pmsa --no-daemon
+
+run-queue: ## [MSA] queue 서비스 로컬 실행 (port $(PORT_QUEUE))
+	SERVER_PORT=$(PORT_QUEUE) ./gradlew :queue:bootRun -Pmsa --no-daemon

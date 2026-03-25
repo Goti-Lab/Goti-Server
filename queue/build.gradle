@@ -1,0 +1,43 @@
+ext {
+    set('springCloudVersion', "2023.0.3")
+}
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+    testImplementation 'org.springframework.security:spring-security-test'
+
+    implementation 'com.github.f4b6a3:tsid-creator:5.2.6'
+
+    /* Swagger */
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.14'
+
+    /* postgresql */
+    implementation 'org.postgresql:postgresql'
+    runtimeOnly 'org.postgresql:postgresql'
+
+    /* Jwt */
+    implementation 'io.jsonwebtoken:jjwt-api:0.13.0'
+    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.13.0'
+    runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.13.0'
+
+    testImplementation 'org.springframework.cloud:spring-cloud-contract-wiremock'
+
+    implementation project(':common')
+    implementation project(':integration')
+    implementation project(':stadium')
+
+    testImplementation project(':user')
+}
+
+dependencyManagement {
+    imports {
+        mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
+    }
+}
