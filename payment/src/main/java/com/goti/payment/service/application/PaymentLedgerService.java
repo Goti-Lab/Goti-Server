@@ -1,7 +1,5 @@
 package com.goti.payment.service.application;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.UUID;
 
 import org.springframework.data.domain.Page;
@@ -10,9 +8,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.goti.constants.messages.ErrorCode;
-import com.goti.payment.domain.entity.payment.PaymentLedgerEntity;
-import com.goti.payment.dto.response.ResalePaymentLedgerResponse;
 import com.goti.exception.CustomException;
+import com.goti.payment.dto.response.ResalePaymentLedgerResponse;
 import com.goti.payment.repository.PaymentLedgerRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -21,41 +18,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class PaymentLedgerService {
 
-	private static final BigDecimal VAT_RATE = new BigDecimal("0.1");
-	private static final BigDecimal VAT_DIVISOR = new BigDecimal("1.1");
-
 	private final PaymentLedgerRepository ledgerRepository;
-
-	@Transactional
-	public void createLedger(
-		UUID orderId,
-		UUID paymentId,
-		Integer totalAmount,
-		Integer buyerFee,
-		Integer sellerFee
-	) {
-		int totalFee = buyerFee + sellerFee;
-		BigDecimal totalFeeBD = BigDecimal.valueOf(totalFee);
-		BigDecimal vatBD = totalFeeBD
-			.multiply(VAT_RATE)
-			.divide(VAT_DIVISOR, 0, RoundingMode.HALF_UP);
-
-		int vat = vatBD.intValue();
-		int netProfit = totalFee - vat;
-		int settlementAmount = totalAmount - buyerFee - sellerFee;
-
-		PaymentLedgerEntity ledger = PaymentLedgerEntity.create(
-			orderId,
-			paymentId,
-			totalAmount,
-			buyerFee,
-			sellerFee,
-			vat,
-			netProfit,
-			settlementAmount
-		);
-		ledgerRepository.save(ledger);
-	}
 
 	@Transactional(readOnly = true)
 	public Page<ResalePaymentLedgerResponse> getLedgers(Pageable pageable) {
