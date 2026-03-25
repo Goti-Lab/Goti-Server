@@ -74,10 +74,8 @@ public class QueueTokenProvider {
 				claims.get(QUEUE_NUMBER_CLAIM, Long.class),
 				claims.getIssuedAt().toInstant()
 			);
-		} catch (CustomException e) {
-			throw e;
-		} catch (RuntimeException e) {
-			throw new CustomException(ErrorCode.AUTH_INVALID, e);
+		} catch (JwtException | IllegalArgumentException e) {
+			throw new CustomException(ErrorCode.QUEUE_TOKEN_INVALID, e);
 		}
 	}
 

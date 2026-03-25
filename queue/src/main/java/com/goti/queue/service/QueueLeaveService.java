@@ -34,7 +34,10 @@ public class QueueLeaveService {
 			throw new CustomException(ErrorCode.AUTH_INVALID);
 		}
 
-		return distributedLockManager.withLock(LEAVE_LOCK_KEY_PREFIX + gameId + ":" + userId, () -> {
+		return distributedLockManager.withLock(
+			LEAVE_LOCK_KEY_PREFIX + gameId + ":" + userId,
+			ErrorCode.QUEUE_LOCK_ACQUIRE_FAILED,
+			() -> {
 			QueueEntry currentEntry = queueRedisRepository.getEntry(gameId, userId);
 			QueueMeta queueMeta = queueRedisRepository.getMeta(gameId);
 			boolean activeUser = queueRedisRepository.isActiveUser(gameId, userId);
@@ -59,6 +62,7 @@ public class QueueLeaveService {
 			}
 
 			return new QueueLeaveResponse(gameId, activeUser, QueueStatus.LEFT);
-		});
+			}
+		);
 	}
 }

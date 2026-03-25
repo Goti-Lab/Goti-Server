@@ -67,6 +67,7 @@ public enum ErrorCode {
 	QUEUE_NOT_ALLOWED_YET(HttpStatus.FORBIDDEN, "아직 입장 가능한 대기 순번이 아닙니다."),
 	QUEUE_ALREADY_ADMITTED(HttpStatus.CONFLICT, "이미 입장 처리된 사용자입니다."),
 	QUEUE_CAPACITY_FULL(HttpStatus.CONFLICT, "현재 입장 가능 인원이 가득 찼습니다."),
+	QUEUE_LOCK_ACQUIRE_FAILED(HttpStatus.BAD_REQUEST, "대기열 요청이 몰리고 있습니다. 잠시 후 다시 시도해주세요."),
 
 	ORDER_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 주문입니다."),
 	ORDER_HISTORY_NOT_FOUND(HttpStatus.NOT_FOUND, "주문자 정보를 찾을 수 없습니다."),

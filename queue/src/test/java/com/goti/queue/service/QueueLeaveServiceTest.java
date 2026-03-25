@@ -61,11 +61,11 @@ class QueueLeaveServiceTest {
 			distributedLockManager
 		);
 
-		lenient().when(distributedLockManager.withLock(any(), any()))
-			.thenAnswer(invocation -> {
-				Supplier<?> action = invocation.getArgument(1);
-				return action.get();
-			});
+			lenient().when(distributedLockManager.withLock(any(), any(ErrorCode.class), any()))
+				.thenAnswer(invocation -> {
+					Supplier<?> action = invocation.getArgument(2);
+					return action.get();
+				});
 	}
 
 	@Test
@@ -154,7 +154,7 @@ class QueueLeaveServiceTest {
 			.extracting("error")
 			.isEqualTo(ErrorCode.AUTH_INVALID);
 
-		verify(distributedLockManager, never()).withLock(any(), any());
+		verify(distributedLockManager, never()).withLock(any(), any(ErrorCode.class), any());
 	}
 
 	@Test
@@ -169,6 +169,10 @@ class QueueLeaveServiceTest {
 
 		queueLeaveService.leave(gameId, userId);
 
-		verify(distributedLockManager).withLock(eq("lock:queue:leave:" + gameId + ":" + userId), any());
+		verify(distributedLockManager).withLock(
+			eq("lock:queue:leave:" + gameId + ":" + userId),
+			eq(ErrorCode.QUEUE_LOCK_ACQUIRE_FAILED),
+			any()
+		);
 	}
 }

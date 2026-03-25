@@ -37,14 +37,14 @@ public class QueueSeatEnterService {
 		if (userId == null) {
 			throw new CustomException(ErrorCode.AUTH_INVALID);
 		}
-		if (request.queueToken() == null || request.queueToken().isBlank()) {
-			throw new CustomException(ErrorCode.QUEUE_TOKEN_REQUIRED);
-		}
 
 		String lockKey = LOCK_KEY_PREFIX + gameId + ":" + userId;
-		return distributedLockManager.withLock(lockKey, () -> {
+		return distributedLockManager.withLock(
+			lockKey,
+			ErrorCode.QUEUE_LOCK_ACQUIRE_FAILED,
+			() -> {
 			// TODO: /seat-enter 부하 테스트 이후 Lua script 기반 원자 처리 전환 검토
-			QueueTokenPayload payload = parseToken(request.queueToken());
+			QueueTokenPayload payload = queueTokenProvider.parse(request.queueToken());
 			validateTokenIdentity(gameId, userId, payload);
 
 			QueueEntry currentEntry = queueRedisRepository.getEntry(gameId, userId);
@@ -94,14 +94,6 @@ public class QueueSeatEnterService {
 				QueueStatus.ADMITTED
 			);
 		});
-	}
-
-	private QueueTokenPayload parseToken(String queueToken) {
-		try {
-			return queueTokenProvider.parse(queueToken);
-		} catch (CustomException e) {
-			throw new CustomException(ErrorCode.QUEUE_TOKEN_INVALID, e);
-		}
 	}
 
 	private void validateTokenIdentity(UUID gameId, UUID userId, QueueTokenPayload payload) {

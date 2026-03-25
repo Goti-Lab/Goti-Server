@@ -38,7 +38,10 @@ public class QueueEnterService {
 		}
 
 		String lockKey = buildLockKey(request.gameId(), userId);
-		return distributedLockManager.withLock(lockKey, () -> {
+		return distributedLockManager.withLock(
+			lockKey,
+			ErrorCode.QUEUE_LOCK_ACQUIRE_FAILED,
+			() -> {
 			// TODO: /enter 부하 테스트 이후 Lua script 기반 원자 처리 전환 시도
 			QueueEntry existingEntry = queueRedisRepository.getEntry(request.gameId(), userId);
 			if (existingEntry != null) {
