@@ -18,10 +18,9 @@ import com.goti.payment.infra.MockResaleEscrowClient;
 import com.goti.payment.infra.ResaleOrderClient;
 import com.goti.payment.repository.EscrowAccountRepository;
 import com.goti.payment.repository.PaymentLedgerRepository;
-import com.goti.payment.service.domain.PaymentLedgerDomainService;
+import com.goti.payment.service.domain.PaymentLedgerService;
 import com.goti.payment.service.domain.PaymentService;
 import com.goti.payment.service.domain.ResaleEscrowService;
-import com.goti.payment.service.domain.ResaleOrderPaymentDomainService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -32,12 +31,12 @@ import lombok.extern.slf4j.Slf4j;
 public class ResaleOrderPaymentService {
 	private final ResaleOrderClient resaleOrderClient;
 	private final PaymentService paymentService;
-	private final PaymentLedgerDomainService paymentLedgerDomainService;
+	private final PaymentLedgerService paymentLedgerService;
 	private final PaymentLedgerRepository paymentLedgerRepository;
 	private final ResaleEscrowService resaleEscrowService;
 	private final MockResaleEscrowClient escrowClient;
 	private final EscrowAccountRepository escrowAccountRepository;
-	private final ResaleOrderPaymentDomainService domainService;
+	private final com.goti.payment.service.domain.ResaleOrderPaymentService domainService;
 	private final ApplicationEventPublisher eventPublisher;
 
 	@Transactional
@@ -51,7 +50,7 @@ public class ResaleOrderPaymentService {
 		);
 
 		if (payment.paymentStatus() == PaymentStatus.SUCCESS) {
-			PaymentLedgerEntity ledger = paymentLedgerDomainService.create(
+			PaymentLedgerEntity ledger = paymentLedgerService.create(
 				request.orderId(),
 				payment.paymentId(),
 				request.totalAmount(),

@@ -8,7 +8,7 @@ import com.goti.payment.domain.entity.payment.EscrowAccountEntity;
 import com.goti.payment.dto.request.ResalePaymentRequest;
 
 @Service
-public class ResaleOrderPaymentDomainServiceImpl implements ResaleOrderPaymentDomainService {
+public class ResaleOrderPaymentServiceImpl implements ResaleOrderPaymentService {
 
 	@Override
 	public List<EscrowAccountEntity> createEscrows(ResalePaymentRequest request) {

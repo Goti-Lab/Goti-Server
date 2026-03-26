@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service;
 import com.goti.payment.domain.entity.payment.PaymentLedgerEntity;
 
 @Service
-public class PaymentLedgerDomainServiceImpl implements PaymentLedgerDomainService {
+public class PaymentLedgerServiceImpl implements PaymentLedgerService {
 
 	private static final BigDecimal VAT_RATE = new BigDecimal("0.1");
 	private static final BigDecimal VAT_DIVISOR = new BigDecimal("1.1");
