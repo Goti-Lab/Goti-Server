@@ -43,12 +43,13 @@ public class QueueEnterService {
 		}
 
 		String lockKey = buildLockKey(request.gameId(), userId);
-		QueueEnterResponse response =  distributedLockManager.withLock(
+		EnterResult result = distributedLockManager.withLock(
 			lockKey,
 			ErrorCode.QUEUE_LOCK_ACQUIRE_FAILED,
 			() -> {
 			// TODO: /enter 부하 테스트 이후 Lua script 기반 원자 처리 전환 시도
 			QueueEntry existingEntry = queueRedisRepository.getEntry(request.gameId(), userId);
+			Long previousQueueNumber = existingEntry == null ? null : existingEntry.queueNumber();
 			if (existingEntry != null) {
 				queueRedisRepository.removeWaiting(request.gameId(), userId);
 				queueRedisRepository.deleteEntry(request.gameId(), userId);
@@ -70,14 +71,27 @@ public class QueueEnterService {
 			queueRedisRepository.addWaiting(request.gameId(), userId, queueNumber);
 			queueRedisRepository.saveEntry(request.gameId(), userId, queueEntry, queueProperties.entryTtl());
 
-			return new QueueEnterResponse(
-				queueToken,
-				queueNumber,
-				request.gameId(),
-				issuedAt
+			return new EnterResult(
+				new QueueEnterResponse(
+					queueToken,
+					queueNumber,
+					request.gameId(),
+					issuedAt
+				),
+				previousQueueNumber
 			);
 		});
 
+		QueueEnterResponse response = result.response();
+		if (result.previousQueueNumber() != null) {
+			log.info(
+				"action=REENTER gameId={} userId={} oldQueueNumber={} newQueueNumber={}",
+				request.gameId(),
+				userId,
+				result.previousQueueNumber(),
+				response.queueNumber()
+			);
+		}
 		log.info("action=ENTER gameId={} userId={} queueNumber={}", request.gameId(), userId, response.queueNumber());
 		meterRegistry.counter("queue.enter.total", "gameId", request.gameId().toString()).increment();
 
@@ -86,5 +100,11 @@ public class QueueEnterService {
 
 	private String buildLockKey(UUID gameId, UUID userId) {
 		return LOCK_KEY_PREFIX + gameId + ":" + userId;
+	}
+
+	private record EnterResult(
+		QueueEnterResponse response,
+		Long previousQueueNumber
+	) {
 	}
 }

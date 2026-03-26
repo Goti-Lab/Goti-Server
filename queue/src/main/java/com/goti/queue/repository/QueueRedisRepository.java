@@ -67,6 +67,11 @@ public class QueueRedisRepository {
 		);
 	}
 
+	public long countWaitingUsers(UUID gameId) {
+		Long count = redisTemplate.opsForZSet().zCard(RedisKey.QUEUE_WAITING.getKey(gameId));
+		return count == null ? 0L : count;
+	}
+
 	public boolean isActiveUser(UUID gameId, UUID userId) {
 		Boolean member = redisTemplate.opsForSet().isMember(
 			RedisKey.QUEUE_ACTIVE_USERS.getKey(gameId),

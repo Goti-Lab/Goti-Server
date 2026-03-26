@@ -46,69 +46,74 @@ public class QueueSeatEnterService {
 		}
 
 		String lockKey = LOCK_KEY_PREFIX + gameId + ":" + userId;
-		return distributedLockManager.withLock(
-			lockKey,
-			ErrorCode.QUEUE_LOCK_ACQUIRE_FAILED,
-			() -> {
-			// TODO: /seat-enter 부하 테스트 이후 Lua script 기반 원자 처리 전환 검토
-			QueueTokenPayload payload = queueTokenProvider.parse(request.queueToken());
-			validateTokenIdentity(gameId, userId, payload);
+		try {
+			return distributedLockManager.withLock(
+				lockKey,
+				ErrorCode.QUEUE_LOCK_ACQUIRE_FAILED,
+				() -> {
+				// TODO: /seat-enter 부하 테스트 이후 Lua script 기반 원자 처리 전환 검토
+				QueueTokenPayload payload = queueTokenProvider.parse(request.queueToken());
+				validateTokenIdentity(gameId, userId, payload);
 
-			QueueEntry currentEntry = queueRedisRepository.getEntry(gameId, userId);
-			if (currentEntry == null) {
-				throw new CustomException(ErrorCode.QUEUE_ENTRY_NOT_FOUND);
-			}
+				QueueEntry currentEntry = queueRedisRepository.getEntry(gameId, userId);
+				if (currentEntry == null) {
+					throw new CustomException(ErrorCode.QUEUE_ENTRY_NOT_FOUND);
+				}
 
-			validateEntryState(payload, currentEntry);
+				validateEntryState(payload, currentEntry);
 
-			if (queueRedisRepository.isActiveUser(gameId, userId) || currentEntry.status() == QueueStatus.ADMITTED) {
-				throw new CustomException(ErrorCode.QUEUE_ALREADY_ADMITTED);
-			}
+				if (queueRedisRepository.isActiveUser(gameId, userId) || currentEntry.status() == QueueStatus.ADMITTED) {
+					throw new CustomException(ErrorCode.QUEUE_ALREADY_ADMITTED);
+				}
 
-			QueueMeta queueMeta = queueRedisRepository.getMeta(gameId);
-			if (queueMeta == null) {
-				throw new CustomException(ErrorCode.QUEUE_META_NOT_FOUND);
-			}
+				QueueMeta queueMeta = queueRedisRepository.getMeta(gameId);
+				if (queueMeta == null) {
+					throw new CustomException(ErrorCode.QUEUE_META_NOT_FOUND);
+				}
 
-			if (payload.queueNumber() > queueMeta.currentAllowedRank()) {
-				throw new CustomException(ErrorCode.QUEUE_NOT_ALLOWED_YET);
-			}
+				if (payload.queueNumber() > queueMeta.currentAllowedRank()) {
+					throw new CustomException(ErrorCode.QUEUE_NOT_ALLOWED_YET);
+				}
 
-			if (queueMeta.activeCount() >= queueMeta.maxCapacity()) {
-				throw new CustomException(ErrorCode.QUEUE_CAPACITY_FULL);
-			}
+				if (queueMeta.activeCount() >= queueMeta.maxCapacity()) {
+					throw new CustomException(ErrorCode.QUEUE_CAPACITY_FULL);
+				}
 
-			QueueEntry admittedEntry = new QueueEntry(
-				currentEntry.queueNumber(),
-				currentEntry.issuedAt(),
-				QueueStatus.ADMITTED
-			);
+				QueueEntry admittedEntry = new QueueEntry(
+					currentEntry.queueNumber(),
+					currentEntry.issuedAt(),
+					QueueStatus.ADMITTED
+				);
 
-			queueRedisRepository.saveEntry(gameId, userId, admittedEntry, queueProperties.admittedTtl());
-			queueRedisRepository.addActiveUser(gameId, userId, queueProperties.admittedTtl());
-			queueRedisRepository.addExpirationUser(gameId, userId, currentEntry.issuedAt().plus(queueProperties.admittedTtl()));
-			queueRedisRepository.removeWaiting(gameId, userId);
-			Instant now = Instant.now();
-			queueRedisRepository.updateSeatEnterMeta(
-				gameId,
-				queueMeta.activeCount() + 1,
-				payload.queueNumber(),
-				now
-			);
-			meterRegistry.counter("queue.seat_enter.total", "gameId", gameId.toString()).increment();
-			long waitMs = Duration.between(currentEntry.issuedAt(), now).toMillis();
-			meterRegistry.timer("queue.wait.duration", "gameId", gameId.toString())
-				.record(waitMs, TimeUnit.MILLISECONDS);
+				queueRedisRepository.saveEntry(gameId, userId, admittedEntry, queueProperties.admittedTtl());
+				queueRedisRepository.addActiveUser(gameId, userId, queueProperties.admittedTtl());
+				queueRedisRepository.addExpirationUser(gameId, userId, currentEntry.issuedAt().plus(queueProperties.admittedTtl()));
+				queueRedisRepository.removeWaiting(gameId, userId);
+				Instant now = Instant.now();
+				queueRedisRepository.updateSeatEnterMeta(
+					gameId,
+					queueMeta.activeCount() + 1,
+					payload.queueNumber(),
+					now
+				);
+				meterRegistry.counter("queue.seat_enter.total", "gameId", gameId.toString()).increment();
+				long waitMs = Duration.between(currentEntry.issuedAt(), now).toMillis();
+				meterRegistry.timer("queue.wait.duration", "gameId", gameId.toString())
+					.record(waitMs, TimeUnit.MILLISECONDS);
 
 			log.info("action=SEAT_ENTER gameId={} userId={} queueNumber={} waitDurationMs={}", gameId, userId, payload.queueNumber(), waitMs);
 
-			return new QueueSeatEnterResponse(
-				gameId,
-				true,
-				payload.queueNumber(),
-				QueueStatus.ADMITTED
-			);
-		});
+				return new QueueSeatEnterResponse(
+					gameId,
+					true,
+					payload.queueNumber(),
+					QueueStatus.ADMITTED
+				);
+			});
+		} catch (CustomException e) {
+			log.info("action=SEAT_ENTER_BLOCKED gameId={} userId={} reason={}", gameId, userId, e.error().name());
+			throw e;
+		}
 	}
 
 	private void validateTokenIdentity(UUID gameId, UUID userId, QueueTokenPayload payload) {

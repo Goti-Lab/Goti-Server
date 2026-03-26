@@ -40,6 +40,7 @@ public class QueueStatusService {
 			queueMeta.lastEnteredRank() + availableSlots
 		);
 		long publishedRank = currentAllowedRank;
+		long waitingCount = queueRedisRepository.countWaitingUsers(gameId);
 		Instant updatedAt = Instant.now();
 		queueRedisRepository.updateStatusMeta(gameId, currentAllowedRank, publishedRank, updatedAt);
 		meterRegistry.gauge("queue.waiting.size", Tags.of("gameId", gameId.toString()),
@@ -47,8 +48,9 @@ public class QueueStatusService {
 		meterRegistry.gauge("queue.active.size", Tags.of("gameId", gameId.toString()),
 			queueMeta.activeCount());
 		log.debug(
-			"action=STATUS gameId={} activeCount={} availableSlots={} publishedRank={}",
+			"action=STATUS gameId={} waitingCount={} activeCount={} availableSlots={} publishedRank={}",
 			gameId,
+			waitingCount,
 			queueMeta.activeCount(),
 			availableSlots,
 			publishedRank
