@@ -10,6 +10,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import com.goti.global.api.ApiSuccessResponse;
 import com.goti.payment.config.properties.ResaleApiProperties;
+import com.goti.payment.dto.response.ResaleOrderListResponse;
 
 @Component
 public class ResaleOrderClient {
@@ -35,7 +36,7 @@ public class ResaleOrderClient {
 	}
 
 	public List<UUID> getTransactionIds(UUID orderId) {
-		ApiSuccessResponse<List<UUID>> response = restClient.get()
+		ApiSuccessResponse<ResaleOrderListResponse> response = restClient.get()
 			.uri(
 				UriComponentsBuilder.fromUriString(properties.baseUrl())
 					.path("/api/v1/resales/orders/{orderId}/transactions")
@@ -43,9 +44,21 @@ public class ResaleOrderClient {
 					.toUri()
 			)
 			.retrieve()
-			.body(new ParameterizedTypeReference<ApiSuccessResponse<List<UUID>>>() {
+			.body(new ParameterizedTypeReference<>() {
 			});
 
-		return response != null ? response.getData() : List.of();
+		return response != null ? response.getData().transactionIds() : List.of();
+	}
+
+	public void completeSettlement(UUID orderId) {
+		restClient.patch()
+			.uri(
+				UriComponentsBuilder.fromUriString(properties.baseUrl())
+					.path("/api/v1/resales/orders/{orderId}/settled")
+					.buildAndExpand(orderId)
+					.toUri()
+			)
+			.retrieve()
+			.toBodilessEntity();
 	}
 }

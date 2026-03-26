@@ -12,8 +12,8 @@ import org.junit.jupiter.params.provider.NullSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.test.context.ActiveProfiles;
 
-import com.goti.resale.constants.ResaleTransactionStatus;
 import com.goti.exception.FieldValidationException;
+import com.goti.resale.constants.ResaleTransactionStatus;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -21,6 +21,7 @@ import lombok.extern.slf4j.Slf4j;
 @ActiveProfiles("test")
 class ResaleTransactionEntityTest {
 
+	private static final String VALID_RESALE_TICKET_NUMBER = "RST-20260319-123456";
 	private static final UUID VALID_BUYER_ID = UUID.randomUUID();
 	private static final UUID VALID_SELLER_ID = UUID.randomUUID();
 	private static final Integer VALID_TRANSACTION_PRICE = 50000;
@@ -57,6 +58,7 @@ class ResaleTransactionEntityTest {
 		ResaleTransactionEntity entity = ResaleTransactionEntity.create(
 			resaleOrder,
 			validListing,
+			VALID_RESALE_TICKET_NUMBER,
 			VALID_BUYER_ID,
 			VALID_SELLER_ID,
 			VALID_TRANSACTION_PRICE,
@@ -69,6 +71,7 @@ class ResaleTransactionEntityTest {
 		assertAll(
 			() -> assertThat(entity.getResaleOrder()).isEqualTo(resaleOrder),
 			() -> assertThat(entity.getListing()).isEqualTo(validListing),
+			() -> assertThat(entity.getResaleTicketNumber()).isEqualTo(VALID_RESALE_TICKET_NUMBER),
 			() -> assertThat(entity.getBuyerId()).isEqualTo(VALID_BUYER_ID),
 			() -> assertThat(entity.getSellerId()).isEqualTo(VALID_SELLER_ID),
 			() -> assertThat(entity.getTransactionPrice()).isEqualTo(VALID_TRANSACTION_PRICE),
@@ -89,6 +92,7 @@ class ResaleTransactionEntityTest {
 		ResaleTransactionEntity entity = ResaleTransactionEntity.create(
 			resaleOrder,
 			validListing,
+			VALID_RESALE_TICKET_NUMBER,
 			VALID_BUYER_ID,
 			VALID_SELLER_ID,
 			VALID_TRANSACTION_PRICE,
@@ -111,6 +115,7 @@ class ResaleTransactionEntityTest {
 		ResaleTransactionEntity entity = ResaleTransactionEntity.create(
 			resaleOrder,
 			validListing,
+			VALID_RESALE_TICKET_NUMBER,
 			VALID_BUYER_ID,
 			VALID_SELLER_ID,
 			0,
@@ -127,13 +132,30 @@ class ResaleTransactionEntityTest {
 		);
 	}
 
-	// ===== 실패 케이스 - UUID 필드 =====
+	@Test
+	void 리셀_티켓_번호가_null_실패() {
+		assertThatThrownBy(() -> ResaleTransactionEntity.create(
+			resaleOrder,
+			validListing,
+			null,
+			VALID_BUYER_ID,
+			VALID_SELLER_ID,
+			VALID_TRANSACTION_PRICE,
+			VALID_BUYER_FEE,
+			VALID_SELLER_FEE,
+			VALID_BUYER_TOTAL,
+			VALID_SELLER_TOTAL
+		))
+			.isInstanceOf(FieldValidationException.class)
+			.hasMessageContaining("리셀 티켓 번호는 비어 있을 수 없습니다");
+	}
 
 	@Test
 	void 구매자_ID가_null_실패() {
 		assertThatThrownBy(() -> ResaleTransactionEntity.create(
 			resaleOrder,
 			validListing,
+			VALID_RESALE_TICKET_NUMBER,
 			null,
 			VALID_SELLER_ID,
 			VALID_TRANSACTION_PRICE,
@@ -151,6 +173,7 @@ class ResaleTransactionEntityTest {
 		assertThatThrownBy(() -> ResaleTransactionEntity.create(
 			resaleOrder,
 			validListing,
+			VALID_RESALE_TICKET_NUMBER,
 			VALID_BUYER_ID,
 			null,
 			VALID_TRANSACTION_PRICE,
@@ -170,6 +193,7 @@ class ResaleTransactionEntityTest {
 		assertThatThrownBy(() -> ResaleTransactionEntity.create(
 			resaleOrder,
 			validListing,
+			VALID_RESALE_TICKET_NUMBER,
 			sameUserId,
 			sameUserId,
 			VALID_TRANSACTION_PRICE,
@@ -188,6 +212,7 @@ class ResaleTransactionEntityTest {
 		assertThatThrownBy(() -> ResaleTransactionEntity.create(
 			resaleOrder,
 			validListing,
+			VALID_RESALE_TICKET_NUMBER,
 			VALID_BUYER_ID,
 			VALID_SELLER_ID,
 			transactionPrice,
@@ -206,6 +231,7 @@ class ResaleTransactionEntityTest {
 		assertThatThrownBy(() -> ResaleTransactionEntity.create(
 			resaleOrder,
 			validListing,
+			VALID_RESALE_TICKET_NUMBER,
 			VALID_BUYER_ID,
 			VALID_SELLER_ID,
 			transactionPrice,
@@ -224,6 +250,7 @@ class ResaleTransactionEntityTest {
 		assertThatThrownBy(() -> ResaleTransactionEntity.create(
 			resaleOrder,
 			validListing,
+			VALID_RESALE_TICKET_NUMBER,
 			VALID_BUYER_ID,
 			VALID_SELLER_ID,
 			VALID_TRANSACTION_PRICE,
@@ -242,6 +269,7 @@ class ResaleTransactionEntityTest {
 		assertThatThrownBy(() -> ResaleTransactionEntity.create(
 			resaleOrder,
 			validListing,
+			VALID_RESALE_TICKET_NUMBER,
 			VALID_BUYER_ID,
 			VALID_SELLER_ID,
 			VALID_TRANSACTION_PRICE,
@@ -260,6 +288,7 @@ class ResaleTransactionEntityTest {
 		assertThatThrownBy(() -> ResaleTransactionEntity.create(
 			resaleOrder,
 			validListing,
+			VALID_RESALE_TICKET_NUMBER,
 			VALID_BUYER_ID,
 			VALID_SELLER_ID,
 			VALID_TRANSACTION_PRICE,
@@ -278,6 +307,7 @@ class ResaleTransactionEntityTest {
 		assertThatThrownBy(() -> ResaleTransactionEntity.create(
 			resaleOrder,
 			validListing,
+			VALID_RESALE_TICKET_NUMBER,
 			VALID_BUYER_ID,
 			VALID_SELLER_ID,
 			VALID_TRANSACTION_PRICE,
@@ -296,6 +326,7 @@ class ResaleTransactionEntityTest {
 		assertThatThrownBy(() -> ResaleTransactionEntity.create(
 			resaleOrder,
 			validListing,
+			VALID_RESALE_TICKET_NUMBER,
 			VALID_BUYER_ID,
 			VALID_SELLER_ID,
 			VALID_TRANSACTION_PRICE,
@@ -314,6 +345,7 @@ class ResaleTransactionEntityTest {
 		assertThatThrownBy(() -> ResaleTransactionEntity.create(
 			resaleOrder,
 			validListing,
+			VALID_RESALE_TICKET_NUMBER,
 			VALID_BUYER_ID,
 			VALID_SELLER_ID,
 			VALID_TRANSACTION_PRICE,
@@ -333,6 +365,7 @@ class ResaleTransactionEntityTest {
 		assertThatThrownBy(() -> ResaleTransactionEntity.create(
 			resaleOrder,
 			validListing,
+			VALID_RESALE_TICKET_NUMBER,
 			VALID_BUYER_ID,
 			VALID_SELLER_ID,
 			VALID_TRANSACTION_PRICE,
@@ -351,6 +384,7 @@ class ResaleTransactionEntityTest {
 		assertThatThrownBy(() -> ResaleTransactionEntity.create(
 			resaleOrder,
 			validListing,
+			VALID_RESALE_TICKET_NUMBER,
 			VALID_BUYER_ID,
 			VALID_SELLER_ID,
 			VALID_TRANSACTION_PRICE,
@@ -369,6 +403,7 @@ class ResaleTransactionEntityTest {
 		assertThatThrownBy(() -> ResaleTransactionEntity.create(
 			resaleOrder,
 			validListing,
+			VALID_RESALE_TICKET_NUMBER,
 			VALID_BUYER_ID,
 			VALID_SELLER_ID,
 			VALID_TRANSACTION_PRICE,
@@ -388,6 +423,7 @@ class ResaleTransactionEntityTest {
 		assertThatThrownBy(() -> ResaleTransactionEntity.create(
 			resaleOrder,
 			validListing,
+			VALID_RESALE_TICKET_NUMBER,
 			VALID_BUYER_ID,
 			VALID_SELLER_ID,
 			VALID_TRANSACTION_PRICE,

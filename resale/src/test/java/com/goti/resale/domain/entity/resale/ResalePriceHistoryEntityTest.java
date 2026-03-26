@@ -36,7 +36,8 @@ class ResalePriceHistoryEntityTest {
 			VALID_SEAT_ID,
 			VALID_SECTION_ID,
 			VALID_GRADE_ID,
-			VALID_TRANSACTION_PRICE
+			VALID_TRANSACTION_PRICE,
+			null
 		);
 
 		assertAll(
@@ -55,7 +56,8 @@ class ResalePriceHistoryEntityTest {
 			VALID_SEAT_ID,
 			VALID_SECTION_ID,
 			VALID_GRADE_ID,
-			0
+			0,
+			null
 		);
 
 		assertThat(entity.getTransactionPrice()).isZero();
@@ -69,7 +71,8 @@ class ResalePriceHistoryEntityTest {
 			VALID_SEAT_ID,
 			VALID_SECTION_ID,
 			VALID_GRADE_ID,
-			VALID_TRANSACTION_PRICE
+			VALID_TRANSACTION_PRICE,
+			null
 		))
 			.isInstanceOf(FieldValidationException.class)
 			.hasMessageContaining("게임 ID는 비어 있을 수 없습니다");
@@ -82,7 +85,8 @@ class ResalePriceHistoryEntityTest {
 			null,
 			VALID_SECTION_ID,
 			VALID_GRADE_ID,
-			VALID_TRANSACTION_PRICE
+			VALID_TRANSACTION_PRICE,
+			null
 		))
 			.isInstanceOf(FieldValidationException.class)
 			.hasMessageContaining("좌석 ID는 비어 있을 수 없습니다");
@@ -95,7 +99,8 @@ class ResalePriceHistoryEntityTest {
 			VALID_SEAT_ID,
 			null,
 			VALID_GRADE_ID,
-			VALID_TRANSACTION_PRICE
+			VALID_TRANSACTION_PRICE,
+			null
 		))
 			.isInstanceOf(FieldValidationException.class)
 			.hasMessageContaining("구역 ID는 비어 있을 수 없습니다");
@@ -108,7 +113,8 @@ class ResalePriceHistoryEntityTest {
 			VALID_SEAT_ID,
 			VALID_SECTION_ID,
 			null,
-			VALID_TRANSACTION_PRICE
+			VALID_TRANSACTION_PRICE,
+			null
 		))
 			.isInstanceOf(FieldValidationException.class)
 			.hasMessageContaining("등급 ID는 비어 있을 수 없습니다");
@@ -122,10 +128,11 @@ class ResalePriceHistoryEntityTest {
 			VALID_SEAT_ID,
 			VALID_SECTION_ID,
 			VALID_GRADE_ID,
-			transactionPrice
+			transactionPrice,
+			null
 		))
 			.isInstanceOf(FieldValidationException.class)
-			.hasMessageContaining("거래 가격은 0 이상이어야 합니다");
+			.hasMessageContaining("거래 가격은 0원 이상이어야 합니다");
 	}
 
 	@ParameterizedTest
@@ -136,9 +143,10 @@ class ResalePriceHistoryEntityTest {
 			VALID_SEAT_ID,
 			VALID_SECTION_ID,
 			VALID_GRADE_ID,
-			transactionPrice
+			transactionPrice,
+			null
 		))
 			.isInstanceOf(FieldValidationException.class)
-			.hasMessageContaining("거래 가격은 0 이상이어야 합니다");
+			.hasMessageContaining("거래 가격은 0원 이상이어야 합니다");
 	}
 }

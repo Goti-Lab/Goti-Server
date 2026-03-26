@@ -37,7 +37,7 @@ public class ResaleHoldRepositoryImpl implements ResaleHoldRepositoryCustom {
 			)
 			.orderBy(resaleHold.expiredAt.asc())
 			.offset(pageable.getOffset())
-			.offset(pageable.getPageSize())
+			.limit(pageable.getPageSize())
 			.fetch();
 	}
 }

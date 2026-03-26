@@ -1,6 +1,8 @@
 package com.goti.ticketing.ticket.service.domain;
 
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import com.goti.ticketing.domain.entity.order.OrderItemEntity;
@@ -19,4 +21,8 @@ public interface TicketService {
 		String seatInfo,
 		Integer ticketPrice
 	);
+
+	Map<UUID, TicketEntity> getByOrderItemIds(List<UUID> orderItemIds);
+
+	void invalidate(TicketEntity ticket);
 }
