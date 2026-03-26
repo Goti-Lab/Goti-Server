@@ -33,6 +33,7 @@ import com.goti.queue.dto.response.QueueEnterResponse;
 import com.goti.queue.infra.QueueTokenProvider;
 import com.goti.queue.repository.QueueRedisRepository;
 
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 @ExtendWith(MockitoExtension.class)
 class QueueEnterServiceTest {
 
@@ -56,13 +57,15 @@ class QueueEnterServiceTest {
 			5000L,
 			Duration.ofMinutes(10),
 			Duration.ofMinutes(15),
-			"goti-2026-queue-token-secret-key-minimum-32-chars"
+			"goti-2026-queue-token-secret-key-minimum-32-chars",
+			Duration.ofSeconds(30)
 		);
 		queueEnterService = new QueueEnterService(
 			queueRedisRepository,
 			queueTokenProvider,
 			queueProperties,
-			distributedLockManager
+			distributedLockManager,
+			new SimpleMeterRegistry()
 		);
 			lenient().when(distributedLockManager.withLock(any(), any(ErrorCode.class), any()))
 				.thenAnswer(invocation -> {

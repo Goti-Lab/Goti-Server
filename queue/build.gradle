@@ -23,6 +23,8 @@ dependencies {
     runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.13.0'
     runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.13.0'
 
+    implementation 'io.micrometer:micrometer-core'
+
     implementation project(':common')
     implementation project(':integration')
 }

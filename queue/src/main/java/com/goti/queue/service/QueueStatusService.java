@@ -10,13 +10,18 @@ import com.goti.queue.domain.model.QueueMeta;
 import com.goti.queue.dto.response.QueueStatusResponse;
 import com.goti.queue.repository.QueueRedisRepository;
 
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Tags;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class QueueStatusService {
 
 	private final QueueRedisRepository queueRedisRepository;
+	private final MeterRegistry meterRegistry;
 
 	public QueueStatusResponse getStatus(UUID gameId, UUID userId) {
 		if (userId == null) {
@@ -30,6 +35,17 @@ public class QueueStatusService {
 
 		long availableSlots = Math.max(0L, queueMeta.maxCapacity() - queueMeta.activeCount());
 		long publishedRank = queueMeta.currentAllowedRank() + availableSlots;
+		meterRegistry.gauge("queue.waiting.size", Tags.of("gameId", gameId.toString()),
+			queueMeta.maxCapacity() - queueMeta.activeCount());
+		meterRegistry.gauge("queue.active.size", Tags.of("gameId", gameId.toString()),
+			queueMeta.activeCount());
+		log.debug(
+			"action=STATUS gameId={} activeCount={} availableSlots={} publishedRank={}",
+			gameId,
+			queueMeta.activeCount(),
+			availableSlots,
+			publishedRank
+		);
 
 		return new QueueStatusResponse(
 			gameId,

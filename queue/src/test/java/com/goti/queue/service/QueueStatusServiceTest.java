@@ -21,6 +21,7 @@ import com.goti.queue.domain.model.QueueMeta;
 import com.goti.queue.dto.response.QueueStatusResponse;
 import com.goti.queue.repository.QueueRedisRepository;
 
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 @ExtendWith(MockitoExtension.class)
 class QueueStatusServiceTest {
 
@@ -37,6 +38,10 @@ class QueueStatusServiceTest {
 	void setUp() {
 		gameId = UUID.randomUUID();
 		userId = UUID.randomUUID();
+		queueStatusService = new QueueStatusService(
+			queueRedisRepository,
+			new SimpleMeterRegistry()
+		);
 	}
 
 	@Test

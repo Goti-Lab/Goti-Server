@@ -4,6 +4,8 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.UUID;
 
+import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,8 +20,10 @@ import com.goti.queue.dto.response.QueueEnterResponse;
 import com.goti.queue.infra.QueueTokenProvider;
 import com.goti.queue.repository.QueueRedisRepository;
 
+import io.micrometer.core.instrument.MeterRegistry;
 import lombok.RequiredArgsConstructor;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class QueueEnterService {
@@ -30,6 +34,7 @@ public class QueueEnterService {
 	private final QueueTokenProvider queueTokenProvider;
 	private final QueueProperties queueProperties;
 	private final DistributedLockManager distributedLockManager;
+	private final MeterRegistry meterRegistry;
 
 	@Transactional
 	public QueueEnterResponse enter(QueueEnterRequest request, UUID userId) {
@@ -38,7 +43,7 @@ public class QueueEnterService {
 		}
 
 		String lockKey = buildLockKey(request.gameId(), userId);
-		return distributedLockManager.withLock(
+		QueueEnterResponse response =  distributedLockManager.withLock(
 			lockKey,
 			ErrorCode.QUEUE_LOCK_ACQUIRE_FAILED,
 			() -> {
@@ -72,6 +77,11 @@ public class QueueEnterService {
 				issuedAt
 			);
 		});
+
+		log.info("action=ENTER gameId={} userId={} queueNumber={}", request.gameId(), userId, response.queueNumber());
+		meterRegistry.counter("queue.enter.total", "gameId", request.gameId().toString()).increment();
+
+		return response;
 	}
 
 	private String buildLockKey(UUID gameId, UUID userId) {

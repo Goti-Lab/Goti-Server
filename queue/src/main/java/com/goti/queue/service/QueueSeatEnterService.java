@@ -1,7 +1,11 @@
 package com.goti.queue.service;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
+
+import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,8 +23,10 @@ import com.goti.queue.infra.QueueTokenPayload;
 import com.goti.queue.infra.QueueTokenProvider;
 import com.goti.queue.repository.QueueRedisRepository;
 
+import io.micrometer.core.instrument.MeterRegistry;
 import lombok.RequiredArgsConstructor;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class QueueSeatEnterService {
@@ -31,6 +37,7 @@ public class QueueSeatEnterService {
 	private final QueueTokenProvider queueTokenProvider;
 	private final QueueProperties queueProperties;
 	private final DistributedLockManager distributedLockManager;
+	private final MeterRegistry meterRegistry;
 
 	@Transactional
 	public QueueSeatEnterResponse enter(UUID gameId, UUID userId, QueueSeatEnterRequest request) {
@@ -80,12 +87,19 @@ public class QueueSeatEnterService {
 			queueRedisRepository.saveEntry(gameId, userId, admittedEntry, queueProperties.admittedTtl());
 			queueRedisRepository.addActiveUser(gameId, userId, queueProperties.admittedTtl());
 			queueRedisRepository.removeWaiting(gameId, userId);
+			Instant now = Instant.now();
 			queueRedisRepository.updateSeatEnterMeta(
 				gameId,
 				queueMeta.activeCount() + 1,
 				payload.queueNumber(),
-				Instant.now()
+				now
 			);
+			meterRegistry.counter("queue.seat_enter.total", "gameId", gameId.toString()).increment();
+			long waitMs = Duration.between(currentEntry.issuedAt(), now).toMillis();
+			meterRegistry.timer("queue.wait.duration", "gameId", gameId.toString())
+				.record(waitMs, TimeUnit.MILLISECONDS);
+
+			log.info("action=SEAT_ENTER gameId={} userId={} queueNumber={} waitDurationMs={}", gameId, userId, payload.queueNumber(), waitMs);
 
 			return new QueueSeatEnterResponse(
 				gameId,
