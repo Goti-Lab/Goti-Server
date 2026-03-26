@@ -64,7 +64,8 @@ public class TestUserService {
 					// REQUIRES_NEW 덕분에 외부 트랜잭션은 깨끗한 상태
 					log.debug("테스트 유저 이미 존재 (동시 생성): mobile={}", request.mobile());
 					return memberService.findByMobile(request.mobile())
-						.orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
+						.orElseThrow(() -> new CustomException(ErrorCode.INTERNAL_SERVER_ERROR,
+							"중복 생성된 테스트 유저 조회에 실패했습니다."));
 				}
 			});
 	}
