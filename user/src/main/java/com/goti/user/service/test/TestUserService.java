@@ -5,6 +5,7 @@ import java.time.LocalDate;
 import com.goti.user.constants.TokenType;
 
 import org.springframework.context.annotation.Profile;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,7 +26,9 @@ import com.goti.user.service.domain.user.MemberService;
 import com.goti.user.service.domain.user.SocialProviderService;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Profile("!prod")
 @Service
 @RequiredArgsConstructor
@@ -33,14 +36,12 @@ public class TestUserService {
 
 	private final MemberService memberService;
 	private final SocialProviderService socialProviderService;
+	private final TestUserPersistenceHelper persistenceHelper;
 	private final JwtTokenProvider jwtTokenProvider;
 
 	@Transactional
 	public TestUserResponse createUser(CreateTestUserRequest request) {
-		MemberEntity member = memberService.findByMobile(request.mobile())
-			.orElseGet(() -> createMemberWithSocialProvider(
-				request.name(), request.mobile(), request.gender(), request.birthDate()
-			));
+		MemberEntity member = findOrCreateMember(request);
 
 		String accessToken = jwtTokenProvider.create(
 			member.getId(), member.getMobile(), UserRole.MEMBER, TokenType.ACCESS
@@ -49,6 +50,23 @@ public class TestUserService {
 		return new TestUserResponse(
 			member.getId(), member.getMobile(), member.getName(), accessToken
 		);
+	}
+
+	private MemberEntity findOrCreateMember(CreateTestUserRequest request) {
+		return memberService.findByMobile(request.mobile())
+			.orElseGet(() -> {
+				try {
+					return persistenceHelper.createMember(
+						request.name(), request.mobile(),
+						request.gender(), request.birthDate()
+					);
+				} catch (DataIntegrityViolationException e) {
+					// REQUIRES_NEW 덕분에 외부 트랜잭션은 깨끗한 상태
+					log.debug("테스트 유저 이미 존재 (동시 생성): mobile={}", request.mobile());
+					return memberService.findByMobile(request.mobile())
+						.orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
+				}
+			});
 	}
 
 	/**
@@ -97,7 +115,6 @@ public class TestUserService {
 		String name, String mobile, Gender gender, LocalDate birthDate
 	) {
 		MemberEntity member = memberService.save(name, mobile, gender, birthDate);
-		// 테스트 더미 SocialProvider — providerId는 mobile 기반 고정값 (SecureRandom 불필요)
 		socialProviderService.save(
 			member, OAuthProvider.NAVER,
 			"test-provider-" + mobile,
