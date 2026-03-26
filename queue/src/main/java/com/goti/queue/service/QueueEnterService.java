@@ -85,7 +85,7 @@ public class QueueEnterService {
 		QueueEnterResponse response = result.response();
 		if (result.previousQueueNumber() != null) {
 			log.info(
-				"action=REENTER gameId={} userId={} oldQueueNumber={} newQueueNumber={}",
+				"action=ENTER gameId={} userId={} oldQueueNumber={} newQueueNumber={}",
 				request.gameId(),
 				userId,
 				result.previousQueueNumber(),
