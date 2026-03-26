@@ -3,6 +3,7 @@ package com.goti.queue.repository;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 import org.springframework.data.redis.core.RedisTemplate;
@@ -75,15 +76,39 @@ public class QueueRedisRepository {
 	}
 
 	public void addActiveUser(UUID gameId, UUID userId, Duration ttl) {
-		String key = RedisKey.QUEUE_ACTIVE_USERS.getKey(gameId);
-		redisTemplate.opsForSet().add(key, userId.toString());
-		redisTemplate.expire(key, ttl);
+		redisTemplate.opsForSet().add(
+			RedisKey.QUEUE_ACTIVE_USERS.getKey(gameId),
+			userId.toString()
+		);
 	}
 
 	public void removeActiveUser(UUID gameId, UUID userId) {
 		redisTemplate.opsForSet().remove(
 			RedisKey.QUEUE_ACTIVE_USERS.getKey(gameId),
 			userId.toString()
+		);
+	}
+
+	public void addExpirationUser(UUID gameId, UUID userId, Instant expiresAt) {
+		redisTemplate.opsForZSet().add(
+			RedisKey.QUEUE_EXPIRATION_USERS.getKey(""),
+			expirationMember(gameId, userId),
+			expiresAt.toEpochMilli()
+		);
+	}
+
+	public void removeExpirationUser(UUID gameId, UUID userId) {
+		redisTemplate.opsForZSet().remove(
+			RedisKey.QUEUE_EXPIRATION_USERS.getKey(""),
+			expirationMember(gameId, userId)
+		);
+	}
+
+	public Set<Object> getExpiredUsers(Instant now) {
+		return redisTemplate.opsForZSet().rangeByScore(
+			RedisKey.QUEUE_EXPIRATION_USERS.getKey(""),
+			0,
+			now.toEpochMilli()
 		);
 	}
 
@@ -142,5 +167,9 @@ public class QueueRedisRepository {
 
 	private long longValue(Object value) {
 		return ((Number)value).longValue();
+	}
+
+	private String expirationMember(UUID gameId, UUID userId) {
+		return gameId + ":" + userId;
 	}
 }

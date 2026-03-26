@@ -86,6 +86,7 @@ public class QueueSeatEnterService {
 
 			queueRedisRepository.saveEntry(gameId, userId, admittedEntry, queueProperties.admittedTtl());
 			queueRedisRepository.addActiveUser(gameId, userId, queueProperties.admittedTtl());
+			queueRedisRepository.addExpirationUser(gameId, userId, currentEntry.issuedAt().plus(queueProperties.admittedTtl()));
 			queueRedisRepository.removeWaiting(gameId, userId);
 			Instant now = Instant.now();
 			queueRedisRepository.updateSeatEnterMeta(

@@ -33,6 +33,7 @@ import com.goti.queue.domain.model.QueueMeta;
 import com.goti.queue.dto.response.QueueLeaveResponse;
 import com.goti.queue.repository.QueueRedisRepository;
 
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 @ExtendWith(MockitoExtension.class)
 class QueueLeaveServiceTest {
 
@@ -53,12 +54,14 @@ class QueueLeaveServiceTest {
 			5000L,
 			Duration.ofMinutes(10),
 			Duration.ofMinutes(15),
-			"goti-2026-queue-token-secret-key-minimum-32-chars"
+			"goti-2026-queue-token-secret-key-minimum-32-chars",
+			Duration.ofSeconds(30)
 		);
 		queueLeaveService = new QueueLeaveService(
 			queueRedisRepository,
 			queueProperties,
-			distributedLockManager
+			distributedLockManager,
+			new SimpleMeterRegistry()
 		);
 
 			lenient().when(distributedLockManager.withLock(any(), any(ErrorCode.class), any()))

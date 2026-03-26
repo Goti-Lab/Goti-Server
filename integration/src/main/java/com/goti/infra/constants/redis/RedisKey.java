@@ -16,7 +16,8 @@ public enum RedisKey {
 	QUEUE_WAITING("queue:%s:waiting", null),
 	QUEUE_META("queue:%s:meta", null),
 	QUEUE_ENTRY("queue:%s:entry:%s", Duration.ofMinutes(30)),
-	QUEUE_ACTIVE_USERS("queue:%s:active-users", null);
+	QUEUE_ACTIVE_USERS("queue:%s:active-users", null),
+	QUEUE_EXPIRATION_USERS("queue:expiration:users", null);
 
 	private final String prefix;
 

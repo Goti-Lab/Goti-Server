@@ -9,6 +9,7 @@ public record QueueProperties(
 	long maxCapacity,
 	Duration entryTtl,
 	Duration admittedTtl,
-	String tokenSecret
+	String tokenSecret,
+	Duration expirationCheckInterval
 ) {
 }

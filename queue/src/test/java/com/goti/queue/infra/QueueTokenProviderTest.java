@@ -24,7 +24,8 @@ class QueueTokenProviderTest {
 				5000L,
 				java.time.Duration.ofMinutes(10),
 				java.time.Duration.ofMinutes(15),
-				"goti-2026-queue-token-secret-key-minimum-32-chars"
+				"goti-2026-queue-token-secret-key-minimum-32-chars",
+				java.time.Duration.ofSeconds(30)
 			)
 		);
 		ReflectionTestUtils.invokeMethod(queueTokenProvider, "init");
