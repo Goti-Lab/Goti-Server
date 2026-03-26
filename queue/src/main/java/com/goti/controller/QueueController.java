@@ -41,7 +41,7 @@ public class QueueController {
 		description = "유저 대기열 진입 및 토큰 발급 검증 API"
 	)
 	@PostMapping("/validate")
-	public ResponseEntity<ApiSuccessResponse<QueueValidateResponse>> create(
+	public ResponseEntity<ApiSuccessResponse<QueueValidateResponse>> validate(
 		@AuthenticationPrincipal(expression = "id") UUID memberId,
 		@RequestBody @Valid QueueValidateRequest request
 	) {
