@@ -165,6 +165,14 @@ public class QueueRedisRepository {
 		));
 	}
 
+	public void updateStatusMeta(UUID gameId, long currentAllowedRank, long publishedRank, Instant updatedAt) {
+		redisTemplate.opsForHash().putAll(RedisKey.QUEUE_META.getKey(gameId), Map.of(
+			QueueMetaField.CURRENT_ALLOWED_RANK, currentAllowedRank,
+			QueueMetaField.PUBLISHED_RANK, publishedRank,
+			QueueMetaField.UPDATED_AT, updatedAt.toString()
+		));
+	}
+
 	private long longValue(Object value) {
 		return ((Number)value).longValue();
 	}

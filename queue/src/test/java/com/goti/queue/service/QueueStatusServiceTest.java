@@ -4,6 +4,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.verify;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -62,9 +65,9 @@ class QueueStatusServiceTest {
 		assertEquals(5000L, response.maxCapacity());
 		assertEquals(1900L, response.activeCount());
 		assertEquals(3100L, response.availableSlots());
-		assertEquals(2000L, response.currentAllowedRank());
-		assertEquals(5100L, response.publishedRank());
-		assertEquals(queueMeta.updatedAt(), response.updatedAt());
+		assertEquals(5000L, response.currentAllowedRank());
+		assertEquals(5000L, response.publishedRank());
+		verify(queueRedisRepository).updateStatusMeta(eq(gameId), eq(5000L), eq(5000L), any(Instant.class));
 	}
 
 	@Test
@@ -82,6 +85,7 @@ class QueueStatusServiceTest {
 		QueueStatusResponse response = queueStatusService.getStatus(gameId, userId);
 
 		assertThat(response.availableSlots()).isZero();
+		assertEquals(200L, response.currentAllowedRank());
 		assertEquals(200L, response.publishedRank());
 	}
 

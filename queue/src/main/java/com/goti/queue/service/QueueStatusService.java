@@ -1,5 +1,6 @@
 package com.goti.queue.service;
 
+import java.time.Instant;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
@@ -34,7 +35,13 @@ public class QueueStatusService {
 		}
 
 		long availableSlots = Math.max(0L, queueMeta.maxCapacity() - queueMeta.activeCount());
-		long publishedRank = queueMeta.currentAllowedRank() + availableSlots;
+		long currentAllowedRank = Math.max(
+			queueMeta.currentAllowedRank(),
+			queueMeta.lastEnteredRank() + availableSlots
+		);
+		long publishedRank = currentAllowedRank;
+		Instant updatedAt = Instant.now();
+		queueRedisRepository.updateStatusMeta(gameId, currentAllowedRank, publishedRank, updatedAt);
 		meterRegistry.gauge("queue.waiting.size", Tags.of("gameId", gameId.toString()),
 			queueMeta.maxCapacity() - queueMeta.activeCount());
 		meterRegistry.gauge("queue.active.size", Tags.of("gameId", gameId.toString()),
@@ -52,9 +59,9 @@ public class QueueStatusService {
 			queueMeta.maxCapacity(),
 			queueMeta.activeCount(),
 			availableSlots,
-			queueMeta.currentAllowedRank(),
+			currentAllowedRank,
 			publishedRank,
-			queueMeta.updatedAt()
+			updatedAt
 		);
 	}
 }
