@@ -34,32 +34,56 @@ public class QueueInterceptor implements HandlerInterceptor {
 			(Map<String, String>) request.getAttribute(HandlerMapping.URI_TEMPLATE_VARIABLES_ATTRIBUTE);
 
 		String gameId = pathVariables != null ? pathVariables.get("gameId") : null;
+		UUID memberId = getCurrentMemberId();
+
 		if (tokenFromHeader == null || gameId == null) {
-			log.warn("검증 데이터 누락 - Token: {}, GameId: {}", tokenFromHeader, gameId);
+			log.warn(
+				"action=VALIDATE_TOKEN gameId={} userId={} result=FAIL reason=MISSING_DATA",
+				gameId, memberId
+			);
 			throw new RuntimeException("검증 정보가 부족합니다.");
 		}
-
-		UUID memberId = getCurrentMemberId();
 
 		String userPassKey = RedisKey.QUEUE_PASSED.getKey(gameId, memberId);
 		String cachedToken = redisCache.get(userPassKey, String.class);
 
 		if (cachedToken == null || !cachedToken.equals(tokenFromHeader)) {
-			log.warn("검증 실패 - 유저: {}, 게임: {}", memberId, gameId);
+			log.warn(
+				"action=VALIDATE_TOKEN gameId={} userId={} result=FAIL reason=INVALID_OR_EXPIRED_TOKEN",
+				gameId, memberId
+			);
 			throw new RuntimeException("대기열 순서가 아니거나 세션이 만료되었습니다.");
 		}
 
+		log.info(
+			"action=VALIDATE_TOKEN gameId={} userId={} result=SUCCESS",
+			gameId, memberId
+		);
 		return true;
 	}
 
 	private UUID getCurrentMemberId() {
+
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-		if (authentication == null || !(authentication.getPrincipal() instanceof ExtendedUserDetails userDetails)) {
-			log.error("인증 정보가 없거나 타입이 일치하지 않습니다.");
+
+		// 인증 정보 자체가 없는 경우
+		if (authentication == null) {
+			log.error("action=AUTH_CHECK result=FAIL reason=NO_AUTHENTICATION");
 			throw new RuntimeException("인증 정보가 없습니다.");
 		}
-		log.info("authentication :: {}", authentication.getPrincipal());
 
-		return userDetails.getId();
+		// Principal 타입이 맞지 않는 경우 (비로그인 혹은 다른 객체)
+		if (!(authentication.getPrincipal() instanceof ExtendedUserDetails userDetails)) {
+			log.error(
+				"action=AUTH_CHECK result=FAIL reason=INVALID_PRINCIPAL_TYPE principal={}",
+				authentication.getPrincipal()
+			);
+			throw new RuntimeException("유효하지 않은 인증 타입입니다.");
+		}
+
+		UUID userId = userDetails.getId();
+		log.debug("action=AUTH_CHECK result=SUCCESS userId={}", userId);
+
+		return userId;
 	}
 }

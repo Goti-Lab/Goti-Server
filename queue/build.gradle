@@ -29,6 +29,8 @@ dependencies {
 
     testImplementation 'org.springframework.cloud:spring-cloud-contract-wiremock'
 
+    implementation 'io.micrometer:micrometer-core'
+
     implementation project(':common')
     implementation project(':integration')
 }
