@@ -76,6 +76,7 @@ public enum ErrorCode {
 	SEAT_SECTION_ALREADY_EXISTS(HttpStatus.CONFLICT, "이미 동일한 좌석 구역이 존재합니다."),
 	SEAT_LOCK_ACQUIRE_FAILED(HttpStatus.BAD_REQUEST, "요청이 몰리고 있습니다. 잠시 후 다시 시도해주세요"),
 	SEAT_STATUS_NOT_FOUND(HttpStatus.NOT_FOUND, "좌석 상태를 확인할 수 없습니다."),
+	SEAT_ALREADY_SELECTED(HttpStatus.BAD_REQUEST, "이미 선택된 좌석입니다."),
 	SEAT_HOLD_NOT_FOUND(HttpStatus.NOT_FOUND, "좌석 점유 정보를 찾을 수 없습니다."),
 	SEAT_HOLD_GAME_MISMATCH(HttpStatus.BAD_REQUEST, "선택한 좌석의 경기 정보가 요청한 경기와 일치하지 않습니다."),
 	SEAT_HOLD_STATUS_INVALID(HttpStatus.BAD_REQUEST, "점유 중인 좌석만 주문할 수 있습니다."),

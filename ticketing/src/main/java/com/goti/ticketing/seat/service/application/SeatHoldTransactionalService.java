@@ -11,6 +11,7 @@ import com.goti.ticketing.domain.entity.seat.SeatHoldEntity;
 import com.goti.ticketing.domain.entity.seat.SeatStatusEntity;
 import com.goti.exception.CustomException;
 import com.goti.ticketing.game.repository.gameschedule.GameScheduleRepository;
+import com.goti.ticketing.constants.SeatStatus;
 import com.goti.global.validation.Preconditions;
 import com.goti.ticketing.seat.config.properties.SeatHoldProperties;
 import com.goti.ticketing.seat.repository.SeatHoldRepository;
@@ -35,6 +36,11 @@ public class SeatHoldTransactionalService {
 				seatRepository.getReferenceById(seatId)
 			)
 			.orElseThrow(() -> new CustomException(ErrorCode.SEAT_STATUS_NOT_FOUND));
+
+		Preconditions.validate(
+			seatStatus.getStatus() == SeatStatus.AVAILABLE,
+			ErrorCode.SEAT_ALREADY_SELECTED
+		);
 
 		seatStatus.hold();
 		seatStatusRepository.save(seatStatus);
