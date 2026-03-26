@@ -31,9 +31,6 @@ dependencies {
 
     implementation project(':common')
     implementation project(':integration')
-    implementation project(':stadium')
-
-    testImplementation project(':user')
 }
 
 dependencyManagement {

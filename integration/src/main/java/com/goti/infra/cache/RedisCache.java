@@ -111,8 +111,6 @@ public class RedisCache {
 			}
 			return result;
 		});
-
-		// 💡 null 체크 후 기본값 0L 반환 (NPE 방지)
 		return count != null ? count : 0L;
 	}
 }
