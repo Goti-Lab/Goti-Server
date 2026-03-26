@@ -20,7 +20,7 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-public class ResaleListingDomainServiceImpl implements ResaleListingDomainService {
+public class ResaleListingServiceImpl implements ResaleListingService {
 
 	private final ResaleListingRepository listingRepository;
 	private final ResaleRestrictionHandler restrictionHandler;

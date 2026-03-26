@@ -31,13 +31,13 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-public class ResaleOrderDomainServiceImpl implements ResaleOrderDomainService {
+public class ResaleOrderServiceImpl implements ResaleOrderService {
 	private static final DateTimeFormatter ORDER_NUMBER_FORMATTER = DateTimeFormatter.ofPattern("yyMMdd");
 	private static final DateTimeFormatter TICKET_NUMBER_FORMATTER = DateTimeFormatter.ofPattern("MMdd");
 
 	private final ResaleOrderRepository resaleOrderRepository;
 	private final ResaleTransactionRepository resaleTransactionRepository;
-	private final ResaleRestrictionDomainService restrictionDomainService;
+	private final ResaleRestrictionService restrictionDomainService;
 	private final ResaleRestrictionHandler resaleRestrictionHandler;
 	private final ResalePricePolicy resalePricePolicy;
 	private final TicketClient ticketClient;
@@ -60,7 +60,8 @@ public class ResaleOrderDomainServiceImpl implements ResaleOrderDomainService {
 	}
 
 	@Override
-	public List<TransactionItemVO> calculateOrderItems(UUID buyerId, List<ResaleHoldEntity> holds, ResaleRestrictionEntity restriction) {
+	public List<TransactionItemVO> calculateOrderItems(UUID buyerId, List<ResaleHoldEntity> holds,
+		ResaleRestrictionEntity restriction) {
 		List<TransactionItemVO> itemVOs = new ArrayList<>();
 		for (ResaleHoldEntity hold : holds) {
 			ResaleListingEntity listing = hold.getResaleListing();

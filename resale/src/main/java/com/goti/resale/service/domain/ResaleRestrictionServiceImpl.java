@@ -16,7 +16,7 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-public class ResaleRestrictionDomainServiceImpl implements ResaleRestrictionDomainService {
+public class ResaleRestrictionServiceImpl implements ResaleRestrictionService {
 
 	private final ResaleRestrictionRepository restrictionRepository;
 

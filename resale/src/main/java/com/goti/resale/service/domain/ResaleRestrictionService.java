@@ -6,7 +6,7 @@ import java.util.UUID;
 
 import com.goti.resale.domain.entity.resale.ResaleRestrictionEntity;
 
-public interface ResaleRestrictionDomainService {
+public interface ResaleRestrictionService {
 	ResaleRestrictionEntity getOrCreateRestriction(UUID userId);
 
 	Map<UUID, ResaleRestrictionEntity> getOrCreateRestrictions(List<UUID> userIds);

@@ -3,7 +3,6 @@ package com.goti.resale.service.application;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,8 +21,7 @@ import com.goti.resale.infra.TicketClient;
 import com.goti.resale.repository.ResaleRestrictionRepository;
 import com.goti.resale.repository.history.ResalePriceHistoryRepository;
 import com.goti.resale.repository.listing.ResaleListingRepository;
-import com.goti.resale.service.domain.ResaleListingDomainService;
-import com.goti.resale.service.domain.ResaleRestrictionDomainService;
+import com.goti.resale.service.domain.ResaleRestrictionService;
 import com.goti.resale.utils.ResaleRestrictionHandler;
 
 import lombok.RequiredArgsConstructor;
@@ -35,8 +33,8 @@ public class ResaleListingService {
 	private final ResaleRestrictionRepository restrictionRepository;
 	private final ResalePriceHistoryRepository priceHistoryRepository;
 	private final ResaleRestrictionHandler restrictionHandler;
-	private final ResaleRestrictionDomainService restrictionDomainService;
-	private final ResaleListingDomainService listingDomainService;
+	private final ResaleRestrictionService restrictionDomainService;
+	private final com.goti.resale.service.domain.ResaleListingService listingDomainService;
 	private final TicketClient ticketClient;
 
 	@Transactional

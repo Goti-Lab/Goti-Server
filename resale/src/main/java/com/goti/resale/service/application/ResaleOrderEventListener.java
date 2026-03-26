@@ -28,7 +28,7 @@ import com.goti.resale.repository.ResaleRestrictionRepository;
 import com.goti.resale.repository.ResaleTransactionRepository;
 import com.goti.resale.repository.history.ResalePriceHistoryRepository;
 import com.goti.resale.repository.listing.ResaleListingRepository;
-import com.goti.resale.service.domain.ResaleRestrictionDomainService;
+import com.goti.resale.service.domain.ResaleRestrictionService;
 import com.goti.resale.service.infra.PaymentService;
 import com.goti.resale.utils.ResaleRestrictionHandler;
 
@@ -45,7 +45,7 @@ public class ResaleOrderEventListener {
 	private final ResalePriceHistoryRepository priceHistoryRepository;
 	private final ResaleRestrictionRepository restrictionRepository;
 	private final ResaleRestrictionHandler restrictionHandler;
-	private final ResaleRestrictionDomainService restrictionDomainService;
+	private final ResaleRestrictionService restrictionDomainService;
 	private final PaymentService paymentService;
 	private final TicketClient ticketClient;
 

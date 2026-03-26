@@ -22,7 +22,7 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-public class ResaleHoldDomainServiceImpl implements ResaleHoldDomainService {
+public class ResaleHoldServiceImpl implements ResaleHoldService {
 
 	private final ResaleListingRepository resaleListingRepository;
 	private final ResaleHoldRepository resaleHoldRepository;

@@ -7,7 +7,7 @@ import com.goti.resale.dto.request.ResaleHoldRequest;
 import com.goti.resale.dto.response.ResaleHoldResponse;
 import com.goti.resale.dto.response.ResaleReleaseResponse;
 
-public interface ResaleHoldDomainService {
+public interface ResaleHoldService {
 	void validateHoldable(ResaleListingEntity listing, UUID buyerId);
 
 	ResaleHoldResponse hold(UUID buyerId, ResaleHoldRequest request);

@@ -13,7 +13,6 @@ import com.goti.resale.dto.request.ResaleHoldRequest;
 import com.goti.resale.dto.response.ResaleHoldResponse;
 import com.goti.resale.dto.response.ResaleReleaseResponse;
 import com.goti.resale.repository.hold.ResaleHoldRepository;
-import com.goti.resale.service.domain.ResaleHoldDomainService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,12 +23,12 @@ import lombok.extern.slf4j.Slf4j;
 public class ResaleHoldService {
 	private final ResaleHoldRepository resaleHoldRepository;
 	private final DistributedLockManager distributedLockManager;
-	private final ResaleHoldDomainService resaleHoldDomainService;
+	private final com.goti.resale.service.domain.ResaleHoldService resaleHoldService;
 
 	public ResaleHoldResponse holdResale(UUID buyerId, ResaleHoldRequest request) {
 		String lockKey = buildLockKey(request.listingId());
 		return distributedLockManager.withLock(
-			lockKey, () -> resaleHoldDomainService.hold(buyerId, request));
+			lockKey, () -> resaleHoldService.hold(buyerId, request));
 	}
 
 	public ResaleReleaseResponse releaseResaleHold(UUID buyerId, UUID holdId) {
@@ -43,7 +42,7 @@ public class ResaleHoldService {
 
 		return distributedLockManager.withLock(
 			lockKey,
-			() -> resaleHoldDomainService.release(holdId)
+			() -> resaleHoldService.release(holdId)
 		);
 	}
 

@@ -7,11 +7,10 @@ import java.util.UUID;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
+import com.goti.infra.lock.DistributedLockManager;
 import com.goti.resale.constants.ResaleHoldStatus;
 import com.goti.resale.domain.entity.resale.ResaleHoldEntity;
-import com.goti.infra.lock.DistributedLockManager;
 import com.goti.resale.repository.hold.ResaleHoldRepository;
-import com.goti.resale.service.domain.ResaleHoldExpiryDomainService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,7 +21,7 @@ import lombok.extern.slf4j.Slf4j;
 public class ResaleHoldExpiryService {
 	private final ResaleHoldRepository resaleHoldRepository;
 	private final DistributedLockManager distributedLockManager;
-	private final ResaleHoldExpiryDomainService holdExpiryDomainService;
+	private final com.goti.resale.service.domain.ResaleHoldExpiryService holdExpiryDomainService;
 
 	public ResaleHoldExpiryBatchResult expireHolds(int batchSize) {
 		LocalDateTime now = LocalDateTime.now();
