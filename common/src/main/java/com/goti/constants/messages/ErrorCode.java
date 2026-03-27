@@ -58,6 +58,8 @@ public enum ErrorCode {
 	AUTH_CODE_NOT_FOUND(HttpStatus.UNAUTHORIZED, "인증 시간이 만료되었거나 해당 휴대전화번호로 인증번호 전송 이력이 없습니다."),
 	AUTH_CODE_INVALID(HttpStatus.UNAUTHORIZED, "인증 코드가 일치하지 않습니다."),
 
+	RESERVATION_SESSION_EXPIRED(HttpStatus.BAD_REQUEST, "예매 가능 시간이 만료되었습니다."),
+
 	GAME_ALREADY_EXISTS(HttpStatus.CONFLICT, "이미 동일한 경기 일정이 존재합니다."),
 	GAME_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 경기입니다."),
 

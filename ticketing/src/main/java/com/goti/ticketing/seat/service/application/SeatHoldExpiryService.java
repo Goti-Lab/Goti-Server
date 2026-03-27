@@ -24,7 +24,7 @@ public class SeatHoldExpiryService {
 	// TODO: 동시성 및 hold/release/expire 경합 상황 테스트 추가
 	public SeatHoldExpiryBatchResult expireHolds(int batchSize) {
 		LocalDateTime now = LocalDateTime.now();
-		List<SeatHoldEntity> expiredHolds = seatHoldRepository.findByStatusAndExpiredAtBeforeOrderByExpiredAtAsc(
+		List<SeatHoldEntity> expiredHolds = seatHoldRepository.findExpiredHolds(
 			SeatHoldStatus.HOLDING,
 			now,
 			PageRequest.of(0, batchSize)

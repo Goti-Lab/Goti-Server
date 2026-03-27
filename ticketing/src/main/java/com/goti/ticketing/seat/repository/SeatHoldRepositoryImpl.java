@@ -43,6 +43,28 @@ public class SeatHoldRepositoryImpl implements SeatHoldRepositoryCustom {
 	}
 
 	@Override
+	public List<SeatHoldEntity> findAllHoldingSeats(UUID gameId, UUID userId) {
+		QSeatHoldEntity seatHold = QSeatHoldEntity.seatHoldEntity;
+		QGameScheduleEntity gameSchedule = QGameScheduleEntity.gameScheduleEntity;
+		QSeatEntity seat = QSeatEntity.seatEntity;
+		QSeatSectionEntity seatSection = QSeatSectionEntity.seatSectionEntity;
+		QSeatGradeEntity seatGrade = QSeatGradeEntity.seatGradeEntity;
+
+		return queryFactory
+			.selectFrom(seatHold)
+			.join(seatHold.gameSchedule, gameSchedule).fetchJoin()
+			.join(seatHold.seat, seat).fetchJoin()
+			.join(seat.seatSection, seatSection).fetchJoin()
+			.join(seatSection.seatGrade, seatGrade).fetchJoin()
+			.where(
+				seatHold.gameSchedule.id.eq(gameId),
+				seatHold.userId.eq(userId),
+				seatHold.status.eq(SeatHoldStatus.HOLDING)
+			)
+			.fetch();
+	}
+
+	@Override
 	public Optional<SeatHoldEntity> findLatestActiveHold(
 		GameScheduleEntity gameSchedule,
 		SeatEntity seat,

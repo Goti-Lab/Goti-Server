@@ -27,6 +27,7 @@ import com.goti.ticketing.order.service.domain.OrderItemService;
 import com.goti.ticketing.order.service.domain.OrderPricingResult;
 import com.goti.ticketing.order.service.domain.OrderPricingService;
 import com.goti.ticketing.order.service.domain.OrderService;
+import com.goti.ticketing.session.service.application.ReservationSessionService;
 import com.goti.ticketing.seat.repository.SeatHoldRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -41,6 +42,7 @@ public class OrderCreateService {
 	private final OrderHistoryService orderHistoryService;
 	private final OrderItemService orderItemService;
 	private final OrderPricingService orderPricingService;
+	private final ReservationSessionService reservationSessionService;
 
 	@Transactional
 	public OrderCreateResponse create(OrderCreateCommand command) {
@@ -48,6 +50,7 @@ public class OrderCreateService {
 			command.memberId() != null,
 			ErrorCode.AUTH_INVALID
 		);
+		reservationSessionService.validateActiveSession(command.memberId(), command.gameId());
 
 		validateDuplicateHoldIds(command.holdIds());
 
