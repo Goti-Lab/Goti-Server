@@ -1,6 +1,6 @@
 package com.goti.infra.api.base;
 
-import com.goti.global.api.ApiSuccessResponse;
+import java.util.Map;
 
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.MediaType;
@@ -10,7 +10,7 @@ import org.springframework.web.client.RestClient;
 import org.springframework.web.util.UriBuilder;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import java.util.Map;
+import com.goti.global.api.ApiSuccessResponse;
 
 public abstract class BaseRestClient {
 	protected final RestClient restClient;
@@ -39,7 +39,8 @@ public abstract class BaseRestClient {
 		MultiValueMap<String, String> multiValueMap = new LinkedMultiValueMap<>();
 		if (queryParams != null) {
 			queryParams.forEach((k, v) -> {
-				if (v != null) multiValueMap.add(k, String.valueOf(v));
+				if (v != null)
+					multiValueMap.add(k, String.valueOf(v));
 			});
 		}
 		return multiValueMap;
@@ -60,7 +61,8 @@ public abstract class BaseRestClient {
 				return builder.build();
 			})
 			.headers(header -> {
-				if (headers != null) headers.forEach(header::add);
+				if (headers != null)
+					headers.forEach(header::add);
 			})
 			.retrieve()
 			.body(responseType);
@@ -81,7 +83,8 @@ public abstract class BaseRestClient {
 				return builder.build();
 			})
 			.headers(header -> {
-				if (headers != null) headers.forEach(header::add);
+				if (headers != null)
+					headers.forEach(header::add);
 			})
 			.retrieve()
 			.body(responseType);
@@ -133,7 +136,7 @@ public abstract class BaseRestClient {
 
 	protected <T> T put(String uri, Object body, Class<T> responseType) {
 		return restClient.put().uri(
-			uriBuilder -> getActualUriBuilder(uri, uriBuilder).build()
+				uriBuilder -> getActualUriBuilder(uri, uriBuilder).build()
 			)
 			.body(body)
 			.retrieve()
@@ -161,11 +164,13 @@ public abstract class BaseRestClient {
 		restClient.get()
 			.uri(uriBuilder -> {
 				UriBuilder builder = getActualUriBuilder(uri, uriBuilder);
-				if (queryParams != null) builder.queryParams(toParams(queryParams));
+				if (queryParams != null)
+					builder.queryParams(toParams(queryParams));
 				return builder.build();
 			})
 			.headers(header -> {
-				if (headers != null) headers.forEach(header::add);
+				if (headers != null)
+					headers.forEach(header::add);
 			})
 			.retrieve()
 			.toBodilessEntity();
@@ -175,6 +180,14 @@ public abstract class BaseRestClient {
 		restClient.post()
 			.uri(uriBuilder -> getActualUriBuilder(uri, uriBuilder).build())
 			.body(body)
+			.retrieve()
+			.toBodilessEntity();
+	}
+
+	protected void patchVoid(String uri, Object body) {
+		restClient.patch()
+			.uri(uriBuilder -> getActualUriBuilder(uri, uriBuilder).build())
+			.body(body != null ? body : "")
 			.retrieve()
 			.toBodilessEntity();
 	}
