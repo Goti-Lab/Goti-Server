@@ -18,8 +18,9 @@ import org.springframework.web.bind.annotation.RestController;
 import com.goti.global.api.ApiSuccessResponse;
 import com.goti.resale.constants.ResaleGraphRange;
 import com.goti.resale.dto.request.ResaleListingCancelRequest;
-import com.goti.resale.dto.request.ResaleListingCreateRequest;
+import com.goti.resale.dto.request.ResaleListingOrderCreateRequest;
 import com.goti.resale.dto.response.ResaleListingCountResponse;
+import com.goti.resale.dto.response.ResaleListingOrderCreateResponse;
 import com.goti.resale.dto.response.ResaleListingResponse;
 import com.goti.resale.dto.response.ResalePriceHistoryResponse;
 import com.goti.resale.service.application.ResaleListingProcessService;
@@ -42,16 +43,16 @@ public class ResaleListingController {
 	private final ResalePriceProcessService priceService;
 
 	@Operation(
-		summary = "리셀 등록",
-		description = "리셀 등록 API"
+		summary = "리셀 일괄 등록",
+		description = "티켓을 한 번에 리셀 등록하며 하나의 주문 그룹으로 등록 API"
 	)
 	@PostMapping("/listings")
-	public ResponseEntity<ApiSuccessResponse<ResaleListingResponse>> createListing(
+	public ResponseEntity<ApiSuccessResponse<ResaleListingOrderCreateResponse>> createListingOrder(
 		@AuthenticationPrincipal(expression = "id") UUID sellerId,
-		@Valid @RequestBody ResaleListingCreateRequest request
+		@Valid @RequestBody ResaleListingOrderCreateRequest request
 	) {
 
-		ResaleListingResponse response = listingService.createListing(sellerId, request);
+		ResaleListingOrderCreateResponse response = listingService.createListingOrder(sellerId, request);
 		return wrap(response);
 	}
 
