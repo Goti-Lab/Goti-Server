@@ -11,6 +11,9 @@ import com.goti.infra.sms.SmsProvider;
 
 import com.goti.user.constants.TokenType;
 import com.goti.user.domain.entity.user.MemberEntity;
+
+import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.data.util.Pair;
 
 import lombok.RequiredArgsConstructor;
@@ -19,8 +22,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import java.security.SecureRandom;
+import java.time.Duration;
 import java.util.UUID;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
@@ -64,11 +69,27 @@ public class AuthServiceImpl implements AuthService {
 		deleteCachedTokenId(member.getId());
 		String accessToken = createToken(member, TokenType.ACCESS);
 		String refreshToken = createToken(member, TokenType.REFRESH);
-		saveTokenJti(member.getId(), refreshToken);
+		saveCacheJwtId(member.getId(), refreshToken);
 		return Pair.of(accessToken, refreshToken);
 	}
 
-	private void saveTokenJti(UUID memberId, String token) {
+	@Override
+	public void logout(String accessToken, String refreshToken) {
+		UUID memberId = UUID.fromString(
+			jwtTokenProvider.extractSubject(accessToken)
+		);
+		deleteCachedTokenId(memberId);
+
+		long expiredTtl = jwtTokenProvider.getExpiry(accessToken);
+		if (expiredTtl > 0) {
+			String lockKey = RedisKey.BLACKLIST.getKey(accessToken);
+			redisCache.set(
+				lockKey, "logout", Duration.ofMillis(expiredTtl)
+			);
+		}
+	}
+
+	private void saveCacheJwtId(UUID memberId, String token) {
 		String jti = jwtTokenProvider.extractJti(token);
 		redisCache.set(RedisKey.REFRESH_TOKEN, memberId, jti);
 	}

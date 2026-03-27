@@ -14,4 +14,6 @@ public interface AuthService {
 
 	Pair<String, String> issueTokens(MemberEntity member);
 
+	void logout(String accessToken, String refreshToken);
+
 }
