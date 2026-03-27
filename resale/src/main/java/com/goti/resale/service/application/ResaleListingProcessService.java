@@ -11,17 +11,14 @@ import com.goti.constants.messages.ErrorCode;
 import com.goti.exception.CustomException;
 import com.goti.resale.constants.ResaleListingStatus;
 import com.goti.resale.domain.entity.resale.ResaleListingEntity;
-import com.goti.resale.domain.entity.resale.ResalePriceHistoryEntity;
 import com.goti.resale.domain.entity.resale.ResaleRestrictionEntity;
 import com.goti.resale.dto.request.ResaleListingCancelRequest;
-import com.goti.resale.dto.request.ResaleListingCreateRequest;
+import com.goti.resale.dto.request.ResaleListingOrderCreateRequest;
+import com.goti.resale.dto.response.ResaleListingOrderCreateResponse;
 import com.goti.resale.dto.response.ResaleListingResponse;
-import com.goti.resale.dto.response.ResaleTicketResponse;
-import com.goti.resale.infra.TicketClient;
 import com.goti.resale.repository.ResaleRestrictionRepository;
-import com.goti.resale.repository.history.ResalePriceHistoryRepository;
 import com.goti.resale.repository.listing.ResaleListingRepository;
-import com.goti.resale.service.domain.ResaleListingService;
+import com.goti.resale.service.domain.ListingService;
 import com.goti.resale.service.domain.ResaleRestrictionService;
 import com.goti.resale.utils.ResaleRestrictionHandler;
 
@@ -29,50 +26,16 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-public class ResaleListingProcessService {
+public class ResaleListingService {
 	private final ResaleListingRepository listingRepository;
 	private final ResaleRestrictionRepository restrictionRepository;
-	private final ResalePriceHistoryRepository priceHistoryRepository;
 	private final ResaleRestrictionHandler restrictionHandler;
 	private final ResaleRestrictionService restrictionService;
-	private final ResaleListingService resaleListingService;
-	private final TicketClient ticketClient;
+	private final ListingService listingService;
 
 	@Transactional
-	public ResaleListingResponse createListing(UUID sellerId, ResaleListingCreateRequest request) {
-		ResaleTicketResponse ticketInfo = ticketClient.getTicketInfo(request.ticketId(), sellerId);
-
-		ResaleRestrictionEntity resaleRestriction = restrictionService.getOrCreateRestriction(sellerId);
-
-		resaleListingService.validateListingCreation(ticketInfo, sellerId, request.listingPrice(), resaleRestriction);
-
-		Integer lastTransactionPrice = priceHistoryRepository
-			.findLatestByGameAndGrade(ticketInfo.gameId(), ticketInfo.gradeId())
-			.map(ResalePriceHistoryEntity::getTransactionPrice)
-			.orElse(null);
-
-		ResaleListingEntity resaleListing = ResaleListingEntity.create(
-			ticketInfo.ticketId(),
-			sellerId,
-			ticketInfo.gameId(),
-			ticketInfo.seatId(),
-			ticketInfo.sectionId(),
-			ticketInfo.gradeId(),
-			ticketInfo.seatInfo(),
-			ticketInfo.ticketPrice(),
-			request.listingPrice()
-		);
-
-		if (lastTransactionPrice != null) {
-			resaleListing.initializeLastTransactionPrice(lastTransactionPrice);
-		}
-
-		listingRepository.save(resaleListing);
-
-		restrictionHandler.handleAfterSell(resaleRestriction, ticketInfo.gameId());
-		restrictionRepository.save(resaleRestriction);
-
-		return ResaleListingResponse.from(resaleListing);
+	public ResaleListingOrderCreateResponse createListingOrder(UUID sellerId, ResaleListingOrderCreateRequest request) {
+		return listingService.createListingOrder(sellerId, request);
 	}
 
 	@Transactional
@@ -84,7 +47,7 @@ public class ResaleListingProcessService {
 
 		ResaleRestrictionEntity resaleRestriction = restrictionService.getOrCreateRestriction(sellerId);
 
-		resaleListingService.validateListingCancellation(
+		listingService.validateListingCancellation(
 			sellerId,
 			resaleListing,
 			resaleRestriction

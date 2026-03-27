@@ -4,9 +4,15 @@ import java.util.UUID;
 
 import com.goti.resale.domain.entity.resale.ResaleListingEntity;
 import com.goti.resale.domain.entity.resale.ResaleRestrictionEntity;
+import com.goti.resale.dto.request.ResaleListingOrderCreateRequest;
+import com.goti.resale.dto.response.ResaleListingOrderCreateResponse;
 import com.goti.resale.dto.response.ResaleTicketResponse;
 
-public interface ResaleListingService {
+public interface ListingService {
+	String generateListingOrderNumber();
+
+	ResaleListingOrderCreateResponse createListingOrder(UUID sellerId, ResaleListingOrderCreateRequest request);
+
 	void validateListingCreation(
 		ResaleTicketResponse ticketInfo,
 		UUID sellerId,
