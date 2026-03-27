@@ -89,10 +89,9 @@ internal:
     base-url: ${TICKETING_BASE_URL:http://localhost:8080}
   resale:
     base-url: ${RESALE_BASE_URL:http://localhost:8080}
-  payment:
-    base-url: ${PAYMENT_BASE_URL:http://localhost:8080}
 
 infra:
   api:
     endpoints:
       stadium: ${STADIUM_API_URL:http://localhost:8080}
+      payment: ${RESALE_BASE_URL:http://localhost:8080}

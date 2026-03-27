@@ -5,8 +5,8 @@ import java.util.UUID;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 
+import com.goti.config.properties.ApiEndpointProperties;
 import com.goti.infra.api.base.BaseRestClient;
-import com.goti.resale.config.properties.PaymentApiProperties;
 import com.goti.resale.dto.request.ResalePaymentRequest;
 
 @Component
@@ -14,8 +14,8 @@ public class PaymentApiClient extends BaseRestClient implements PaymentClient {
 	private static final String RESALE_PAYMENT_API = "/api/v1/payments/resales";
 	private static final String PATH_SEPARATOR = "/";
 
-	public PaymentApiClient(RestClient.Builder builder, PaymentApiProperties properties) {
-		super(builder, properties.baseUrl());
+	public PaymentApiClient(RestClient.Builder builder, ApiEndpointProperties properties) {
+		super(builder, properties.payment());
 	}
 
 	@Override
