@@ -7,9 +7,9 @@ import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 
-import com.goti.resale.dto.internal.TicketGameInfo;
 import com.goti.resale.dto.response.ResaleTicketResponse;
 import com.goti.resale.infra.TicketClient;
+import com.goti.resale.infra.dto.TicketGameInfo;
 
 import lombok.RequiredArgsConstructor;
 

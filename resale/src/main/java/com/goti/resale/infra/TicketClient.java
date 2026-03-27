@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.UUID;
 
 import com.goti.resale.dto.response.ResaleTicketResponse;
-import com.goti.resale.dto.internal.TicketGameInfo;
+import com.goti.resale.infra.dto.TicketGameInfo;
 
 /**
  * 티켓 도메인과의 연동을 위한 인터페이스

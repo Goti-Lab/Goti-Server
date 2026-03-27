@@ -15,15 +15,15 @@ import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 
 import com.goti.constants.messages.ErrorCode;
-import com.goti.dto.internal.ResaleOrderCreatedEvent;
-import com.goti.dto.internal.ResaleOrderPaymentCompletedEvent;
-import com.goti.dto.internal.SettlementCompletedEvent;
 import com.goti.exception.CustomException;
 import com.goti.resale.domain.entity.resale.ResaleListingEntity;
 import com.goti.resale.domain.entity.resale.ResalePriceHistoryEntity;
 import com.goti.resale.domain.entity.resale.ResaleRestrictionEntity;
 import com.goti.resale.domain.entity.resale.ResaleTransactionEntity;
 import com.goti.resale.infra.TicketClient;
+import com.goti.resale.infra.dto.ResaleOrderCreatedEvent;
+import com.goti.resale.infra.dto.ResaleOrderPaymentCompletedEvent;
+import com.goti.resale.infra.dto.SettlementCompletedEvent;
 import com.goti.resale.repository.ResaleRestrictionRepository;
 import com.goti.resale.repository.ResaleTransactionRepository;
 import com.goti.resale.repository.history.ResalePriceHistoryRepository;

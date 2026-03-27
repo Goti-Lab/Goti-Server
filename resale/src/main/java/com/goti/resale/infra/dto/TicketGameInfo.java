@@ -1,4 +1,4 @@
-package com.goti.resale.dto.internal;
+package com.goti.resale.infra.dto;
 
 import java.util.UUID;
 
