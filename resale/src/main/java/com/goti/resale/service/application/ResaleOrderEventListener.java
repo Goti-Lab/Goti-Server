@@ -20,9 +20,6 @@ import com.goti.resale.domain.entity.resale.ResaleListingEntity;
 import com.goti.resale.domain.entity.resale.ResalePriceHistoryEntity;
 import com.goti.resale.domain.entity.resale.ResaleRestrictionEntity;
 import com.goti.resale.domain.entity.resale.ResaleTransactionEntity;
-import com.goti.resale.dto.request.ResalePaymentRequest;
-import com.goti.resale.dto.request.ResaleTransactionItemRequest;
-import com.goti.resale.infra.PaymentApiClient;
 import com.goti.resale.infra.TicketClient;
 import com.goti.resale.infra.dto.ResaleOrderCreatedEvent;
 import com.goti.resale.infra.dto.ResaleOrderPaymentCompletedEvent;
@@ -32,6 +29,7 @@ import com.goti.resale.repository.ResaleTransactionRepository;
 import com.goti.resale.repository.history.ResalePriceHistoryRepository;
 import com.goti.resale.repository.listing.ResaleListingRepository;
 import com.goti.resale.service.domain.ResaleRestrictionDomainService;
+import com.goti.resale.service.infra.PaymentService;
 import com.goti.resale.utils.ResaleRestrictionHandler;
 
 import lombok.RequiredArgsConstructor;
@@ -48,13 +46,13 @@ public class ResaleOrderEventListener {
 	private final ResaleRestrictionRepository restrictionRepository;
 	private final ResaleRestrictionHandler restrictionHandler;
 	private final ResaleRestrictionDomainService restrictionDomainService;
-	private final PaymentApiClient paymentApiClient;
+	private final PaymentService paymentService;
 	private final TicketClient ticketClient;
 
 	@Async
 	@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
 	public void handleOrderCreated(ResaleOrderCreatedEvent event) {
-		createResalePayment(
+		paymentService.createResalePayment(
 			event.orderId(),
 			event.buyerId(),
 			event.totalBuyerAmount(),
@@ -111,7 +109,7 @@ public class ResaleOrderEventListener {
 			transferOwnershipAsync(listing.getTicketId(), event.buyerId());
 		}
 
-		releaseEscrow(event.resaleOrderId());
+		paymentService.releaseEscrow(event.resaleOrderId());
 	}
 
 	@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
@@ -142,44 +140,6 @@ public class ResaleOrderEventListener {
 			log.error("티켓 소유권 이전 실패 - 티켓ID: {}, 구매자: {}, 에러: {}",
 				ticketId, buyerId, e.getMessage(), e);
 			throw new CustomException(ErrorCode.TRANSFER_OWNERSHIP_FAILED);
-		}
-	}
-
-	public void createResalePayment(
-		UUID orderId,
-		UUID buyerId,
-		int totalAmount,
-		int totalBuyerFee,
-		int totalSellerFee,
-		List<ResaleTransactionItemRequest> items,
-		String idempotencyKey
-	) {
-		ResalePaymentRequest request = new ResalePaymentRequest(
-			orderId,
-			buyerId,
-			totalAmount,
-			totalBuyerFee,
-			totalSellerFee,
-			items,
-			"CARD",
-			idempotencyKey
-		);
-
-		try {
-			paymentApiClient.createResalePayment(request);
-		} catch (Exception e) {
-			log.error("리셀 결제 요청 실패 - orderId: {}, error: {}", orderId, e.getMessage());
-			throw new CustomException(ErrorCode.RESALE_PAYMENT_FAILED);
-		}
-	}
-
-	public void releaseEscrow(UUID orderId) {
-		log.info("에스크로 해제 요청 - orderId: {}", orderId);
-		try {
-			paymentApiClient.releaseEscrow(orderId);
-		} catch (Exception e) {
-			log.error("에스크로 해제 실패 - orderId: {}, error: {}", orderId, e.getMessage());
-			throw new CustomException(ErrorCode.RESALE_ESCROW_FAILED);
 		}
 	}
 }
