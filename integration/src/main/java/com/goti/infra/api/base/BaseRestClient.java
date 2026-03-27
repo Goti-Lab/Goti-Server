@@ -187,7 +187,7 @@ public abstract class BaseRestClient {
 	protected void patchVoid(String uri, Object body) {
 		restClient.patch()
 			.uri(uriBuilder -> getActualUriBuilder(uri, uriBuilder).build())
-			.body(body != null ? body : "")
+			.body(body)
 			.retrieve()
 			.toBodilessEntity();
 	}
