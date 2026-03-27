@@ -10,7 +10,11 @@ public interface ResaleEscrowService {
 
 	List<EscrowAccountEntity> createEscrows(ResalePaymentRequest request);
 
+	void requestEscrowPayments(List<EscrowAccountEntity> escrows);
+
 	List<EscrowAccountEntity> filterHoldings(List<EscrowAccountEntity> escrows);
 
 	void settle(List<EscrowAccountEntity> escrows, LocalDateTime releaseTime);
+
+	void requestSettlements(List<EscrowAccountEntity> escrows);
 }

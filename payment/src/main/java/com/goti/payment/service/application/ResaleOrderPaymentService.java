@@ -14,13 +14,12 @@ import com.goti.payment.domain.entity.payment.PaymentLedgerEntity;
 import com.goti.payment.dto.internal.SettlementCompletedEvent;
 import com.goti.payment.dto.request.ResalePaymentRequest;
 import com.goti.payment.dto.response.PaymentResponse;
-import com.goti.payment.infra.MockResaleEscrowClient;
-import com.goti.payment.infra.ResaleOrderClient;
 import com.goti.payment.repository.EscrowAccountRepository;
 import com.goti.payment.repository.PaymentLedgerRepository;
 import com.goti.payment.service.domain.PaymentLedgerService;
 import com.goti.payment.service.domain.PaymentService;
 import com.goti.payment.service.domain.ResaleEscrowService;
+import com.goti.payment.service.domain.ResaleService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -29,12 +28,11 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 @RequiredArgsConstructor
 public class ResaleOrderPaymentService {
-	private final ResaleOrderClient resaleOrderClient;
 	private final PaymentService paymentService;
 	private final PaymentLedgerService paymentLedgerService;
 	private final PaymentLedgerRepository paymentLedgerRepository;
 	private final ResaleEscrowService resaleEscrowService;
-	private final MockResaleEscrowClient escrowClient;
+	private final ResaleService resaleService;
 	private final EscrowAccountRepository escrowAccountRepository;
 	private final ApplicationEventPublisher eventPublisher;
 
@@ -60,13 +58,7 @@ public class ResaleOrderPaymentService {
 
 			List<EscrowAccountEntity> escrows = resaleEscrowService.createEscrows(request);
 
-			for (EscrowAccountEntity escrow : escrows) {
-				String externalId = escrowClient.requestEscrowPayment(
-					escrow.getTransactionId(),
-					escrow.getEscrowAmount()
-				);
-				escrow.updateExternalId(externalId);
-			}
+			resaleEscrowService.requestEscrowPayments(escrows);
 
 			escrowAccountRepository.saveAll(escrows);
 
@@ -93,11 +85,7 @@ public class ResaleOrderPaymentService {
 			return;
 		}
 
-		for (EscrowAccountEntity escrow : holdingEscrows) {
-			if (escrow.getExternalEscrowId() != null) {
-				escrowClient.requestSettlement(escrow.getExternalEscrowId());
-			}
-		}
+		resaleEscrowService.requestSettlements(holdingEscrows);
 
 		resaleEscrowService.settle(holdingEscrows, LocalDateTime.now());
 		escrowAccountRepository.saveAll(holdingEscrows);
@@ -111,10 +99,10 @@ public class ResaleOrderPaymentService {
 		UUID paymentId
 	) {
 		log.info("리셀 주문 결제 확정 - orderId: {}, buyerId: {}", orderId, buyerId);
-		resaleOrderClient.completeOrder(orderId, paymentId);
+		resaleService.confirmOrder(orderId, paymentId);
 	}
 
 	public List<UUID> getTransactionIds(UUID orderId) {
-		return resaleOrderClient.getTransactionIds(orderId);
+		return resaleService.getTransactionIds(orderId);
 	}
 }
