@@ -42,18 +42,18 @@ public class SeatHoldExpiryService {
 
 				failed++;
 				log.debug(
-					"좌석 점유 만료 처리 락 획득 실패로 건너뜀. holdId={}, gameId={}, seatId={}",
-					seatHold.getId(),
+					"action=LOCK_TIMEOUT operation=SEAT_HOLD_EXPIRY gameId={} seatId={} holdId={}",
 					seatHold.getGameSchedule().getId(),
-					seatHold.getSeat().getId()
+					seatHold.getSeat().getId(),
+					seatHold.getId()
 				);
 			} catch (Exception e) {
 				failed++;
 				log.warn(
-					"좌석 점유 만료 처리 실패. holdId={}, gameId={}, seatId={}, reason={}",
-					seatHold.getId(),
+					"action=HOLD_RELEASE_FAILED gameId={} seatId={} holdId={} reason={}",
 					seatHold.getGameSchedule().getId(),
 					seatHold.getSeat().getId(),
+					seatHold.getId(),
 					e.getMessage()
 				);
 			}

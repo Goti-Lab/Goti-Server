@@ -1,5 +1,8 @@
 package com.goti.exception.handler;
 
+import java.util.Map;
+import java.util.stream.Collectors;
+
 import com.goti.global.api.ApiErrorResponse;
 import com.goti.constants.messages.ErrorCode;
 import com.goti.exception.CustomException;
@@ -29,10 +32,22 @@ public class SystemExceptionHandler extends BaseExceptionHandler {
 	@ExceptionHandler(CustomException.class)
 	public ResponseEntity<ApiErrorResponse> handleCustomException(CustomException ex) {
 		ErrorCode error = ex.error();
+		Map<String, Object> context = ex.context();
+		String action = String.valueOf(context.getOrDefault("action", "ERROR_OCCURRED"));
+		String contextLog = formatContext(context);
+
+		String logMessage = String.format(
+			"action=%s errorCode=%s message=%s %s",
+			action,
+			error.name(),
+			ex.getMessage(),
+			contextLog
+		).trim();
+
 		if (error.isSystemError()) {
-			log.error("[System Error] code={} message={}", error.name(), ex.getMessage(), ex);
+			log.error(logMessage, ex);
 		} else {
-			log.warn("[Business Error] code={} message={}", error.name(), ex.getMessage());
+			log.warn(logMessage);
 		}
 		return toResponse(ex);
 	}
@@ -70,4 +85,15 @@ public class SystemExceptionHandler extends BaseExceptionHandler {
 		);
 		return toResponse(ErrorCode.AUTH_INVALID);
 	}
+
+	private String formatContext(Map<String, Object> context) {
+		if (context == null || context.isEmpty()) {
+			return "";
+		}
+		return context.entrySet().stream()
+			.filter(entry -> !"action".equals(entry.getKey()))
+			.map(entry -> entry.getKey() + "=" + entry.getValue())
+			.collect(Collectors.joining(" "));
+	}
+
 }

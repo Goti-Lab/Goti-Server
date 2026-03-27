@@ -37,7 +37,9 @@ import com.goti.ticketing.seat.service.domain.SeatStatusService;
 import com.goti.ticketing.ticket.service.domain.TicketService;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class OrderCancelService {
@@ -129,6 +131,15 @@ public class OrderCancelService {
 		updateOrderStatus(order, orderItems);
 		PaymentCancelResponse paymentData = paymentApiClient.cancelPayment(orderId, cancellation.getId());
 		orderCancellationService.complete(cancellation);
+
+		log.info(
+			"action=ORDER_CANCEL gameId={} userId={} orderId={} cancelledItems={} refundAmount={}",
+			order.getGameSchedule().getId(),
+			memberId,
+			orderId,
+			targetItems.size(),
+			refundAmount.refundAmount()
+		);
 
 		return OrderCancelResponse.from(
 			cancellation,

@@ -6,6 +6,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.UUID;
 
+import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,6 +34,7 @@ import com.goti.ticketing.seat.repository.SeatHoldRepository;
 
 import lombok.RequiredArgsConstructor;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class OrderCreateService {
@@ -79,6 +82,15 @@ public class OrderCreateService {
 
 		createOrderItems(order, pricingResult.pricedHolds());
 
+		log.info(
+			"action=ORDER_CREATE gameId={} userId={} orderId={} quantity={} totalAmount={}",
+			command.gameId(),
+			command.memberId(),
+			order.getId(),
+			order.getTotalQuantity(),
+			order.getTotalAmount()
+		);
+
 		return OrderCreateResponse.from(
 			order.getId(),
 			order.getOrderNumber(),
@@ -120,10 +132,14 @@ public class OrderCreateService {
 				hold.getStatus() == SeatHoldStatus.HOLDING,
 				ErrorCode.SEAT_HOLD_STATUS_INVALID
 			);
-			Preconditions.validate(
-				hold.getExpiredAt().isAfter(LocalDateTime.now()),
-				ErrorCode.SEAT_HOLD_EXPIRED
-			);
+			if (!hold.getExpiredAt().isAfter(LocalDateTime.now())) {
+				throw new CustomException(ErrorCode.SEAT_HOLD_EXPIRED)
+					.withContext("action", "SESSION_BLOCK")
+					.withContext("stage", "ORDER_CREATE")
+					.withContext("gameId", gameId)
+					.withContext("userId", userId)
+					.withContext("holdId", hold.getId());
+			}
 		}
 	}
 
