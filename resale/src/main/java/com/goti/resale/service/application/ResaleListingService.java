@@ -34,7 +34,7 @@ public class ResaleListingService {
 	private final ResaleRestrictionRepository restrictionRepository;
 	private final ResalePriceHistoryRepository priceHistoryRepository;
 	private final ResaleRestrictionHandler restrictionHandler;
-	private final ResaleRestrictionService restrictionDomainService;
+	private final ResaleRestrictionService restrictionService;
 	private final ListingService listingService;
 	private final TicketClient ticketClient;
 
@@ -42,7 +42,7 @@ public class ResaleListingService {
 	public ResaleListingResponse createListing(UUID sellerId, ResaleListingCreateRequest request) {
 		ResaleTicketResponse ticketInfo = ticketClient.getTicketInfo(request.ticketId(), sellerId);
 
-		ResaleRestrictionEntity resaleRestriction = restrictionDomainService.getOrCreateRestriction(sellerId);
+		ResaleRestrictionEntity resaleRestriction = restrictionService.getOrCreateRestriction(sellerId);
 
 		listingService.validateListingCreation(ticketInfo, sellerId, request.listingPrice(), resaleRestriction);
 
@@ -82,7 +82,7 @@ public class ResaleListingService {
 				() -> new CustomException(ErrorCode.LISTING_NOT_FOUND)
 			);
 
-		ResaleRestrictionEntity resaleRestriction = restrictionDomainService.getOrCreateRestriction(sellerId);
+		ResaleRestrictionEntity resaleRestriction = restrictionService.getOrCreateRestriction(sellerId);
 
 		listingService.validateListingCancellation(
 			sellerId,
@@ -139,7 +139,7 @@ public class ResaleListingService {
 			.distinct()
 			.toList();
 
-		Map<UUID, ResaleRestrictionEntity> restrictionMap = restrictionDomainService.getOrCreateRestrictions(sellerIds);
+		Map<UUID, ResaleRestrictionEntity> restrictionMap = restrictionService.getOrCreateRestrictions(sellerIds);
 
 		for (ResaleListingEntity listing : listings) {
 			listing.cancelByGameStart();
