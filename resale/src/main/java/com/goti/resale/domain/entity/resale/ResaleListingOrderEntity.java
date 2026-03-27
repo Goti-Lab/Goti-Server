@@ -22,7 +22,7 @@ import lombok.NoArgsConstructor;
 @Table(name = "resale_listing_orders",
 	indexes = {
 		@Index(name = "idx_listing_order_seller_id", columnList = "sellerId"),
-		@Index(name = "idx_listing_order_game_id", columnList = "gameId"),
+		@Index(name = "idx_listing_order_section_id", columnList = "sectionId"),
 		@Index(name = "idx_listing_order_number", columnList = "orderNumber", unique = true)
 	})
 @NoArgsConstructor(access = PROTECTED)
