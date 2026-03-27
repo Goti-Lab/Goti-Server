@@ -71,6 +71,19 @@ public class ResaleListingController {
 	}
 
 	@Operation(
+		summary = "등록 일괄 취소",
+		description = "리셀 등록 그룹에 속한 모든 판매 중인 티켓을 취소합니다."
+	)
+	@PatchMapping("/listings/orders/{listingOrderId}/cancel")
+	public ResponseEntity<ApiSuccessResponse<Void>> cancelListingOrder(
+		@AuthenticationPrincipal(expression = "id") UUID sellerId,
+		@PathVariable UUID listingOrderId
+	) {
+		listingService.cancelListingOrder(sellerId, listingOrderId);
+		return wrap(null);
+	}
+
+	@Operation(
 		summary = "목록 조회",
 		description = "판매자의 리셀 목록 조회 API"
 	)
