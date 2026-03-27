@@ -67,7 +67,8 @@ public class ResaleListingOrderEntity extends ModificationTimestampEntity {
 	}
 
 	public void partial() {
-		if (this.orderStatus == ResaleListingOrderStatus.LISTING)
+		if (this.orderStatus == ResaleListingOrderStatus.LISTING
+			|| this.orderStatus == ResaleListingOrderStatus.SOLD)
 			this.orderStatus = ResaleListingOrderStatus.PARTIAL;
 	}
 
@@ -76,7 +77,8 @@ public class ResaleListingOrderEntity extends ModificationTimestampEntity {
 	}
 
 	public void settled() {
-		if (this.orderStatus == ResaleListingOrderStatus.SOLD)
+		if (this.orderStatus == ResaleListingOrderStatus.SOLD
+			|| this.orderStatus == ResaleListingOrderStatus.PARTIAL)
 			this.orderStatus = ResaleListingOrderStatus.SETTLED;
 	}
 }
