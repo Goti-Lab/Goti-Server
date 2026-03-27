@@ -11,9 +11,9 @@ import org.junit.jupiter.params.provider.NullSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.test.context.ActiveProfiles;
 
+import com.goti.exception.FieldValidationException;
 import com.goti.resale.constants.ResaleAvailableStatus;
 import com.goti.resale.constants.ResaleListingStatus;
-import com.goti.exception.FieldValidationException;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -31,9 +31,12 @@ class ResaleListingEntityTest {
 	private static final Integer VALID_DAILY_BASE_PRICE = 50000;
 	private static final Integer VALID_LISTING_PRICE = 55000;
 
+	ResaleListingOrderEntity listingOrder;
+
 	@Test
 	void 리셀_생성_성공() {
 		ResaleListingEntity entity = ResaleListingEntity.create(
+			listingOrder,
 			VALID_TICKET_ID,
 			VALID_SELLER_ID,
 			VALID_GAME_ID,
@@ -46,6 +49,7 @@ class ResaleListingEntityTest {
 		);
 
 		assertAll(
+			() -> assertThat(entity.getListingOrder()).isEqualTo(listingOrder),
 			() -> assertThat(entity.getTicketId()).isEqualTo(VALID_TICKET_ID),
 			() -> assertThat(entity.getSellerId()).isEqualTo(VALID_SELLER_ID),
 			() -> assertThat(entity.getGameId()).isEqualTo(VALID_GAME_ID),
@@ -66,6 +70,7 @@ class ResaleListingEntityTest {
 	@Test
 	void 원가와_판매가가_0_성공() {
 		ResaleListingEntity entity = ResaleListingEntity.create(
+			listingOrder,
 			VALID_TICKET_ID,
 			VALID_SELLER_ID,
 			VALID_GAME_ID,
@@ -86,6 +91,7 @@ class ResaleListingEntityTest {
 	@Test
 	void 티켓_ID가_null_실패() {
 		assertThatThrownBy(() -> ResaleListingEntity.create(
+			listingOrder,
 			null,
 			VALID_SELLER_ID,
 			VALID_GAME_ID,
@@ -103,6 +109,7 @@ class ResaleListingEntityTest {
 	@Test
 	void 판매자_ID가_null_실패() {
 		assertThatThrownBy(() -> ResaleListingEntity.create(
+			listingOrder,
 			VALID_TICKET_ID,
 			null,
 			VALID_GAME_ID,
@@ -120,6 +127,7 @@ class ResaleListingEntityTest {
 	@Test
 	void 경기_ID가_null_실패() {
 		assertThatThrownBy(() -> ResaleListingEntity.create(
+			listingOrder,
 			VALID_TICKET_ID,
 			VALID_SELLER_ID,
 			null,
@@ -137,6 +145,7 @@ class ResaleListingEntityTest {
 	@Test
 	void 좌석_ID가_null_실패() {
 		assertThatThrownBy(() -> ResaleListingEntity.create(
+			listingOrder,
 			VALID_TICKET_ID,
 			VALID_SELLER_ID,
 			VALID_GAME_ID,
@@ -154,6 +163,7 @@ class ResaleListingEntityTest {
 	@Test
 	void 구역_ID가_null_실패() {
 		assertThatThrownBy(() -> ResaleListingEntity.create(
+			listingOrder,
 			VALID_TICKET_ID,
 			VALID_SELLER_ID,
 			VALID_GAME_ID,
@@ -171,6 +181,7 @@ class ResaleListingEntityTest {
 	@Test
 	void 등급_ID가_null_실패() {
 		assertThatThrownBy(() -> ResaleListingEntity.create(
+			listingOrder,
 			VALID_TICKET_ID,
 			VALID_SELLER_ID,
 			VALID_GAME_ID,
@@ -188,6 +199,7 @@ class ResaleListingEntityTest {
 	@Test
 	void 좌석_정보가_null_실패() {
 		assertThatThrownBy(() -> ResaleListingEntity.create(
+			listingOrder,
 			VALID_TICKET_ID,
 			VALID_SELLER_ID,
 			VALID_GAME_ID,
@@ -206,6 +218,7 @@ class ResaleListingEntityTest {
 	@NullSource
 	void 시작가가_null_실패(Integer dailyPrice) {
 		assertThatThrownBy(() -> ResaleListingEntity.create(
+			listingOrder,
 			VALID_TICKET_ID,
 			VALID_SELLER_ID,
 			VALID_GAME_ID,
@@ -224,6 +237,7 @@ class ResaleListingEntityTest {
 	@ValueSource(ints = {-1, -50000})
 	void 시작가가_음수_실패(Integer dailyPrice) {
 		assertThatThrownBy(() -> ResaleListingEntity.create(
+			listingOrder,
 			VALID_TICKET_ID,
 			VALID_SELLER_ID,
 			VALID_GAME_ID,
@@ -242,6 +256,7 @@ class ResaleListingEntityTest {
 	@NullSource
 	void 판매가가_null_실패(Integer listingPrice) {
 		assertThatThrownBy(() -> ResaleListingEntity.create(
+			listingOrder,
 			VALID_TICKET_ID,
 			VALID_SELLER_ID,
 			VALID_GAME_ID,
@@ -260,6 +275,7 @@ class ResaleListingEntityTest {
 	@ValueSource(ints = {-1, -55000})
 	void 판매가가_음수_실패(Integer listingPrice) {
 		assertThatThrownBy(() -> ResaleListingEntity.create(
+			listingOrder,
 			VALID_TICKET_ID,
 			VALID_SELLER_ID,
 			VALID_GAME_ID,

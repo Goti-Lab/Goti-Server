@@ -32,10 +32,12 @@ class ResaleTransactionEntityTest {
 
 	private ResaleListingEntity validListing;
 	private ResaleOrderEntity resaleOrder;
+	ResaleListingOrderEntity listingOrder;
 
 	@BeforeEach
 	void setUp() {
 		validListing = ResaleListingEntity.create(
+			listingOrder,
 			UUID.randomUUID(),
 			VALID_SELLER_ID,
 			UUID.randomUUID(),
