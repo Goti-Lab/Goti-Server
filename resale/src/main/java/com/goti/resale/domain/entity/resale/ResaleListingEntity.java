@@ -14,7 +14,10 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.Index;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -26,10 +29,16 @@ import lombok.NoArgsConstructor;
 		@Index(name = "idx_ticket_id", columnList = "ticket_id"),
 		@Index(name = "idx_seller_id", columnList = "seller_id"),
 		@Index(name = "idx_section_id", columnList = "section_id"),
-		@Index(name = "idx_game_id", columnList = "game_id")
+		@Index(name = "idx_game_id", columnList = "game_id"),
+		@Index(name = "idx_listing_order_id", columnList = "listing_order_id")
 	})
 @NoArgsConstructor(access = PROTECTED)
 public class ResaleListingEntity extends ModificationTimestampEntity {
+
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "listing_order_id", nullable = false)
+	private ResaleListingOrderEntity listingOrder;
+
 	@Column(nullable = false)
 	private UUID ticketId;
 
@@ -75,6 +84,7 @@ public class ResaleListingEntity extends ModificationTimestampEntity {
 	private LocalDateTime canceledAt;
 
 	private ResaleListingEntity(
+		ResaleListingOrderEntity listingOrder,
 		UUID ticketId,
 		UUID sellerId,
 		UUID gameId,
@@ -85,6 +95,7 @@ public class ResaleListingEntity extends ModificationTimestampEntity {
 		Integer dailyBasePrice,
 		Integer listingPrice
 	) {
+		this.listingOrder = listingOrder;
 		this.ticketId = ticketId;
 		this.sellerId = sellerId;
 		this.gameId = gameId;
@@ -103,6 +114,7 @@ public class ResaleListingEntity extends ModificationTimestampEntity {
 	}
 
 	public static ResaleListingEntity create(
+		ResaleListingOrderEntity listingOrder,
 		UUID ticketId,
 		UUID sellerId,
 		UUID gameId,
@@ -116,6 +128,7 @@ public class ResaleListingEntity extends ModificationTimestampEntity {
 		validate(ticketId, sellerId, gameId, seatId, sectionId, gradeId, seatInfo, dailyBasePrice, listingPrice);
 
 		return new ResaleListingEntity(
+			listingOrder,
 			ticketId,
 			sellerId,
 			gameId,
