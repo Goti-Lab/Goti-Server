@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.github.f4b6a3.tsid.TsidCreator;
 import com.goti.constants.messages.ErrorCode;
+import com.goti.exception.CustomException;
 import com.goti.global.validation.Preconditions;
 import com.goti.resale.constants.ResaleListingOrderStatus;
 import com.goti.resale.constants.ResaleListingStatus;
@@ -21,6 +22,7 @@ import com.goti.resale.domain.entity.resale.ResaleListingEntity;
 import com.goti.resale.domain.entity.resale.ResaleListingOrderEntity;
 import com.goti.resale.domain.entity.resale.ResalePriceHistoryEntity;
 import com.goti.resale.domain.entity.resale.ResaleRestrictionEntity;
+import com.goti.resale.dto.request.ResaleListingCancelRequest;
 import com.goti.resale.dto.request.ResaleListingCreateRequest;
 import com.goti.resale.dto.request.ResaleListingOrderCreateRequest;
 import com.goti.resale.dto.response.ResaleListingOrderCreateResponse;
@@ -121,6 +123,70 @@ public class ResaleListingServiceImpl implements ResaleListingService {
 
 		ResaleListingOrderEntity representativeOrder = orderMap.values().iterator().next();
 		return ResaleListingOrderCreateResponse.from(representativeOrder, listingResponses);
+	}
+
+	@Override
+	@Transactional
+	public ResaleListingResponse cancelListing(UUID sellerId, ResaleListingCancelRequest request) {
+		ResaleListingEntity resaleListing = listingRepository.findById(request.listingId())
+			.orElseThrow(
+				() -> new CustomException(ErrorCode.LISTING_NOT_FOUND)
+			);
+
+		ResaleRestrictionEntity resaleRestriction = restrictionService.getOrCreateRestriction(sellerId);
+
+		validateListingCancellation(
+			sellerId,
+			resaleListing,
+			resaleRestriction
+		);
+
+		resaleListing.cancel();
+		listingRepository.save(resaleListing);
+
+		ResaleListingOrderEntity order = resaleListing.getListingOrder();
+		order.partial();
+
+		List<ResaleListingEntity> ListingsByOrderId = listingRepository.findAllByListingOrderId(order.getId());
+		boolean allCancelled = ListingsByOrderId.stream()
+			.allMatch(l -> l.getListingStatus() == ResaleListingStatus.CANCELED);
+
+		if (allCancelled) {
+			order.cancel();
+		}
+
+		listingOrderRepository.save(order);
+
+		restrictionHandler.handleAfterCancel(resaleRestriction, resaleListing.getGameId());
+		restrictionRepository.save(resaleRestriction);
+
+		return ResaleListingResponse.from(resaleListing);
+	}
+
+	@Override
+	@Transactional
+	public void cancelListingOrder(UUID sellerId, UUID orderId) {
+		ResaleListingOrderEntity order = listingOrderRepository.findById(orderId)
+			.orElseThrow(() -> new CustomException(ErrorCode.ORDER_NOT_FOUND));
+
+		Preconditions.validate(order.getSellerId().equals(sellerId), ErrorCode.AUTH_PERMISSION_DENIED);
+
+		List<ResaleListingEntity> listings = listingRepository.findAllByListingOrderId(orderId);
+		ResaleRestrictionEntity restriction = restrictionService.getOrCreateRestriction(sellerId);
+
+		for (ResaleListingEntity listing : listings) {
+			if (listing.isCancelable()) {
+				validateListingCancellation(sellerId, listing, restriction);
+				listing.cancel();
+				restrictionHandler.handleAfterCancel(restriction, listing.getGameId());
+			}
+		}
+
+		order.cancel();
+
+		listingRepository.saveAll(listings);
+		listingOrderRepository.save(order);
+		restrictionRepository.save(restriction);
 	}
 
 	@Override

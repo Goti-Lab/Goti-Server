@@ -7,8 +7,6 @@ import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.goti.constants.messages.ErrorCode;
-import com.goti.exception.CustomException;
 import com.goti.resale.constants.ResaleListingStatus;
 import com.goti.resale.domain.entity.resale.ResaleListingEntity;
 import com.goti.resale.domain.entity.resale.ResaleRestrictionEntity;
@@ -16,7 +14,6 @@ import com.goti.resale.dto.request.ResaleListingCancelRequest;
 import com.goti.resale.dto.request.ResaleListingOrderCreateRequest;
 import com.goti.resale.dto.response.ResaleListingOrderCreateResponse;
 import com.goti.resale.dto.response.ResaleListingResponse;
-import com.goti.resale.repository.ResaleRestrictionRepository;
 import com.goti.resale.repository.listing.ResaleListingRepository;
 import com.goti.resale.service.domain.ListingService;
 import com.goti.resale.service.domain.ResaleRestrictionService;
@@ -28,7 +25,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class ResaleListingService {
 	private final ResaleListingRepository listingRepository;
-	private final ResaleRestrictionRepository restrictionRepository;
+	private final com.goti.resale.repository.ResaleRestrictionRepository restrictionRepository;
 	private final ResaleRestrictionHandler restrictionHandler;
 	private final ResaleRestrictionService restrictionService;
 	private final ListingService listingService;
@@ -40,27 +37,12 @@ public class ResaleListingService {
 
 	@Transactional
 	public ResaleListingResponse cancelListing(UUID sellerId, ResaleListingCancelRequest request) {
-		ResaleListingEntity resaleListing = listingRepository.findById(request.listingId())
-			.orElseThrow(
-				() -> new CustomException(ErrorCode.LISTING_NOT_FOUND)
-			);
+		return listingService.cancelListing(sellerId, request);
+	}
 
-		ResaleRestrictionEntity resaleRestriction = restrictionService.getOrCreateRestriction(sellerId);
-
-		listingService.validateListingCancellation(
-			sellerId,
-			resaleListing,
-			resaleRestriction
-		);
-
-		resaleListing.cancel();
-
-		listingRepository.save(resaleListing);
-
-		restrictionHandler.handleAfterCancel(resaleRestriction, resaleListing.getGameId());
-		restrictionRepository.save(resaleRestriction);
-
-		return ResaleListingResponse.from(resaleListing);
+	@Transactional
+	public void cancelListingOrder(UUID sellerId, UUID listingOrderId) {
+		listingService.cancelListingOrder(sellerId, listingOrderId);
 	}
 
 	@Transactional(readOnly = true)
