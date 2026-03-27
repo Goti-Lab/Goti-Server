@@ -7,6 +7,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
@@ -27,7 +28,9 @@ import com.goti.resale.infra.TicketClient;
 import com.goti.resale.infra.dto.ResaleOrderCreatedEvent;
 import com.goti.resale.infra.dto.ResaleOrderPaymentCompletedEvent;
 import com.goti.resale.infra.dto.SettlementCompletedEvent;
+import com.goti.resale.repository.ResaleListingOrderRepository;
 import com.goti.resale.repository.ResaleRestrictionRepository;
+import com.goti.resale.repository.ResaleTransactionRepository;
 import com.goti.resale.repository.history.ResalePriceHistoryRepository;
 import com.goti.resale.repository.listing.ResaleListingRepository;
 import com.goti.resale.repository.listingorder.ResaleListingOrderRepository;
