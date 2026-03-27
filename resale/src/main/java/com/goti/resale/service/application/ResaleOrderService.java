@@ -26,6 +26,7 @@ import com.goti.resale.dto.response.ResaleOrderListResponse;
 import com.goti.resale.repository.ResaleOrderRepository;
 import com.goti.resale.repository.ResaleTransactionRepository;
 import com.goti.resale.repository.hold.ResaleHoldRepository;
+import com.goti.resale.service.domain.OrderService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -41,7 +42,7 @@ public class ResaleOrderService {
 	private final ResaleHoldRepository resaleHoldRepository;
 	private final ApplicationEventPublisher eventPublisher;
 	private final DistributedLockManager distributedLockManager;
-	private final com.goti.resale.service.domain.ResaleOrderService resaleOrderService;
+	private final OrderService orderService;
 
 	public ResaleOrderCreateResponse initOrder(
 		UUID buyerId,
@@ -55,7 +56,7 @@ public class ResaleOrderService {
 		return distributedLockManager.withLock(
 			lockKey,
 			ErrorCode.PURCHASABLE_CHECK_FAILED,
-			() -> resaleOrderService.initOrder(buyerId, holds, gameId)
+			() -> orderService.initOrder(buyerId, holds, gameId)
 		);
 	}
 

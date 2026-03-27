@@ -18,7 +18,7 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-public class ResaleHoldExpiryServiceImpl implements ResaleHoldExpiryService {
+public class HoldExpiryServiceImpl implements HoldExpiryService {
 
 	private final ResaleListingRepository resaleListingRepository;
 	private final ResaleHoldRepository resaleHoldRepository;

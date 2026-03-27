@@ -8,7 +8,7 @@ import com.goti.resale.domain.entity.resale.ResaleHoldEntity;
 import com.goti.resale.domain.entity.resale.ResaleRestrictionEntity;
 import com.goti.resale.dto.response.ResaleOrderCreateResponse;
 
-public interface ResaleOrderService {
+public interface OrderService {
 	String generateOrderNumber();
 
 	String generateResaleTicketNumber(String resaleSuffix, String num);
