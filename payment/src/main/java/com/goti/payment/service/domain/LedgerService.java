@@ -4,7 +4,7 @@ import java.util.UUID;
 
 import com.goti.payment.domain.entity.payment.PaymentLedgerEntity;
 
-public interface PaymentLedgerService {
+public interface LedgerService {
 	PaymentLedgerEntity create(
 		UUID orderId,
 		UUID paymentId,

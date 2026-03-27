@@ -16,7 +16,7 @@ import com.goti.payment.dto.request.ResalePaymentRequest;
 import com.goti.payment.dto.response.PaymentResponse;
 import com.goti.payment.repository.EscrowAccountRepository;
 import com.goti.payment.repository.PaymentLedgerRepository;
-import com.goti.payment.service.domain.PaymentLedgerService;
+import com.goti.payment.service.domain.LedgerService;
 import com.goti.payment.service.domain.PaymentService;
 import com.goti.payment.service.domain.ResaleEscrowService;
 import com.goti.payment.service.domain.ResaleService;
@@ -29,7 +29,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class ResaleOrderPaymentService {
 	private final PaymentService paymentService;
-	private final PaymentLedgerService paymentLedgerService;
+	private final LedgerService ledgerService;
 	private final PaymentLedgerRepository paymentLedgerRepository;
 	private final ResaleEscrowService resaleEscrowService;
 	private final ResaleService resaleService;
@@ -47,7 +47,7 @@ public class ResaleOrderPaymentService {
 		);
 
 		if (payment.paymentStatus() == PaymentStatus.SUCCESS) {
-			PaymentLedgerEntity ledger = paymentLedgerService.create(
+			PaymentLedgerEntity ledger = ledgerService.create(
 				request.orderId(),
 				payment.paymentId(),
 				request.totalAmount(),
