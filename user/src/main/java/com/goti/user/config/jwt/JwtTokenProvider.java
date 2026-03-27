@@ -165,6 +165,18 @@ public class JwtTokenProvider {
 		);
 	}
 
+	public long getExpiry(String token) {
+		try {
+			Date expiration = getClaims(token).getExpiration();
+			long now = new Date().getTime();
+			long diff = expiration.getTime() - now;
+
+			return Math.max(0, diff);
+		} catch (Exception e) {
+			return 0;
+		}
+	}
+
 	public String extractJti(String token) {
 		return getClaims(token).getId();
 	}
