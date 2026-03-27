@@ -36,7 +36,6 @@ public class ResaleOrderPaymentService {
 	private final ResaleEscrowService resaleEscrowService;
 	private final MockResaleEscrowClient escrowClient;
 	private final EscrowAccountRepository escrowAccountRepository;
-	private final com.goti.payment.service.domain.ResaleOrderPaymentService domainService;
 	private final ApplicationEventPublisher eventPublisher;
 
 	@Transactional
@@ -59,7 +58,7 @@ public class ResaleOrderPaymentService {
 			);
 			paymentLedgerRepository.save(ledger);
 
-			List<EscrowAccountEntity> escrows = domainService.createEscrows(request);
+			List<EscrowAccountEntity> escrows = resaleEscrowService.createEscrows(request);
 
 			for (EscrowAccountEntity escrow : escrows) {
 				String externalId = escrowClient.requestEscrowPayment(

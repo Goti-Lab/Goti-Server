@@ -7,9 +7,25 @@ import org.springframework.stereotype.Service;
 
 import com.goti.payment.constants.EscrowStatus;
 import com.goti.payment.domain.entity.payment.EscrowAccountEntity;
+import com.goti.payment.dto.request.ResalePaymentRequest;
 
 @Service
 public class ResaleEscrowServiceImpl implements ResaleEscrowService {
+
+	@Override
+	public List<EscrowAccountEntity> createEscrows(ResalePaymentRequest request) {
+		return request.items()
+			.stream()
+			.map(item ->
+				EscrowAccountEntity
+					.create(
+						item.transactionId(),
+						request.buyerId(),
+						item.sellerId(),
+						item.settlementAmount()
+					))
+			.toList();
+	}
 
 	@Override
 	public List<EscrowAccountEntity> filterHoldings(List<EscrowAccountEntity> escrows) {
