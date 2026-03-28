@@ -72,7 +72,7 @@ class QueueStatusApiTest extends PostgreSqlContainerSupport {
 			.andExpect(jsonPath("$.data.maxCapacity").value(5000))
 			.andExpect(jsonPath("$.data.activeCount").value(1900))
 			.andExpect(jsonPath("$.data.availableSlots").value(3100))
-			.andExpect(jsonPath("$.data.currentAllowedRank").value(5000))
+			.andExpect(jsonPath("$.data.currentAllowedRank").value(2000))
 			.andExpect(jsonPath("$.data.publishedRank").value(5000));
 	}
 
