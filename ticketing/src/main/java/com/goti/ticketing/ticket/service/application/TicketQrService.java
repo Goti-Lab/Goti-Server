@@ -24,6 +24,7 @@ public class TicketQrService {
 	private static final String QR_PREFIX = "QR";
 
 	private final TicketRepository ticketRepository;
+	private final TicketFreezeManagementService ticketFreezeManagementService;
 	private final RedisCache redisCache;
 
 	@Transactional(readOnly = true)
@@ -38,6 +39,11 @@ public class TicketQrService {
 
 		TicketEntity ticket = ticketRepository.findByIdAndUserId(ticketId, memberId)
 			.orElseThrow(() -> new CustomException(ErrorCode.TICKET_NOT_FOUND));
+
+		Preconditions.validate(
+			!ticketFreezeManagementService.isFrozen(ticketId),
+			ErrorCode.TICKET_FROZEN
+		);
 
 		return createQrToken(ticket);
 	}

@@ -157,6 +157,7 @@ public class PaymentEntity extends ModificationTimestampEntity {
 		);
 		this.cancellationId = cancellationId;
 		this.paymentStatus = PaymentStatus.CANCELED;
+		this.paymentType = PaymentType.REFUND;
 		this.failedReason = null;
 	}
 

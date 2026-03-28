@@ -3,6 +3,7 @@ package com.goti.resale.service.application;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
@@ -10,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.goti.constants.messages.ErrorCode;
 import com.goti.dto.internal.ResaleOrderPaymentCompletedEvent;
+import com.goti.dto.internal.SettlementCompletedEvent;
 import com.goti.exception.CustomException;
 import com.goti.global.validation.Preconditions;
 import com.goti.infra.lock.DistributedLockManager;
@@ -22,7 +24,7 @@ import com.goti.resale.domain.entity.resale.ResaleTransactionEntity;
 import com.goti.resale.dto.request.ResaleOrderRequest;
 import com.goti.resale.dto.response.ResaleOrderCompleteResponse;
 import com.goti.resale.dto.response.ResaleOrderCreateResponse;
-import com.goti.resale.infra.SettlementClient;
+import com.goti.resale.dto.response.ResaleOrderListResponse;
 import com.goti.resale.repository.ResaleOrderRepository;
 import com.goti.resale.repository.ResaleTransactionRepository;
 import com.goti.resale.repository.hold.ResaleHoldRepository;
@@ -41,7 +43,6 @@ public class ResaleOrderService {
 	private final ResaleOrderRepository resaleOrderRepository;
 	private final ResaleTransactionRepository resaleTransactionRepository;
 	private final ResaleHoldRepository resaleHoldRepository;
-	private final SettlementClient settlementClient;
 	private final ApplicationEventPublisher eventPublisher;
 	private final DistributedLockManager distributedLockManager;
 	private final ResaleOrderTransactionalService resaleOrderTransactionalService;
@@ -91,22 +92,17 @@ public class ResaleOrderService {
 
 	@Transactional
 	public void completeSettlement(UUID resaleOrderId) {
-		List<ResaleTransactionEntity> transactions = resaleTransactionRepository.findAllByResaleOrderId(resaleOrderId);
-
-		for (ResaleTransactionEntity transaction : transactions) {
-			ResaleListingEntity resaleListing = transaction.getListing();
-			resaleListing.settle();
-			resaleListingRepository.save(resaleListing);
-		}
-
-		settlementClient.processSettlement(resaleOrderId);
+		eventPublisher.publishEvent(new SettlementCompletedEvent(resaleOrderId));
+		log.info("리셀 정산 완료 이벤트 발행 - 주문 ID: {}", resaleOrderId);
 	}
 
 	@Transactional(readOnly = true)
-	public List<UUID> getTransactionIds(UUID resaleOrderId) {
-		return resaleTransactionRepository.findAllByResaleOrderId(resaleOrderId).stream()
+	public ResaleOrderListResponse getTransactionIds(UUID resaleOrderId) {
+		List<UUID> transactions = resaleTransactionRepository.findAllByResaleOrderId(resaleOrderId).stream()
 			.map(ResaleTransactionEntity::getId)
 			.toList();
+
+		return new ResaleOrderListResponse(transactions);
 	}
 
 	private List<ResaleHoldEntity> validateAndGetHolds(UUID buyerId, List<UUID> holdIds) {

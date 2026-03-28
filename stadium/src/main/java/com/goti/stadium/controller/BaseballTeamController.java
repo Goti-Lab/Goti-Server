@@ -2,9 +2,12 @@ package com.goti.stadium.controller;
 
 import static com.goti.global.api.ApiSuccessResponse.*;
 
+import java.util.List;
 import java.util.UUID;
 
 import com.goti.stadium.domain.entity.team.BaseballTeamEntity;
+
+import com.goti.stadium.dto.response.internal.BaseballTeamDisplayNameResponse;
 
 import io.swagger.v3.oas.annotations.Operation;
 
@@ -14,6 +17,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.goti.stadium.dto.request.BaseballTeamCreateRequest;
@@ -76,6 +80,15 @@ public class BaseballTeamController {
 			homeStadiumManagementService.assignHomeStadium(
 				teamId, request.stadiumId(), request.type()
 			)
+		);
+	}
+
+	@GetMapping
+	public ResponseEntity<ApiSuccessResponse<List<BaseballTeamDisplayNameResponse>>> getDisplayNamesByIds(
+		@RequestParam List<UUID> teamIds
+	) {
+		return wrap(
+			baseballTeamService.getDisplayNamesByIds(teamIds)
 		);
 	}
 

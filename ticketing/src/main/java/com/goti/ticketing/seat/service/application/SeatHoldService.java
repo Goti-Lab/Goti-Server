@@ -10,6 +10,7 @@ import com.goti.exception.CustomException;
 import com.goti.infra.lock.DistributedLockManager;
 import com.goti.global.validation.Preconditions;
 import com.goti.ticketing.seat.repository.SeatHoldRepository;
+import com.goti.ticketing.session.service.application.ReservationSessionService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -19,8 +20,11 @@ public class SeatHoldService {
 	private final SeatHoldRepository seatHoldRepository;
 	private final DistributedLockManager distributedLockManager;
 	private final SeatHoldTransactionalService seatHoldTransactionalService;
+	private final ReservationSessionService reservationSessionService;
 
 	public UUID hold(UUID gameId, UUID seatId, UUID userId, String queueTokenJti) {
+		reservationSessionService.validateActiveSession(userId, gameId);
+
 		String lockKey = buildLockKey(gameId, seatId);
 		return distributedLockManager.withLock(
 			lockKey,

@@ -7,6 +7,7 @@ import java.util.UUID;
 import com.goti.ticketing.constants.ResaleEnabledStatus;
 import com.goti.ticketing.constants.TicketStatus;
 import com.goti.ticketing.domain.entity.ticket.TicketEntity;
+import com.goti.ticketing.domain.entity.ticket.TicketFreezeEntity;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
@@ -48,6 +49,12 @@ public record TicketResponse(
 	@Schema(description = "리셀 가능 여부", example = "DISABLED")
 	ResaleEnabledStatus resaleEnabledStatus,
 
+	@Schema(description = "티켓 동결 여부", example = "false")
+	boolean frozen,
+
+	@Schema(description = "티켓 동결 종료 시각", example = "2026-03-15T22:30:00")
+	LocalDateTime frozenUntil,
+
 	@Schema(description = "티켓 발급 일시", example = "2026-03-13T10:15:30Z")
 	Instant issuedAt,
 
@@ -55,6 +62,9 @@ public record TicketResponse(
 	LocalDateTime usedAt
 ) {
 	public static TicketResponse from(TicketEntity ticket) {
+		TicketFreezeEntity activeFreeze = ticket.getFreeze();
+		boolean frozen = activeFreeze != null && activeFreeze.isActive();
+
 		return new TicketResponse(
 			ticket.getId(),
 			ticket.getTicketNumber(),
@@ -68,6 +78,8 @@ public record TicketResponse(
 			ticket.getResalePrice(),
 			ticket.getTicketStatus(),
 			ticket.getResaleEnabledStatus(),
+			frozen,
+			frozen ? activeFreeze.getFrozenUntil() : null,
 			ticket.getCreatedAt(),
 			ticket.getUsedAt()
 		);

@@ -10,6 +10,7 @@ import com.goti.exception.CustomException;
 import com.goti.global.validation.Preconditions;
 import com.goti.ticketing.order.dto.response.OrderListResponse;
 import com.goti.ticketing.order.dto.response.OrderPaymentInfoResponse;
+import com.goti.ticketing.session.service.application.ReservationSessionService;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,6 +28,7 @@ public class OrderServiceImpl implements OrderService {
 	private static final DateTimeFormatter ORDER_NUMBER_FORMATTER = DateTimeFormatter.ofPattern("yyMMdd");
 
 	private final OrderRepository orderRepository;
+	private final ReservationSessionService reservationSessionService;
 
 	@Override
 	@Transactional
@@ -79,10 +81,35 @@ public class OrderServiceImpl implements OrderService {
 			memberId != null,
 			ErrorCode.AUTH_INVALID
 		);
+		OrderEntity order = orderRepository.findByIdAndMemberId(orderId, memberId)
+			.orElseThrow(() -> new CustomException(ErrorCode.ORDER_NOT_FOUND));
+
+		reservationSessionService.validateActiveSession(memberId, order.getGameSchedule().getId());
+		return OrderPaymentInfoResponse.from(order);
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public OrderEntity get(UUID orderId, UUID memberId) {
+		Preconditions.validate(
+			memberId != null,
+			ErrorCode.AUTH_INVALID
+		);
 
 		return orderRepository.findByIdAndMemberId(orderId, memberId)
-			.map(OrderPaymentInfoResponse::from)
 			.orElseThrow(() -> new CustomException(ErrorCode.ORDER_NOT_FOUND));
+	}
+
+	@Override
+	@Transactional
+	public void cancel(OrderEntity order) {
+		order.cancel();
+	}
+
+	@Override
+	@Transactional
+	public void partialCancel(OrderEntity order) {
+		order.partialCancel();
 	}
 
 	private String generateOrderNumber() {

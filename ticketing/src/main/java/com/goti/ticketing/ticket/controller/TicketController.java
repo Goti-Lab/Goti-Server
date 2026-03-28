@@ -14,8 +14,8 @@ import org.springframework.web.bind.annotation.RestController;
 import com.goti.global.api.ApiSuccessResponse;
 import com.goti.ticketing.ticket.dto.response.TicketQrResponse;
 import com.goti.ticketing.ticket.dto.response.TicketResponse;
-import com.goti.ticketing.ticket.service.application.TicketDetailService;
 import com.goti.ticketing.ticket.service.application.TicketQrService;
+import com.goti.ticketing.ticket.service.domain.TicketService;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -26,7 +26,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/tickets")
 public class TicketController {
-	private final TicketDetailService ticketDetailService;
+	private final TicketService ticketService;
 	private final TicketQrService ticketQrService;
 
 	@Operation(
@@ -38,7 +38,7 @@ public class TicketController {
 		@PathVariable UUID ticketId,
 		@AuthenticationPrincipal(expression = "id") UUID userId
 	) {
-		return wrap(ticketDetailService.getDetail(ticketId, userId));
+		return wrap(ticketService.getDetail(ticketId, userId));
 	}
 
 	@Operation(

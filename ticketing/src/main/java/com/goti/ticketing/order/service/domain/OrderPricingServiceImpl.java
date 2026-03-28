@@ -22,7 +22,7 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 public class OrderPricingServiceImpl implements OrderPricingService {
-	private static final int PAYMENT_FEE = 1000;
+	private static final int BOOKING_FEE_PER_ITEM = 1000;
 
 	private final TicketPriceRepository ticketPriceRepository;
 
@@ -45,7 +45,7 @@ public class OrderPricingServiceImpl implements OrderPricingService {
 		int ticketTotalAmount = pricedHolds.stream()
 			.mapToInt(OrderPricingResult.PricedHold::ticketPrice)
 			.sum();
-		int totalAmount = ticketTotalAmount + PAYMENT_FEE;
+		int totalAmount = ticketTotalAmount + (pricedHolds.size() * BOOKING_FEE_PER_ITEM);
 
 		return new OrderPricingResult(totalAmount, pricedHolds);
 	}

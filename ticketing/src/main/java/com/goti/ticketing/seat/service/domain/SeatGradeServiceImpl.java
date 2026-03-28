@@ -13,8 +13,11 @@ import com.goti.global.validation.Preconditions;
 import com.goti.infra.queue.QueueAccessReader;
 import com.goti.ticketing.constants.SeatStatus;
 import com.goti.ticketing.domain.entity.seat.SeatGradeEntity;
+import com.goti.ticketing.session.model.ReservationSessionCache;
+import com.goti.ticketing.session.service.application.ReservationSessionService;
 import com.goti.ticketing.seat.dto.response.SeatGradeRegisterResponse;
 import com.goti.ticketing.seat.dto.response.SeatGradeSearchResponse;
+import com.goti.ticketing.seat.dto.response.SeatGradeSearchResultResponse;
 import com.goti.ticketing.seat.repository.SeatGradeRepository;
 import com.goti.ticketing.seat.repository.SeatStatusRepository;
 import com.goti.ticketing.seat.repository.dto.SeatGradeAvailableSeatCount;
@@ -27,6 +30,7 @@ public class SeatGradeServiceImpl implements SeatGradeService {
 	private final SeatGradeRepository seatGradeRepository;
 	private final SeatStatusRepository seatStatusRepository;
 	private final QueueAccessReader queueAccessReader;
+	private final ReservationSessionService reservationSessionService;
 
 	@Override
 	@Transactional
@@ -43,7 +47,7 @@ public class SeatGradeServiceImpl implements SeatGradeService {
 
 	@Override
 	@Transactional(readOnly = true)
-	public List<SeatGradeSearchResponse> get(UUID stadiumId, UUID gameId, UUID userId) {
+	public SeatGradeSearchResultResponse get(UUID stadiumId, UUID gameId, UUID userId) {
 		Preconditions.validate(
 			userId != null,
 			ErrorCode.AUTH_INVALID
@@ -52,6 +56,8 @@ public class SeatGradeServiceImpl implements SeatGradeService {
 			queueAccessReader.isAdmitted(gameId, userId),
 			ErrorCode.QUEUE_ADMISSION_REQUIRED
 		);
+
+		ReservationSessionCache reservationSession = reservationSessionService.getOrCreate(userId, gameId);
 
 		List<SeatGradeEntity> seatGrades = seatGradeRepository.findAllByStadiumId(stadiumId);
 		List<UUID> seatGradeIds = seatGrades.stream()
@@ -66,11 +72,13 @@ public class SeatGradeServiceImpl implements SeatGradeService {
 				count -> Math.toIntExact(count.availableSeatCount())
 			));
 
-		return seatGrades.stream()
+		List<SeatGradeSearchResponse> responses = seatGrades.stream()
 			.map(seatGrade -> SeatGradeSearchResponse.from(
 				seatGrade,
 				availableSeatCounts.getOrDefault(seatGrade.getId(), 0)
 			))
 			.toList();
+
+		return SeatGradeSearchResultResponse.from(reservationSession, responses);
 	}
 }

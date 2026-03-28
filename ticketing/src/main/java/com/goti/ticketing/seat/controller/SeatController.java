@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.goti.global.api.ApiSuccessResponse;
@@ -57,8 +58,9 @@ public class SeatController {
 	@GetMapping("/seat-sections/{sectionId}/seats")
 	public ResponseEntity<ApiSuccessResponse<List<SeatResponse>>> getSeats(
 		@AuthenticationPrincipal(expression = "id") UUID userId,
-		@PathVariable UUID sectionId
+		@PathVariable UUID sectionId,
+		@RequestParam UUID gameId
 	) {
-		return wrap(seatService.get(sectionId, userId));
+		return wrap(seatService.get(sectionId, gameId, userId));
 	}
 }
