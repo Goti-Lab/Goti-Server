@@ -69,12 +69,18 @@ public class QueueSeatEnterService {
 					throw new CustomException(ErrorCode.QUEUE_META_NOT_FOUND);
 				}
 
-				if (payload.queueNumber() > queueMeta.currentAllowedRank()) {
-					throw new CustomException(ErrorCode.QUEUE_NOT_ALLOWED_YET);
-				}
-
 				if (queueMeta.activeCount() >= queueMeta.maxCapacity()) {
 					throw new CustomException(ErrorCode.QUEUE_CAPACITY_FULL);
+				}
+
+				// publishedRank: status API와 동일한 동적 계산 (availableSlots 기반)
+				long availableSlots = Math.max(0L, queueMeta.maxCapacity() - queueMeta.activeCount());
+				long publishedRank = Math.max(
+					queueMeta.currentAllowedRank(),
+					queueMeta.lastEnteredRank() + availableSlots
+				);
+				if (payload.queueNumber() > publishedRank) {
+					throw new CustomException(ErrorCode.QUEUE_NOT_ALLOWED_YET);
 				}
 
 				QueueEntry admittedEntry = new QueueEntry(

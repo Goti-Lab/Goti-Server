@@ -122,7 +122,7 @@ class QueueSeatEnterApiTest extends PostgreSqlContainerSupport {
 	}
 
 	@Test
-	void 허용순번_아니면_seat_enter_실패() throws Exception {
+	void 수용인원_초과시_seat_enter_실패() throws Exception {
 		gameId = UUID.randomUUID();
 		userId = UUID.randomUUID();
 
@@ -139,12 +139,13 @@ class QueueSeatEnterApiTest extends PostgreSqlContainerSupport {
 
 		String queueToken = readData(enterResult).get("queueToken").asText();
 
+		// 수용인원 가득 참 → publishedRank=max(5000, 5000+0)=5000, 하지만 capacity 먼저 체크
 		redisTemplate.opsForHash().putAll(RedisKey.QUEUE_META.getKey(gameId), Map.of(
 			QueueMetaField.MAX_CAPACITY, 5000L,
-			QueueMetaField.ACTIVE_COUNT, 0L,
-			QueueMetaField.PUBLISHED_RANK, 0L,
-			QueueMetaField.CURRENT_ALLOWED_RANK, 0L,
-			QueueMetaField.LAST_ENTERED_RANK, 0L,
+			QueueMetaField.ACTIVE_COUNT, 5000L,
+			QueueMetaField.PUBLISHED_RANK, 5000L,
+			QueueMetaField.CURRENT_ALLOWED_RANK, 5000L,
+			QueueMetaField.LAST_ENTERED_RANK, 5000L,
 			QueueMetaField.UPDATED_AT, Instant.parse("2026-03-25T10:15:30Z").toString()
 		));
 
@@ -157,7 +158,7 @@ class QueueSeatEnterApiTest extends PostgreSqlContainerSupport {
 						""".formatted(queueToken))
 			)
 			.andExpect(status().isForbidden())
-			.andExpect(jsonPath("$.message").value(ErrorCode.QUEUE_NOT_ALLOWED_YET.getMessage()));
+			.andExpect(jsonPath("$.message").value(ErrorCode.QUEUE_CAPACITY_FULL.getMessage()));
 	}
 
 	private Authentication auth(UUID userId) {
