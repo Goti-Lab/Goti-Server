@@ -89,8 +89,11 @@ public class QueueLeaveService {
 	}
 
 	private void recordLeave(UUID gameId, UUID userId, LeaveReason reason, boolean released) {
-		String metricReason = reason == LeaveReason.TTL_EXPIRED ? "ttl_expired" : "voluntary";
-		meterRegistry.counter("queue.leave.total", "gameId", gameId.toString(), "reason", metricReason).increment();
+		String matchId = gameId.toString();
+		meterRegistry.counter("queue.leave.total", "match_id", matchId, "reason", reason.logValue.toLowerCase()).increment();
+		if (reason == LeaveReason.VOLUNTARY) {
+			meterRegistry.counter("queue.abandon.total", "match_id", matchId).increment();
+		}
 		log.info("action=LEAVE gameId={} userId={} reason={} released={}", gameId, userId, reason.logValue, released);
 	}
 

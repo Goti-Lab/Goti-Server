@@ -19,7 +19,6 @@ import lombok.extern.slf4j.Slf4j;
 public class QueueStatusService {
 
 	private final QueueRedisRepository queueRedisRepository;
-	private final MeterRegistry meterRegistry;
 
 	/**
 	 * 대기열 상태 조회 — 순수 읽기 전용.

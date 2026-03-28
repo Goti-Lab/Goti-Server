@@ -11,7 +11,9 @@ import com.goti.queue.repository.QueueRedisRepository;
 import com.goti.queue.service.QueueLeaveService;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class QueueExpirationScheduler {
@@ -27,15 +29,19 @@ public class QueueExpirationScheduler {
 		}
 
 		for (Object expiredUser : expiredUsers) {
-			String member = String.valueOf(expiredUser);
-			String[] parts = member.split(":");
-			if (parts.length != 2) {
-				continue;
-			}
+			try {
+				String member = String.valueOf(expiredUser);
+				String[] parts = member.split(":");
+				if (parts.length != 2) {
+					continue;
+				}
 
-			UUID gameId = UUID.fromString(parts[0]);
-			UUID userId = UUID.fromString(parts[1]);
-			queueLeaveService.expire(gameId, userId);
+				UUID gameId = UUID.fromString(parts[0]);
+				UUID userId = UUID.fromString(parts[1]);
+				queueLeaveService.expire(gameId, userId);
+			} catch (Exception e) {
+				log.warn("action=EXPIRE_SKIP member={} error={}", expiredUser, e.getMessage());
+			}
 		}
 	}
 }
