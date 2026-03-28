@@ -4,10 +4,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.verify;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-
 import java.time.Instant;
 import java.util.UUID;
 
@@ -24,7 +20,6 @@ import com.goti.queue.domain.model.QueueMeta;
 import com.goti.queue.dto.response.QueueStatusResponse;
 import com.goti.queue.repository.QueueRedisRepository;
 
-import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 @ExtendWith(MockitoExtension.class)
 class QueueStatusServiceTest {
 
@@ -41,10 +36,6 @@ class QueueStatusServiceTest {
 	void setUp() {
 		gameId = UUID.randomUUID();
 		userId = UUID.randomUUID();
-		queueStatusService = new QueueStatusService(
-			queueRedisRepository,
-			new SimpleMeterRegistry()
-		);
 	}
 
 	@Test
@@ -65,9 +56,8 @@ class QueueStatusServiceTest {
 		assertEquals(5000L, response.maxCapacity());
 		assertEquals(1900L, response.activeCount());
 		assertEquals(3100L, response.availableSlots());
-		assertEquals(5000L, response.currentAllowedRank());
-		assertEquals(5000L, response.publishedRank());
-		verify(queueRedisRepository).updateStatusMeta(eq(gameId), eq(5000L), eq(5000L), any(Instant.class));
+		assertEquals(2000L, response.currentAllowedRank());  // 읽기 전용: 입력값 그대로 반환
+		assertEquals(5000L, response.publishedRank());       // max(2000, 1900+3100) = 5000
 	}
 
 	@Test

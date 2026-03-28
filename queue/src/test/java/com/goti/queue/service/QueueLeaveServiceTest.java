@@ -100,7 +100,7 @@ class QueueLeaveServiceTest {
 		assertEquals(QueueStatus.LEFT, entryCaptor.getValue().status());
 
 		verify(queueRedisRepository).removeActiveUser(gameId, userId);
-		verify(queueRedisRepository).updateLeaveMeta(eq(gameId), eq(9L), any(Instant.class));
+		verify(queueRedisRepository).decrementActiveCount(gameId);
 	}
 
 	@Test
@@ -119,7 +119,7 @@ class QueueLeaveServiceTest {
 		assertEquals(QueueStatus.LEFT, response.status());
 
 		verify(queueRedisRepository, never()).removeActiveUser(any(), any());
-		verify(queueRedisRepository, never()).updateLeaveMeta(any(), any(Long.class), any());
+		verify(queueRedisRepository, never()).decrementActiveCount(any());
 	}
 
 	@Test
@@ -147,7 +147,7 @@ class QueueLeaveServiceTest {
 
 		verify(queueRedisRepository).saveEntry(eq(gameId), eq(userId), any(QueueEntry.class), eq(queueProperties.entryTtl()));
 		verify(queueRedisRepository).removeActiveUser(gameId, userId);
-		verify(queueRedisRepository, never()).updateLeaveMeta(any(), any(Long.class), any());
+		verify(queueRedisRepository, never()).decrementActiveCount(any());
 	}
 
 	@Test
