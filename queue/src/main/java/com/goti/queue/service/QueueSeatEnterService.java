@@ -8,7 +8,6 @@ import java.util.concurrent.TimeUnit;
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import com.goti.constants.messages.ErrorCode;
 import com.goti.exception.CustomException;
@@ -39,7 +38,6 @@ public class QueueSeatEnterService {
 	private final DistributedLockManager distributedLockManager;
 	private final MeterRegistry meterRegistry;
 
-	@Transactional
 	public QueueSeatEnterResponse enter(UUID gameId, UUID userId, QueueSeatEnterRequest request) {
 		if (userId == null) {
 			throw new CustomException(ErrorCode.AUTH_INVALID);
@@ -86,16 +84,12 @@ public class QueueSeatEnterService {
 				);
 
 				queueRedisRepository.saveEntry(gameId, userId, admittedEntry, queueProperties.admittedTtl());
-				queueRedisRepository.addActiveUser(gameId, userId, queueProperties.admittedTtl());
+				queueRedisRepository.addActiveUser(gameId, userId);
 				queueRedisRepository.addExpirationUser(gameId, userId, currentEntry.issuedAt().plus(queueProperties.admittedTtl()));
 				queueRedisRepository.removeWaiting(gameId, userId);
+				queueRedisRepository.incrementActiveCount(gameId);
+				queueRedisRepository.updateSeatEnterMeta(gameId, payload.queueNumber());
 				Instant now = Instant.now();
-				queueRedisRepository.updateSeatEnterMeta(
-					gameId,
-					queueMeta.activeCount() + 1,
-					payload.queueNumber(),
-					now
-				);
 				meterRegistry.counter("queue.seat_enter.total", "gameId", gameId.toString()).increment();
 				long waitMs = Duration.between(currentEntry.issuedAt(), now).toMillis();
 				meterRegistry.timer("queue.wait.duration", "gameId", gameId.toString())

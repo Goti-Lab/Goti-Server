@@ -7,7 +7,6 @@ import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import com.goti.constants.messages.ErrorCode;
 import com.goti.exception.CustomException;
@@ -36,7 +35,6 @@ public class QueueEnterService {
 	private final DistributedLockManager distributedLockManager;
 	private final MeterRegistry meterRegistry;
 
-	@Transactional
 	public QueueEnterResponse enter(QueueEnterRequest request, UUID userId) {
 		if (userId == null) {
 			throw new CustomException(ErrorCode.AUTH_INVALID);

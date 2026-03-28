@@ -6,7 +6,6 @@ import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import com.goti.constants.messages.ErrorCode;
 import com.goti.exception.CustomException;
@@ -33,12 +32,10 @@ public class QueueLeaveService {
 	private final DistributedLockManager distributedLockManager;
 	private final MeterRegistry meterRegistry;
 
-	@Transactional
 	public QueueLeaveResponse leave(UUID gameId, UUID userId) {
 		return processLeave(gameId, userId, LeaveReason.VOLUNTARY, true);
 	}
 
-	@Transactional
 	public QueueLeaveResponse expire(UUID gameId, UUID userId) {
 		return processLeave(gameId, userId, LeaveReason.TTL_EXPIRED, false);
 	}
@@ -80,7 +77,7 @@ public class QueueLeaveService {
 				queueRedisRepository.removeExpirationUser(gameId, userId);
 
 				if (queueMeta != null && activeUser) {
-					queueRedisRepository.updateLeaveMeta(gameId, Math.max(0L, queueMeta.activeCount() - 1), Instant.now());
+					queueRedisRepository.decrementActiveCount(gameId);
 				}
 
 				QueueStatus responseStatus = reason == LeaveReason.TTL_EXPIRED ? QueueStatus.EXPIRED : QueueStatus.LEFT;

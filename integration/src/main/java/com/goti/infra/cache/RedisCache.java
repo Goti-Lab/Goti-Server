@@ -23,8 +23,12 @@ public class RedisCache {
 		redisTemplate.opsForValue().set(key, value, ttl.toMillis(), TimeUnit.MILLISECONDS);
 	}
 
-	public <T> void set(RedisKey redisKey, T value, Object... keyParams) {
-		set(redisKey.getKey(keyParams), value, redisKey.getTtl());
+	public <T> void set(RedisKey redisKey, Object keyParam, T value) {
+		set(redisKey.getKey(keyParam), value, redisKey.getTtl());
+	}
+
+	public <T> void set(RedisKey redisKey, T value, Object[] keyParams, Duration ttl) {
+		set(redisKey.getKey(keyParams), value, ttl);
 	}
 
 	public <T> T get(String key, Class<T> clazz) {

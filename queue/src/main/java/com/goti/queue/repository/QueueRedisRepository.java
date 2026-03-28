@@ -80,7 +80,7 @@ public class QueueRedisRepository {
 		return Boolean.TRUE.equals(member);
 	}
 
-	public void addActiveUser(UUID gameId, UUID userId, Duration ttl) {
+	public void addActiveUser(UUID gameId, UUID userId) {
 		redisTemplate.opsForSet().add(
 			RedisKey.QUEUE_ACTIVE_USERS.getKey(gameId),
 			userId.toString()
@@ -150,23 +150,32 @@ public class QueueRedisRepository {
 		);
 	}
 
-	public void updateSeatEnterMeta(
-		UUID gameId,
-		long activeCount,
-		long lastEnteredRank,
-		Instant updatedAt
-	) {
-		redisTemplate.opsForHash().putAll(RedisKey.QUEUE_META.getKey(gameId), Map.of(
-			QueueMetaField.ACTIVE_COUNT, activeCount,
-			QueueMetaField.LAST_ENTERED_RANK, lastEnteredRank,
-			QueueMetaField.UPDATED_AT, updatedAt.toString()
-		));
+	public long incrementActiveCount(UUID gameId) {
+		Long result = redisTemplate.opsForHash().increment(
+			RedisKey.QUEUE_META.getKey(gameId), QueueMetaField.ACTIVE_COUNT, 1L
+		);
+		redisTemplate.opsForHash().put(
+			RedisKey.QUEUE_META.getKey(gameId), QueueMetaField.UPDATED_AT, Instant.now().toString()
+		);
+		return result == null ? 1L : result;
 	}
 
-	public void updateLeaveMeta(UUID gameId, long activeCount, Instant updatedAt) {
-		redisTemplate.opsForHash().putAll(RedisKey.QUEUE_META.getKey(gameId), Map.of(
-			QueueMetaField.ACTIVE_COUNT, activeCount,
-			QueueMetaField.UPDATED_AT, updatedAt.toString()
+	public long decrementActiveCount(UUID gameId) {
+		Long result = redisTemplate.opsForHash().increment(
+			RedisKey.QUEUE_META.getKey(gameId), QueueMetaField.ACTIVE_COUNT, -1L
+		);
+		redisTemplate.opsForHash().put(
+			RedisKey.QUEUE_META.getKey(gameId), QueueMetaField.UPDATED_AT, Instant.now().toString()
+		);
+		return result == null ? 0L : Math.max(0L, result);
+	}
+
+	public void updateSeatEnterMeta(UUID gameId, long lastEnteredRank) {
+		String metaKey = RedisKey.QUEUE_META.getKey(gameId);
+		redisTemplate.opsForHash().putAll(metaKey, Map.of(
+			QueueMetaField.LAST_ENTERED_RANK, lastEnteredRank,
+			QueueMetaField.CURRENT_ALLOWED_RANK, lastEnteredRank,
+			QueueMetaField.UPDATED_AT, Instant.now().toString()
 		));
 	}
 

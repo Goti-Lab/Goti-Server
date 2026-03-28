@@ -1,6 +1,5 @@
 package com.goti.queue.service;
 
-import java.time.Instant;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
@@ -11,8 +10,6 @@ import com.goti.queue.domain.model.QueueMeta;
 import com.goti.queue.dto.response.QueueStatusResponse;
 import com.goti.queue.repository.QueueRedisRepository;
 
-import io.micrometer.core.instrument.MeterRegistry;
-import io.micrometer.core.instrument.Tags;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -24,6 +21,11 @@ public class QueueStatusService {
 	private final QueueRedisRepository queueRedisRepository;
 	private final MeterRegistry meterRegistry;
 
+	/**
+	 * 대기열 상태 조회 — 순수 읽기 전용.
+	 * Redis 쓰기 없음 → CDN TTL 캐시 적용 가능.
+	 * publishedRank는 메타의 currentAllowedRank + availableSlots로 동적 계산만 하고 저장하지 않는다.
+	 */
 	public QueueStatusResponse getStatus(UUID gameId, UUID userId) {
 		if (userId == null) {
 			throw new CustomException(ErrorCode.AUTH_INVALID);
@@ -35,22 +37,14 @@ public class QueueStatusService {
 		}
 
 		long availableSlots = Math.max(0L, queueMeta.maxCapacity() - queueMeta.activeCount());
-		long currentAllowedRank = Math.max(
+		long publishedRank = Math.max(
 			queueMeta.currentAllowedRank(),
 			queueMeta.lastEnteredRank() + availableSlots
 		);
-		long publishedRank = currentAllowedRank;
-		long waitingCount = queueRedisRepository.countWaitingUsers(gameId);
-		Instant updatedAt = Instant.now();
-		queueRedisRepository.updateStatusMeta(gameId, currentAllowedRank, publishedRank, updatedAt);
-		meterRegistry.gauge("queue.waiting.size", Tags.of("gameId", gameId.toString()),
-			queueMeta.maxCapacity() - queueMeta.activeCount());
-		meterRegistry.gauge("queue.active.size", Tags.of("gameId", gameId.toString()),
-			queueMeta.activeCount());
+
 		log.debug(
-			"action=STATUS gameId={} waitingCount={} activeCount={} availableSlots={} publishedRank={}",
+			"action=STATUS gameId={} activeCount={} availableSlots={} publishedRank={}",
 			gameId,
-			waitingCount,
 			queueMeta.activeCount(),
 			availableSlots,
 			publishedRank
@@ -61,9 +55,9 @@ public class QueueStatusService {
 			queueMeta.maxCapacity(),
 			queueMeta.activeCount(),
 			availableSlots,
-			currentAllowedRank,
+			queueMeta.currentAllowedRank(),
 			publishedRank,
-			updatedAt
+			queueMeta.updatedAt()
 		);
 	}
 }
