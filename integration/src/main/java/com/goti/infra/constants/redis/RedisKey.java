@@ -17,9 +17,8 @@ public enum RedisKey {
 	QUEUE_META("queue:%s:meta", null),
 	QUEUE_ENTRY("queue:%s:entry:%s", Duration.ofMinutes(30)),
 	QUEUE_ACTIVE_USERS("queue:%s:active-users", null),
-	QUEUE_EXPIRATION_USERS("queue:expiration:users", null);
-	RESERVATION_SESSION("ticketing:reservation-session:", Duration.ofMinutes(10)),
-	REFRESH_TOKEN("auth:refresh-token:", Duration.ofDays(7));
+	QUEUE_EXPIRATION_USERS("queue:expiration:users", null),
+	RESERVATION_SESSION("ticketing:reservation-session:", Duration.ofMinutes(10));
 
 	private final String prefix;
 
