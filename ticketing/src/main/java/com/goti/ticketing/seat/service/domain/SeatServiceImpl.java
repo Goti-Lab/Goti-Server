@@ -12,6 +12,7 @@ import com.goti.ticketing.domain.entity.seat.SeatEntity;
 import com.goti.ticketing.domain.entity.seat.SeatSectionEntity;
 import com.goti.exception.CustomException;
 import com.goti.global.validation.Preconditions;
+import com.goti.ticketing.session.service.application.ReservationSessionService;
 import com.goti.ticketing.seat.dto.response.BulkCreateSeatsResponse;
 import com.goti.ticketing.seat.dto.response.SeatResponse;
 import com.goti.ticketing.seat.repository.SeatRepository;
@@ -26,6 +27,7 @@ public class SeatServiceImpl implements SeatService {
 
 	private final SeatSectionRepository seatSectionRepository;
 	private final SeatRepository seatRepository;
+	private final ReservationSessionService reservationSessionService;
 
 	@Override
 	@Transactional
@@ -87,11 +89,12 @@ public class SeatServiceImpl implements SeatService {
 
 	@Override
 	@Transactional(readOnly = true)
-	public List<SeatResponse> get(UUID sectionId, UUID userId) {
+	public List<SeatResponse> get(UUID sectionId, UUID gameId, UUID userId) {
 		Preconditions.validate(
 			userId != null,
 			ErrorCode.AUTH_INVALID
 		);
+		reservationSessionService.validateActiveSession(userId, gameId);
 
 		return seatRepository.findAllBySection(sectionId).stream()
 			.map(SeatResponse::from)

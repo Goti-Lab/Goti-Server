@@ -37,7 +37,7 @@ public class SeatHoldExpiryScheduler {
 
 				if (result.attempted() > 0) {
 					log.info(
-						"좌석 점유 만료 처리 완료. attempted={}, succeeded={}, failed={}",
+						"action=HOLD_RELEASE_BATCH attempted={} succeeded={} failed={}",
 						result.attempted(),
 						result.succeeded(),
 						result.failed()
@@ -46,7 +46,7 @@ public class SeatHoldExpiryScheduler {
 
 				if (result.failed() > 0) {
 					log.warn(
-						"좌석 점유 만료 처리 중 실패 발생. attempted={}, succeeded={}, failed={}",
+						"action=HOLD_RELEASE_BATCH attempted={} succeeded={} failed={}",
 						result.attempted(),
 						result.succeeded(),
 						result.failed()
@@ -56,7 +56,7 @@ public class SeatHoldExpiryScheduler {
 		);
 
 		if (!acquired) {
-			log.debug("좌석 만료 스케줄러 락을 획득하지 못해 이번 실행을 건너뜁니다.");
+			log.debug("action=LOCK_TIMEOUT operation=SEAT_HOLD_EXPIRY_JOB");
 		}
 	}
 }

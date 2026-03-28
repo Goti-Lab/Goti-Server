@@ -14,12 +14,14 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.goti.global.api.ApiSuccessResponse;
 import com.goti.ticketing.seat.dto.request.CreateSeatGradeRequest;
 import com.goti.ticketing.seat.dto.request.CreateSeatSectionRequest;
 import com.goti.ticketing.seat.dto.response.SeatGradeSearchResponse;
+import com.goti.ticketing.seat.dto.response.SeatGradeSearchResultResponse;
 import com.goti.ticketing.seat.dto.response.SeatSectionResponse;
 import com.goti.ticketing.seat.service.domain.SeatGradeService;
 import com.goti.ticketing.seat.service.domain.SeatSectionService;
@@ -59,7 +61,7 @@ public class StadiumSeatController {
 		description = "구장별 좌석 등급 조회 API"
 	)
 	@GetMapping("/stadiums/{stadiumId}/games/{gameId}/seat-grades")
-	public ResponseEntity<ApiSuccessResponse<List<SeatGradeSearchResponse>>> getSeatGrades(
+	public ResponseEntity<ApiSuccessResponse<SeatGradeSearchResultResponse>> getSeatGrades(
 		@AuthenticationPrincipal(expression = "id") UUID userId,
 		@PathVariable UUID stadiumId,
 		@PathVariable UUID gameId
@@ -92,8 +94,9 @@ public class StadiumSeatController {
 	@GetMapping("/stadiums/{stadiumId}/seat-sections")
 	public ResponseEntity<ApiSuccessResponse<List<SeatSectionResponse>>> getSeatSections(
 		@AuthenticationPrincipal(expression = "id") UUID userId,
-		@PathVariable UUID stadiumId
+		@PathVariable UUID stadiumId,
+		@RequestParam UUID gameId
 	) {
-		return wrap(seatSectionService.get(stadiumId, userId));
+		return wrap(seatSectionService.get(stadiumId, gameId, userId));
 	}
 }

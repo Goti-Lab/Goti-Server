@@ -7,6 +7,7 @@ import java.util.UUID;
 
 import com.goti.ticketing.domain.entity.order.OrderItemEntity;
 import com.goti.ticketing.domain.entity.ticket.TicketEntity;
+import com.goti.ticketing.ticket.dto.response.TicketResponse;
 
 public interface TicketService {
 	TicketEntity create(
@@ -25,4 +26,11 @@ public interface TicketService {
 	Map<UUID, TicketEntity> getByOrderItemIds(List<UUID> orderItemIds);
 
 	void invalidate(TicketEntity ticket);
+
+	TicketResponse getDetail(
+		UUID ticketId,
+		UUID userId
+	);
+
+	TicketEntity get(UUID ticketId);
 }

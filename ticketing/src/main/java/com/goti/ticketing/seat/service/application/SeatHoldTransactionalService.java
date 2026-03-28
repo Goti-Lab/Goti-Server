@@ -3,6 +3,8 @@ package com.goti.ticketing.seat.service.application;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,6 +22,7 @@ import com.goti.ticketing.seat.repository.SeatStatusRepository;
 
 import lombok.RequiredArgsConstructor;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class SeatHoldTransactionalService {
@@ -35,12 +38,11 @@ public class SeatHoldTransactionalService {
 				gameScheduleRepository.getReferenceById(gameId),
 				seatRepository.getReferenceById(seatId)
 			)
-			.orElseThrow(() -> new CustomException(ErrorCode.SEAT_STATUS_NOT_FOUND));
+			.orElseThrow(() -> blocked(gameId, userId, seatId, ErrorCode.SEAT_STATUS_NOT_FOUND));
 
-		Preconditions.validate(
-			seatStatus.getStatus() == SeatStatus.AVAILABLE,
-			ErrorCode.SEAT_ALREADY_SELECTED
-		);
+		if (seatStatus.getStatus() != SeatStatus.AVAILABLE) {
+			throw blocked(gameId, userId, seatId, ErrorCode.SEAT_ALREADY_SELECTED);
+		}
 
 		seatStatus.hold();
 		seatStatusRepository.save(seatStatus);
@@ -54,7 +56,17 @@ public class SeatHoldTransactionalService {
 			LocalDateTime.now().plus(seatHoldProperties.ttl())
 		);
 
-		return seatHoldRepository.save(seatHold).getId();
+		UUID holdId = seatHoldRepository.save(seatHold).getId();
+		log.info("action=SEAT_HOLD gameId={} userId={} seatId={} holdId={}", gameId, userId, seatId, holdId);
+		return holdId;
+	}
+
+	private CustomException blocked(UUID gameId, UUID userId, UUID seatId, ErrorCode errorCode) {
+		return new CustomException(errorCode)
+			.withContext("action", "SEAT_HOLD_BLOCKED")
+			.withContext("gameId", gameId)
+			.withContext("userId", userId)
+			.withContext("seatId", seatId);
 	}
 
 	@Transactional

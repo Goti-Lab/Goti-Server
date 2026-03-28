@@ -19,6 +19,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Index;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -85,6 +86,9 @@ public class TicketEntity extends ModificationTimestampEntity {
 
 	@Column
 	private LocalDateTime usedAt;
+
+	@OneToOne(mappedBy = "ticket")
+	private TicketFreezeEntity freeze;
 
 	private TicketEntity(
 		String ticketNumber,
@@ -199,5 +203,9 @@ public class TicketEntity extends ModificationTimestampEntity {
 			"발행 완료 상태의 티켓만 취소할 수 있습니다."
 		);
 		this.ticketStatus = TicketStatus.INVALID;
+	}
+
+	public boolean isFrozen() {
+		return freeze != null && freeze.isActive();
 	}
 }

@@ -43,7 +43,7 @@ public class OrderPaymentConfirmService {
 		String pgTid
 	) {
 		log.info(
-			"주문 결제 완료 처리 시작 - orderId: {}, userId: {}, paymentId: {}, pgTid: {}",
+			"action=PAYMENT_CONFIRM_START orderId={} userId={} paymentId={} pgTid={}",
 			orderId,
 			userId,
 			paymentId,
@@ -72,6 +72,14 @@ public class OrderPaymentConfirmService {
 
 		List<TicketResponse> tickets = ticketCreateService.create(order);
 
+		log.info(
+			"action=PAYMENT_CONFIRM gameId={} userId={} orderId={} ticketCount={}",
+			order.getGameSchedule().getId(),
+			order.getMemberId(),
+			order.getId(),
+			tickets.size()
+		);
+
 		return OrderPaymentConfirmResponse.from(
 			order.getId(),
 			order.getOrderStatus(),
@@ -90,9 +98,14 @@ public class OrderPaymentConfirmService {
 			.filter(seatHold -> seatHold.getExpiredAt().isAfter(LocalDateTime.now()))
 			.isPresent();
 
-		Preconditions.validate(
-			activeHoldExists,
-			ErrorCode.SEAT_HOLD_EXPIRED
-		);
+		if (!activeHoldExists) {
+			throw new CustomException(ErrorCode.SEAT_HOLD_EXPIRED)
+				.withContext("action", "SESSION_BLOCK")
+				.withContext("stage", "PAYMENT_CONFIRM")
+				.withContext("gameId", order.getGameSchedule().getId())
+				.withContext("userId", order.getMemberId())
+				.withContext("orderId", order.getId())
+				.withContext("seatId", orderItem.getSeat().getId());
+		}
 	}
 }
