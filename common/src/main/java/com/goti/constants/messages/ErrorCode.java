@@ -93,6 +93,8 @@ public enum ErrorCode {
 	TICKET_PRICE_NOT_FOUND(HttpStatus.NOT_FOUND, "적용 가능한 티켓 가격을 찾을 수 없습니다."),
 	TICKET_NOT_FOUND(HttpStatus.NOT_FOUND, "티켓을 찾을 수 없습니다."),
 	TICKET_ALREADY_USED(HttpStatus.BAD_REQUEST, "이미 사용 완료된 티켓은 환불할 수 없습니다."),
+	TICKET_FROZEN(HttpStatus.FORBIDDEN, "동결된 티켓은 QR을 발급할 수 없습니다."),
+	TICKET_CANCELLATION_BLOCKED_BY_FREEZE(HttpStatus.FORBIDDEN, "동결된 티켓은 취소할 수 없습니다."),
 	DUPLICATE_HOLD_ID_REQUEST(HttpStatus.BAD_REQUEST, "같은 좌석이 중복 선택되었습니다."),
 	ORDER_SEAT_ALREADY_EXISTS(HttpStatus.CONFLICT, "이미 주문된 좌석이 포함되어 있습니다."),
 

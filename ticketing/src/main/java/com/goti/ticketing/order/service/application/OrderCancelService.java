@@ -34,6 +34,8 @@ import com.goti.ticketing.order.service.domain.OrderCancellationRefundPolicy;
 import com.goti.ticketing.order.service.domain.OrderItemService;
 import com.goti.ticketing.order.service.domain.OrderService;
 import com.goti.ticketing.seat.service.domain.SeatStatusService;
+import com.goti.ticketing.ticket.service.domain.TicketFreezeInfo;
+import com.goti.ticketing.ticket.service.domain.TicketFreezeService;
 import com.goti.ticketing.ticket.service.domain.TicketService;
 
 import lombok.RequiredArgsConstructor;
@@ -51,6 +53,7 @@ public class OrderCancelService {
 	private final OrderCancellationItemService orderCancellationItemService;
 	private final OrderCancellationRefundPolicy refundPolicy;
 	private final TicketService ticketService;
+	private final TicketFreezeService ticketFreezeService;
 	private final SeatStatusService seatStatusService;
 	private final PaymentApiClient paymentApiClient;
 	private final GameStatusRepository gameStatusRepository;
@@ -210,6 +213,14 @@ public class OrderCancelService {
 				ticket.getTicketStatus() != TicketStatus.USED,
 				ErrorCode.TICKET_ALREADY_USED
 			);
+
+			TicketFreezeInfo currentFreeze = ticketFreezeService.getCurrentFreeze(ticket.getId());
+			if (currentFreeze != null) {
+				throw new CustomException(
+					ErrorCode.TICKET_CANCELLATION_BLOCKED_BY_FREEZE,
+					currentFreeze.freezeReason().getDescription() + " 사유로 동결된 티켓은 취소할 수 없습니다."
+				);
+			}
 		}
 	}
 
