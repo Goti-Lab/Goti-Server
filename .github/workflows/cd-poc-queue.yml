@@ -26,11 +26,12 @@ on:
         type: string
         default: "auto"
       build_module:
-        description: "빌드할 모듈 (queue: MSA 큐 모듈, api: 모놀리스 전체)"
+        description: "빌드할 모듈 (queue: MSA 큐, ticketing: MSA 티켓팅, api: 모놀리스)"
         required: true
         type: choice
         options:
           - queue
+          - ticketing
           - api
         default: queue
 
@@ -88,10 +89,10 @@ jobs:
       - name: Build ${{ inputs.build_module || 'queue' }} bootJar
         run: |
           MODULE="${{ inputs.build_module || 'queue' }}"
-          if [ "$MODULE" = "queue" ]; then
-            ./gradlew :queue:bootJar -Pmsa --no-daemon -x test
+          if [ "$MODULE" = "api" ]; then
+            ./gradlew :api:bootJar --no-daemon -x test
           else
-            ./gradlew :${MODULE}:bootJar --no-daemon -x test
+            ./gradlew :${MODULE}:bootJar -Pmsa --no-daemon -x test
           fi
 
       - name: Configure AWS credentials (OIDC)
