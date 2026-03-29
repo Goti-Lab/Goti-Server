@@ -7,7 +7,6 @@ import java.util.Set;
 import java.util.UUID;
 
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.serializer.RedisSerializer;
 import org.springframework.stereotype.Repository;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -24,6 +23,10 @@ public class QueueRedisRepository {
 
 	private final RedisTemplate<String, Object> redisTemplate;
 	private final ObjectMapper objectMapper;
+
+	// Lua script ARGV 직렬화용 — GenericJackson2JsonRedisSerializer는 ARGV를
+	// JSON 직렬화하여 Hash 필드명과 불일치. StringRedisTemplate은 plain string 전달.
+	private final org.springframework.data.redis.core.StringRedisTemplate stringRedisTemplate;
 
 	public QueueEntry getEntry(UUID gameId, UUID userId) {
 		Object value = redisTemplate.opsForValue().get(RedisKey.QUEUE_ENTRY.getKey(gameId, userId));
@@ -169,14 +172,10 @@ public class QueueRedisRepository {
 			"  return 0 " +
 			"end";
 
-		// WHY: RedisTemplate의 valueSerializer가 GenericJackson2JsonRedisSerializer라서
-		// ARGV가 JSON 직렬화됨 ("\"maxCapacity\""). Hash 필드명은 StringRedisSerializer로
-		// 저장되어 plain string이므로, Lua script에서 HGET 시 필드를 못 찾음.
-		// StringRedisSerializer를 명시적으로 지정하여 ARGV를 plain string으로 전달.
-		Long result = redisTemplate.execute(
+		// WHY: redisTemplate(GenericJackson2Json)은 ARGV를 JSON 직렬화하여
+		// Hash 필드명("maxCapacity")과 불일치. StringRedisTemplate으로 plain string 전달.
+		Long result = stringRedisTemplate.execute(
 			org.springframework.data.redis.core.script.RedisScript.of(script, Long.class),
-			RedisSerializer.string(),
-			RedisSerializer.string(),
 			java.util.List.of(RedisKey.QUEUE_META.getKey(gameId)),
 			QueueMetaField.ACTIVE_COUNT,
 			QueueMetaField.MAX_CAPACITY,
