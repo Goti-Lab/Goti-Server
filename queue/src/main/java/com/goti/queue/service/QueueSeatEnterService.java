@@ -97,8 +97,8 @@ public class QueueSeatEnterService {
 				queueRedisRepository.updateSeatEnterMeta(gameId, payload.queueNumber());
 				Instant now = Instant.now();
 				String matchId = gameId.toString();
-				meterRegistry.counter("queue.seat_enter.total", "match_id", matchId).increment();
-				meterRegistry.counter("seat.enter.verify.total", "match_id", matchId, "result", "pass").increment();
+				meterRegistry.counter("queue.seat_enter", "match_id", matchId).increment();
+				meterRegistry.counter("seat.enter.verify", "match_id", matchId, "result", "pass").increment();
 				long waitMs = Duration.between(currentEntry.issuedAt(), now).toMillis();
 				meterRegistry.timer("queue.wait.duration", "match_id", matchId)
 					.record(waitMs, TimeUnit.MILLISECONDS);
@@ -113,7 +113,7 @@ public class QueueSeatEnterService {
 				);
 			});
 		} catch (CustomException e) {
-			meterRegistry.counter("seat.enter.verify.total", "match_id", gameId.toString(), "result", "fail").increment();
+			meterRegistry.counter("seat.enter.verify", "match_id", gameId.toString(), "result", "fail").increment();
 			log.info("action=SEAT_ENTER_BLOCKED gameId={} userId={} reason={}", gameId, userId, e.error().name());
 			throw e;
 		}

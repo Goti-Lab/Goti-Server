@@ -50,7 +50,7 @@ public class QueueEnterService {
 			QueueEntry existingEntry = queueRedisRepository.getEntry(request.gameId(), userId);
 			Long previousQueueNumber = existingEntry == null ? null : existingEntry.queueNumber();
 			if (existingEntry != null) {
-				meterRegistry.counter("queue.enter.duplicate.total", "match_id", matchId).increment();
+				meterRegistry.counter("queue.enter.duplicate", "match_id", matchId).increment();
 				queueRedisRepository.removeWaiting(request.gameId(), userId);
 				queueRedisRepository.deleteEntry(request.gameId(), userId);
 			}
@@ -94,8 +94,8 @@ public class QueueEnterService {
 		}
 		log.info("action=ENTER gameId={} userId={} queueNumber={}", request.gameId(), userId, response.queueNumber());
 		String matchId = request.gameId().toString();
-		meterRegistry.counter("queue.enter.total", "match_id", matchId).increment();
-		meterRegistry.counter("queue.token.issued.total", "match_id", matchId).increment();
+		meterRegistry.counter("queue.enter", "match_id", matchId).increment();
+		meterRegistry.counter("queue.token.issued", "match_id", matchId).increment();
 
 		return response;
 	}
