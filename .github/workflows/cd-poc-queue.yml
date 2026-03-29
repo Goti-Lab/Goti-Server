@@ -25,6 +25,14 @@ on:
         required: false
         type: string
         default: "auto"
+      build_module:
+        description: "빌드할 모듈 (queue: MSA 큐 모듈, api: 모놀리스 전체)"
+        required: true
+        type: choice
+        options:
+          - queue
+          - api
+        default: queue
 
 env:
   AWS_REGION: ap-northeast-2
@@ -77,8 +85,14 @@ jobs:
           distribution: temurin
           java-version: 21
 
-      - name: Build queue bootJar
-        run: ./gradlew :queue:bootJar -Pmsa --no-daemon -x test
+      - name: Build ${{ inputs.build_module || 'queue' }} bootJar
+        run: |
+          MODULE="${{ inputs.build_module || 'queue' }}"
+          if [ "$MODULE" = "queue" ]; then
+            ./gradlew :queue:bootJar -Pmsa --no-daemon -x test
+          else
+            ./gradlew :${MODULE}:bootJar --no-daemon -x test
+          fi
 
       - name: Configure AWS credentials (OIDC)
         uses: aws-actions/configure-aws-credentials@v4
@@ -110,7 +124,7 @@ jobs:
         with:
           context: .
           push: true
-          build-args: MODULE=queue
+          build-args: MODULE=${{ inputs.build_module || 'queue' }}
           tags: ${{ steps.tag.outputs.image }}
           cache-from: type=gha,scope=poc-queue-${{ matrix.author }}
           cache-to: type=gha,mode=max,scope=poc-queue-${{ matrix.author }}
@@ -165,5 +179,6 @@ jobs:
           echo "|------|-----|" >> "$GITHUB_STEP_SUMMARY"
           echo "| 구현체 | ${{ matrix.author }} |" >> "$GITHUB_STEP_SUMMARY"
           echo "| 브랜치 | \`${{ matrix.branch }}\` |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| 빌드 모듈 | \`${{ inputs.build_module || 'queue' }}\` |" >> "$GITHUB_STEP_SUMMARY"
           echo "| 이미지 태그 | \`${{ steps.tag.outputs.tag }}\` |" >> "$GITHUB_STEP_SUMMARY"
           echo "| 전체 이미지 | \`${{ steps.tag.outputs.image }}\` |" >> "$GITHUB_STEP_SUMMARY"
