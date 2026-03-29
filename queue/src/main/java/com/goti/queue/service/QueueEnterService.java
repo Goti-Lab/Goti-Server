@@ -81,7 +81,6 @@ public class QueueEnterService {
 			);
 		}
 		log.info("action=ENTER gameId={} userId={} queueNumber={}", request.gameId(), userId, response.queueNumber());
-		String matchId = request.gameId().toString();
 		meterRegistry.counter("queue.enter", "match_id", matchId).increment();
 		meterRegistry.counter("queue.token.issued", "match_id", matchId).increment();
 
