@@ -6,5 +6,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class SecurityPathConstants {
 
-	public static final String[] PUBLIC_URLS = {};
+	public static final String[] PUBLIC_URLS = {
+		"/actuator/prometheus"
+	};
 }

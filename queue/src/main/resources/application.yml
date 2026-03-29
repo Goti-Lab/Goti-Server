@@ -37,8 +37,6 @@ spring:
       - optional:file:.env[.properties]
 
 management:
-  server:
-    port: 9090
   endpoints:
     web:
       exposure:
