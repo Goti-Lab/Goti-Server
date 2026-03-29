@@ -45,7 +45,7 @@ public class ResaleOrderEventListener {
 	private final ResalePriceHistoryRepository priceHistoryRepository;
 	private final ResaleRestrictionRepository restrictionRepository;
 	private final ResaleRestrictionHandler restrictionHandler;
-	private final ResaleRestrictionService restrictionDomainService;
+	private final ResaleRestrictionService restrictionService;
 	private final PaymentService paymentService;
 	private final TicketClient ticketClient;
 
@@ -73,7 +73,7 @@ public class ResaleOrderEventListener {
 		List<ResaleListingEntity> resaleListings = new ArrayList<>();
 		List<ResalePriceHistoryEntity> priceHistories = new ArrayList<>();
 
-		ResaleRestrictionEntity restriction = restrictionDomainService.getOrCreateRestriction(event.buyerId());
+		ResaleRestrictionEntity restriction = restrictionService.getOrCreateRestriction(event.buyerId());
 
 		for (ResaleTransactionEntity transaction : transactions) {
 			ResaleListingEntity resaleListing = transaction.getListing();
