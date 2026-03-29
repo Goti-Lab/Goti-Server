@@ -5,14 +5,15 @@ import java.util.UUID;
 import org.springframework.stereotype.Service;
 
 import com.goti.constants.messages.ErrorCode;
+import com.goti.exception.CustomException;
+import com.goti.global.validation.Preconditions;
+import com.goti.infra.lock.DistributedLockManager;
 import com.goti.resale.domain.entity.resale.ResaleHoldEntity;
 import com.goti.resale.dto.request.ResaleHoldRequest;
 import com.goti.resale.dto.response.ResaleHoldResponse;
 import com.goti.resale.dto.response.ResaleReleaseResponse;
-import com.goti.exception.CustomException;
-import com.goti.global.validation.Preconditions;
-import com.goti.infra.lock.DistributedLockManager;
 import com.goti.resale.repository.hold.ResaleHoldRepository;
+import com.goti.resale.service.domain.HoldService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,12 +24,12 @@ import lombok.extern.slf4j.Slf4j;
 public class ResaleHoldService {
 	private final ResaleHoldRepository resaleHoldRepository;
 	private final DistributedLockManager distributedLockManager;
-	private final ResaleHoldTransactionalService resaleHoldTransactionalService;
+	private final HoldService holdService;
 
 	public ResaleHoldResponse holdResale(UUID buyerId, ResaleHoldRequest request) {
 		String lockKey = buildLockKey(request.listingId());
 		return distributedLockManager.withLock(
-			lockKey, () -> resaleHoldTransactionalService.hold(buyerId, request));
+			lockKey, () -> holdService.hold(buyerId, request));
 	}
 
 	public ResaleReleaseResponse releaseResaleHold(UUID buyerId, UUID holdId) {
@@ -42,7 +43,7 @@ public class ResaleHoldService {
 
 		return distributedLockManager.withLock(
 			lockKey,
-			() -> resaleHoldTransactionalService.release(holdId)
+			() -> holdService.release(holdId)
 		);
 	}
 

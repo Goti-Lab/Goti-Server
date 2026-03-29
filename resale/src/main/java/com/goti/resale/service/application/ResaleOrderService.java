@@ -3,7 +3,6 @@ package com.goti.resale.service.application;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
@@ -18,7 +17,6 @@ import com.goti.infra.lock.DistributedLockManager;
 import com.goti.resale.constants.ResaleHoldStatus;
 import com.goti.resale.constants.ResaleOrderStatus;
 import com.goti.resale.domain.entity.resale.ResaleHoldEntity;
-import com.goti.resale.domain.entity.resale.ResaleListingEntity;
 import com.goti.resale.domain.entity.resale.ResaleOrderEntity;
 import com.goti.resale.domain.entity.resale.ResaleTransactionEntity;
 import com.goti.resale.dto.request.ResaleOrderRequest;
@@ -28,7 +26,7 @@ import com.goti.resale.dto.response.ResaleOrderListResponse;
 import com.goti.resale.repository.ResaleOrderRepository;
 import com.goti.resale.repository.ResaleTransactionRepository;
 import com.goti.resale.repository.hold.ResaleHoldRepository;
-import com.goti.resale.repository.listing.ResaleListingRepository;
+import com.goti.resale.service.domain.OrderService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -39,13 +37,12 @@ import lombok.extern.slf4j.Slf4j;
 public class ResaleOrderService {
 	private static final String LOCK_KEY_PREFIX = "lock:resale:order:";
 
-	private final ResaleListingRepository resaleListingRepository;
 	private final ResaleOrderRepository resaleOrderRepository;
 	private final ResaleTransactionRepository resaleTransactionRepository;
 	private final ResaleHoldRepository resaleHoldRepository;
 	private final ApplicationEventPublisher eventPublisher;
 	private final DistributedLockManager distributedLockManager;
-	private final ResaleOrderTransactionalService resaleOrderTransactionalService;
+	private final OrderService orderService;
 
 	public ResaleOrderCreateResponse initOrder(
 		UUID buyerId,
@@ -59,7 +56,7 @@ public class ResaleOrderService {
 		return distributedLockManager.withLock(
 			lockKey,
 			ErrorCode.PURCHASABLE_CHECK_FAILED,
-			() -> resaleOrderTransactionalService.initOrder(buyerId, holds, gameId)
+			() -> orderService.initOrder(buyerId, holds, gameId)
 		);
 	}
 

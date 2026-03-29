@@ -74,7 +74,7 @@ public class ResaleListingEntity extends ModificationTimestampEntity {
 
 	private LocalDateTime canceledAt;
 
-	public ResaleListingEntity(
+	private ResaleListingEntity(
 		UUID ticketId,
 		UUID sellerId,
 		UUID gameId,
