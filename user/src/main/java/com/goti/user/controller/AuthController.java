@@ -12,6 +12,7 @@ import com.goti.infra.api.dto.response.common.SocialStateResponse;
 
 import com.goti.user.service.auth.application.SocialAuthService;
 
+import com.goti.user.service.domain.auth.AuthService;
 import com.goti.user.util.CookieProvider;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -29,6 +30,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -41,6 +43,7 @@ import static com.goti.global.api.ApiSuccessResponse.*;
 public class AuthController {
 
 	private final SocialAuthService socialAuthService;
+	private final AuthService authService;
 	private final CookieProvider cookieProvider;
 
 	@Operation(
@@ -85,7 +88,7 @@ public class AuthController {
 
 	@Operation(
 		summary = "회원 가입 및 사용자 식별",
-		description = "사용자 정보 등록(가입) 또는 기존 계정 식별 및 인증번호 검증 API"
+		description = "회원 정보 등록(가입) 또는 기존 계정 식별 및 인증번호 검증 API"
 	)
 	@PostMapping("/signup")
 	public ResponseEntity<ApiSuccessResponse<TokenResponse>> signup(
@@ -100,6 +103,25 @@ public class AuthController {
 			request.authCode()
 		);
 		return handleTokenResponse(tokens, response);
+	}
+
+	@Operation(
+		summary = "회원 로그아웃",
+		description = "기존 회원 AccessToken 블랙리스트 등록 및 RefreshToken 쿠키 삭제 API"
+	)
+	@PostMapping("/logout")
+	public ResponseEntity<ApiSuccessResponse<Void>> logout(
+		@RequestHeader(HttpHeaders.AUTHORIZATION) String authHeader,
+		@CookieValue(name = "refreshToken") String refreshToken,
+		HttpServletResponse response
+	) {
+		String accessToken = authHeader.substring(7);
+		authService.logout(accessToken, refreshToken);
+
+		ResponseCookie cookie = cookieProvider.deleteRefreshTokenCookie();
+		response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+
+		return empty();
 	}
 
 	@Operation(

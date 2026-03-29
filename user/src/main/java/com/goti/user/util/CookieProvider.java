@@ -25,7 +25,8 @@ public class CookieProvider {
 
 	public ResponseCookie deleteRefreshTokenCookie() {
 		return deleteCookie(
-			properties.refresh().name(), properties.refresh().path()
+			properties.refresh().name(),
+			properties.refresh().path()
 		);
 	}
 
