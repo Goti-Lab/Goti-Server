@@ -150,6 +150,35 @@ public class QueueRedisRepository {
 		);
 	}
 
+	/**
+	 * activeCount < maxCapacity일 때만 원자적으로 increment.
+	 * Lua Script로 check-and-increment를 단일 Redis 명령으로 실행.
+	 * @return true: 승격 성공, false: 수용량 초과 (increment 안 함)
+	 */
+	public boolean tryIncrementActiveCount(UUID gameId) {
+		String script =
+			"local key = KEYS[1] " +
+			"local active = tonumber(redis.call('HGET', key, ARGV[1]) or '0') " +
+			"local max = tonumber(redis.call('HGET', key, ARGV[2]) or '0') " +
+			"if active < max then " +
+			"  redis.call('HINCRBY', key, ARGV[1], 1) " +
+			"  redis.call('HSET', key, ARGV[3], ARGV[4]) " +
+			"  return 1 " +
+			"else " +
+			"  return 0 " +
+			"end";
+
+		Long result = redisTemplate.execute(
+			org.springframework.data.redis.core.script.RedisScript.of(script, Long.class),
+			java.util.List.of(RedisKey.QUEUE_META.getKey(gameId)),
+			QueueMetaField.ACTIVE_COUNT,
+			QueueMetaField.MAX_CAPACITY,
+			QueueMetaField.UPDATED_AT,
+			Instant.now().toString()
+		);
+		return result != null && result == 1L;
+	}
+
 	public long incrementActiveCount(UUID gameId) {
 		Long result = redisTemplate.opsForHash().increment(
 			RedisKey.QUEUE_META.getKey(gameId), QueueMetaField.ACTIVE_COUNT, 1L

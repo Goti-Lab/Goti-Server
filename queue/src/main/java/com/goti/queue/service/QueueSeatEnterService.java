@@ -59,10 +59,6 @@ public class QueueSeatEnterService {
 				throw new CustomException(ErrorCode.QUEUE_META_NOT_FOUND);
 			}
 
-			if (queueMeta.activeCount() >= queueMeta.maxCapacity()) {
-				throw new CustomException(ErrorCode.QUEUE_CAPACITY_FULL);
-			}
-
 			long availableSlots = Math.max(0L, queueMeta.maxCapacity() - queueMeta.activeCount());
 			long publishedRank = Math.max(
 				queueMeta.currentAllowedRank(),
@@ -70,6 +66,11 @@ public class QueueSeatEnterService {
 			);
 			if (payload.queueNumber() > publishedRank) {
 				throw new CustomException(ErrorCode.QUEUE_NOT_ALLOWED_YET);
+			}
+
+			// Lua Script 원자적 check-and-increment (race condition 방지)
+			if (!queueRedisRepository.tryIncrementActiveCount(gameId)) {
+				throw new CustomException(ErrorCode.QUEUE_CAPACITY_FULL);
 			}
 
 			QueueEntry admittedEntry = new QueueEntry(
@@ -82,7 +83,6 @@ public class QueueSeatEnterService {
 			queueRedisRepository.addActiveUser(gameId, userId);
 			queueRedisRepository.addExpirationUser(gameId, userId, currentEntry.issuedAt().plus(queueProperties.admittedTtl()));
 			queueRedisRepository.removeWaiting(gameId, userId);
-			queueRedisRepository.incrementActiveCount(gameId);
 			queueRedisRepository.updateSeatEnterMeta(gameId, payload.queueNumber());
 			Instant now = Instant.now();
 			String matchId = gameId.toString();
