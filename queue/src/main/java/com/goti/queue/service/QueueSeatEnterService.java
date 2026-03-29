@@ -11,7 +11,6 @@ import org.springframework.stereotype.Service;
 
 import com.goti.constants.messages.ErrorCode;
 import com.goti.exception.CustomException;
-import com.goti.infra.lock.DistributedLockManager;
 import com.goti.queue.config.properties.QueueProperties;
 import com.goti.queue.constants.QueueStatus;
 import com.goti.queue.domain.model.QueueEntry;
@@ -30,12 +29,9 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class QueueSeatEnterService {
 
-	private static final String LOCK_KEY_PREFIX = "lock:queue:seat-enter:";
-
 	private final QueueRedisRepository queueRedisRepository;
 	private final QueueTokenProvider queueTokenProvider;
 	private final QueueProperties queueProperties;
-	private final DistributedLockManager distributedLockManager;
 	private final MeterRegistry meterRegistry;
 
 	public QueueSeatEnterResponse enter(UUID gameId, UUID userId, QueueSeatEnterRequest request) {
@@ -43,75 +39,67 @@ public class QueueSeatEnterService {
 			throw new CustomException(ErrorCode.AUTH_INVALID);
 		}
 
-		String lockKey = LOCK_KEY_PREFIX + gameId + ":" + userId;
 		try {
-			return distributedLockManager.withLock(
-				lockKey,
-				ErrorCode.QUEUE_LOCK_ACQUIRE_FAILED,
-				() -> {
-				// TODO: /seat-enter 부하 테스트 이후 Lua script 기반 원자 처리 전환 검토
-				QueueTokenPayload payload = queueTokenProvider.parse(request.queueToken());
-				validateTokenIdentity(gameId, userId, payload);
+			QueueTokenPayload payload = queueTokenProvider.parse(request.queueToken());
+			validateTokenIdentity(gameId, userId, payload);
 
-				QueueEntry currentEntry = queueRedisRepository.getEntry(gameId, userId);
-				if (currentEntry == null) {
-					throw new CustomException(ErrorCode.QUEUE_ENTRY_NOT_FOUND);
-				}
+			QueueEntry currentEntry = queueRedisRepository.getEntry(gameId, userId);
+			if (currentEntry == null) {
+				throw new CustomException(ErrorCode.QUEUE_ENTRY_NOT_FOUND);
+			}
 
-				validateEntryState(payload, currentEntry);
+			validateEntryState(payload, currentEntry);
 
-				if (queueRedisRepository.isActiveUser(gameId, userId) || currentEntry.status() == QueueStatus.ADMITTED) {
-					throw new CustomException(ErrorCode.QUEUE_ALREADY_ADMITTED);
-				}
+			if (queueRedisRepository.isActiveUser(gameId, userId) || currentEntry.status() == QueueStatus.ADMITTED) {
+				throw new CustomException(ErrorCode.QUEUE_ALREADY_ADMITTED);
+			}
 
-				QueueMeta queueMeta = queueRedisRepository.getMeta(gameId);
-				if (queueMeta == null) {
-					throw new CustomException(ErrorCode.QUEUE_META_NOT_FOUND);
-				}
+			QueueMeta queueMeta = queueRedisRepository.getMeta(gameId);
+			if (queueMeta == null) {
+				throw new CustomException(ErrorCode.QUEUE_META_NOT_FOUND);
+			}
 
-				if (queueMeta.activeCount() >= queueMeta.maxCapacity()) {
-					throw new CustomException(ErrorCode.QUEUE_CAPACITY_FULL);
-				}
+			if (queueMeta.activeCount() >= queueMeta.maxCapacity()) {
+				throw new CustomException(ErrorCode.QUEUE_CAPACITY_FULL);
+			}
 
-				// publishedRank: status API와 동일한 동적 계산 (availableSlots 기반)
-				long availableSlots = Math.max(0L, queueMeta.maxCapacity() - queueMeta.activeCount());
-				long publishedRank = Math.max(
-					queueMeta.currentAllowedRank(),
-					queueMeta.lastEnteredRank() + availableSlots
-				);
-				if (payload.queueNumber() > publishedRank) {
-					throw new CustomException(ErrorCode.QUEUE_NOT_ALLOWED_YET);
-				}
+			long availableSlots = Math.max(0L, queueMeta.maxCapacity() - queueMeta.activeCount());
+			long publishedRank = Math.max(
+				queueMeta.currentAllowedRank(),
+				queueMeta.lastEnteredRank() + availableSlots
+			);
+			if (payload.queueNumber() > publishedRank) {
+				throw new CustomException(ErrorCode.QUEUE_NOT_ALLOWED_YET);
+			}
 
-				QueueEntry admittedEntry = new QueueEntry(
-					currentEntry.queueNumber(),
-					currentEntry.issuedAt(),
-					QueueStatus.ADMITTED
-				);
+			QueueEntry admittedEntry = new QueueEntry(
+				currentEntry.queueNumber(),
+				currentEntry.issuedAt(),
+				QueueStatus.ADMITTED
+			);
 
-				queueRedisRepository.saveEntry(gameId, userId, admittedEntry, queueProperties.admittedTtl());
-				queueRedisRepository.addActiveUser(gameId, userId);
-				queueRedisRepository.addExpirationUser(gameId, userId, currentEntry.issuedAt().plus(queueProperties.admittedTtl()));
-				queueRedisRepository.removeWaiting(gameId, userId);
-				queueRedisRepository.incrementActiveCount(gameId);
-				queueRedisRepository.updateSeatEnterMeta(gameId, payload.queueNumber());
-				Instant now = Instant.now();
-				String matchId = gameId.toString();
-				meterRegistry.counter("queue.seat_enter", "match_id", matchId).increment();
-				meterRegistry.counter("seat.enter.verify", "match_id", matchId, "result", "pass").increment();
-				long waitMs = Duration.between(currentEntry.issuedAt(), now).toMillis();
-				meterRegistry.timer("queue.wait.duration", "match_id", matchId)
-					.record(waitMs, TimeUnit.MILLISECONDS);
+			queueRedisRepository.saveEntry(gameId, userId, admittedEntry, queueProperties.admittedTtl());
+			queueRedisRepository.addActiveUser(gameId, userId);
+			queueRedisRepository.addExpirationUser(gameId, userId, currentEntry.issuedAt().plus(queueProperties.admittedTtl()));
+			queueRedisRepository.removeWaiting(gameId, userId);
+			queueRedisRepository.incrementActiveCount(gameId);
+			queueRedisRepository.updateSeatEnterMeta(gameId, payload.queueNumber());
+			Instant now = Instant.now();
+			String matchId = gameId.toString();
+			meterRegistry.counter("queue.seat_enter", "match_id", matchId).increment();
+			meterRegistry.counter("seat.enter.verify", "match_id", matchId, "result", "pass").increment();
+			long waitMs = Duration.between(currentEntry.issuedAt(), now).toMillis();
+			meterRegistry.timer("queue.wait.duration", "match_id", matchId)
+				.record(waitMs, TimeUnit.MILLISECONDS);
 
 			log.info("action=SEAT_ENTER gameId={} userId={} queueNumber={} waitDurationMs={}", gameId, userId, payload.queueNumber(), waitMs);
 
-				return new QueueSeatEnterResponse(
-					gameId,
-					true,
-					payload.queueNumber(),
-					QueueStatus.ADMITTED
-				);
-			});
+			return new QueueSeatEnterResponse(
+				gameId,
+				true,
+				payload.queueNumber(),
+				QueueStatus.ADMITTED
+			);
 		} catch (CustomException e) {
 			meterRegistry.counter("seat.enter.verify", "match_id", gameId.toString(), "result", "fail").increment();
 			log.info("action=SEAT_ENTER_BLOCKED gameId={} userId={} reason={}", gameId, userId, e.error().name());

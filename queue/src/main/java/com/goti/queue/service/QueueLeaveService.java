@@ -9,7 +9,6 @@ import org.springframework.stereotype.Service;
 
 import com.goti.constants.messages.ErrorCode;
 import com.goti.exception.CustomException;
-import com.goti.infra.lock.DistributedLockManager;
 import com.goti.queue.config.properties.QueueProperties;
 import com.goti.queue.constants.QueueStatus;
 import com.goti.queue.domain.model.QueueEntry;
@@ -25,11 +24,8 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class QueueLeaveService {
 
-	private static final String LEAVE_LOCK_KEY_PREFIX = "lock:queue:leave:";
-
 	private final QueueRedisRepository queueRedisRepository;
 	private final QueueProperties queueProperties;
-	private final DistributedLockManager distributedLockManager;
 	private final MeterRegistry meterRegistry;
 
 	public QueueLeaveResponse leave(UUID gameId, UUID userId) {
@@ -45,47 +41,41 @@ public class QueueLeaveService {
 			throw new CustomException(ErrorCode.AUTH_INVALID);
 		}
 
-		return distributedLockManager.withLock(
-			LEAVE_LOCK_KEY_PREFIX + gameId + ":" + userId,
-			ErrorCode.QUEUE_LOCK_ACQUIRE_FAILED,
-			() -> {
-				QueueEntry currentEntry = queueRedisRepository.getEntry(gameId, userId);
-				QueueMeta queueMeta = queueRedisRepository.getMeta(gameId);
-				boolean activeUser = queueRedisRepository.isActiveUser(gameId, userId);
+		QueueEntry currentEntry = queueRedisRepository.getEntry(gameId, userId);
+		QueueMeta queueMeta = queueRedisRepository.getMeta(gameId);
+		boolean activeUser = queueRedisRepository.isActiveUser(gameId, userId);
 
-				if (!activeUser && (currentEntry == null || currentEntry.status() == QueueStatus.LEFT || currentEntry.status() == QueueStatus.EXPIRED)) {
-					QueueLeaveResponse response = new QueueLeaveResponse(
-						gameId,
-						false,
-						currentEntry == null ? QueueStatus.LEFT : currentEntry.status()
-					);
-					recordLeave(gameId, userId, reason, response.released());
-					return response;
-				}
+		if (!activeUser && (currentEntry == null || currentEntry.status() == QueueStatus.LEFT || currentEntry.status() == QueueStatus.EXPIRED)) {
+			QueueLeaveResponse response = new QueueLeaveResponse(
+				gameId,
+				false,
+				currentEntry == null ? QueueStatus.LEFT : currentEntry.status()
+			);
+			recordLeave(gameId, userId, reason, response.released());
+			return response;
+		}
 
-				if (currentEntry != null) {
-					QueueStatus nextStatus = reason == LeaveReason.TTL_EXPIRED ? QueueStatus.EXPIRED : QueueStatus.LEFT;
-					queueRedisRepository.saveEntry(
-						gameId,
-						userId,
-						new QueueEntry(currentEntry.queueNumber(), currentEntry.issuedAt(), nextStatus),
-						queueProperties.entryTtl()
-					);
-				}
+		if (currentEntry != null) {
+			QueueStatus nextStatus = reason == LeaveReason.TTL_EXPIRED ? QueueStatus.EXPIRED : QueueStatus.LEFT;
+			queueRedisRepository.saveEntry(
+				gameId,
+				userId,
+				new QueueEntry(currentEntry.queueNumber(), currentEntry.issuedAt(), nextStatus),
+				queueProperties.entryTtl()
+			);
+		}
 
-				queueRedisRepository.removeActiveUser(gameId, userId);
-				queueRedisRepository.removeExpirationUser(gameId, userId);
+		queueRedisRepository.removeActiveUser(gameId, userId);
+		queueRedisRepository.removeExpirationUser(gameId, userId);
 
-				if (queueMeta != null && activeUser) {
-					queueRedisRepository.decrementActiveCount(gameId);
-				}
+		if (queueMeta != null && activeUser) {
+			queueRedisRepository.decrementActiveCount(gameId);
+		}
 
-				QueueStatus responseStatus = reason == LeaveReason.TTL_EXPIRED ? QueueStatus.EXPIRED : QueueStatus.LEFT;
-				QueueLeaveResponse response = new QueueLeaveResponse(gameId, activeUser, responseStatus);
-				recordLeave(gameId, userId, reason, response.released());
-				return response;
-			}
-		);
+		QueueStatus responseStatus = reason == LeaveReason.TTL_EXPIRED ? QueueStatus.EXPIRED : QueueStatus.LEFT;
+		QueueLeaveResponse response = new QueueLeaveResponse(gameId, activeUser, responseStatus);
+		recordLeave(gameId, userId, reason, response.released());
+		return response;
 	}
 
 	private void recordLeave(UUID gameId, UUID userId, LeaveReason reason, boolean released) {
