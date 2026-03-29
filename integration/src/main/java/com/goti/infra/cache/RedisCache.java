@@ -6,14 +6,21 @@ import java.util.concurrent.TimeUnit;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.goti.infra.constants.redis.RedisKey;
 
 import lombok.RequiredArgsConstructor;
 
+/**
+ * Redis 캐시 유틸리티.
+ * TODO: RedisTemplate&lt;String, String&gt; + 도메인별 Repository 패턴으로 전환 예정
+ *       (docs/conventions/redis-serialization-guide.md 참조)
+ */
 @Component
 @RequiredArgsConstructor
 public class RedisCache {
 	private final RedisTemplate<String, Object> redisTemplate;
+	private final ObjectMapper redisObjectMapper;
 
 	public <T> void set(String key, T value) {
 		redisTemplate.opsForValue().set(key, value);
@@ -33,7 +40,13 @@ public class RedisCache {
 
 	public <T> T get(String key, Class<T> clazz) {
 		Object value = redisTemplate.opsForValue().get(key);
-		return value != null ? clazz.cast(value) : null;
+		if (value == null) {
+			return null;
+		}
+		if (clazz.isInstance(value)) {
+			return clazz.cast(value);
+		}
+		return redisObjectMapper.convertValue(value, clazz);
 	}
 
 	public boolean delete(String key) {
