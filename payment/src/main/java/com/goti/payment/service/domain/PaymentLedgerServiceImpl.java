@@ -18,7 +18,7 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-public class LedgerServiceImpl implements LedgerService {
+public class PaymentLedgerServiceImpl implements PaymentLedgerService {
 
 	private final PaymentLedgerRepository ledgerRepository;
 
@@ -66,6 +66,6 @@ public class LedgerServiceImpl implements LedgerService {
 	@Transactional(readOnly = true)
 	public PaymentLedgerEntity findByOrderId(UUID orderId) {
 		return ledgerRepository.findByOrderId(orderId)
-			.orElseThrow(() -> new CustomException(ErrorCode.ORDER_NOT_FOUND));
+			.orElseThrow(() -> new CustomException(ErrorCode.LEDGER_NOT_FOUND));
 	}
 }

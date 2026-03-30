@@ -7,7 +7,7 @@ import java.util.UUID;
 import com.goti.payment.domain.entity.payment.EscrowAccountEntity;
 import com.goti.payment.dto.request.ResalePaymentRequest;
 
-public interface ResaleEscrowService {
+public interface EscrowAccountService {
 
 	List<EscrowAccountEntity> createEscrows(ResalePaymentRequest request);
 

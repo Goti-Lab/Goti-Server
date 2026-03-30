@@ -8,24 +8,24 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.goti.payment.dto.response.ResalePaymentLedgerResponse;
-import com.goti.payment.service.domain.LedgerService;
+import com.goti.payment.service.domain.PaymentLedgerService;
 
 import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-public class PaymentLedgerService {
+public class PaymentLedgerProcessService {
 
-	private final LedgerService ledgerService;
+	private final PaymentLedgerService paymentLedgerService;
 
 	@Transactional(readOnly = true)
 	public Page<ResalePaymentLedgerResponse> getLedgers(Pageable pageable) {
-		return ledgerService.findAll(pageable)
+		return paymentLedgerService.findAll(pageable)
 			.map(ResalePaymentLedgerResponse::from);
 	}
 
 	@Transactional(readOnly = true)
 	public ResalePaymentLedgerResponse getLedgerByOrderId(UUID orderId) {
-		return ResalePaymentLedgerResponse.from(ledgerService.findByOrderId(orderId));
+		return ResalePaymentLedgerResponse.from(paymentLedgerService.findByOrderId(orderId));
 	}
 }

@@ -13,10 +13,10 @@ import com.goti.payment.domain.entity.payment.EscrowAccountEntity;
 import com.goti.payment.dto.internal.SettlementCompletedEvent;
 import com.goti.payment.dto.request.ResalePaymentRequest;
 import com.goti.payment.dto.response.PaymentResponse;
-import com.goti.payment.service.domain.LedgerService;
+import com.goti.payment.infra.ResaleService;
+import com.goti.payment.service.domain.EscrowAccountService;
+import com.goti.payment.service.domain.PaymentLedgerService;
 import com.goti.payment.service.domain.PaymentService;
-import com.goti.payment.service.domain.ResaleEscrowService;
-import com.goti.payment.service.domain.ResaleService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,8 +26,8 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class ResaleOrderPaymentService {
 	private final PaymentService paymentService;
-	private final LedgerService ledgerService;
-	private final ResaleEscrowService resaleEscrowService;
+	private final PaymentLedgerService paymentLedgerService;
+	private final EscrowAccountService escrowAccountService;
 	private final ResaleService resaleService;
 	private final ApplicationEventPublisher eventPublisher;
 
@@ -42,16 +42,16 @@ public class ResaleOrderPaymentService {
 		);
 
 		if (payment.paymentStatus() == PaymentStatus.SUCCESS) {
-			ledgerService.create(
+			paymentLedgerService.create(
 				request.orderId(),
 				payment.paymentId(),
 				request.totalAmount(),
 				request.totalBuyerFee(),
 				request.totalSellerFee()
 			);
-			List<EscrowAccountEntity> escrows = resaleEscrowService.createEscrows(request);
+			List<EscrowAccountEntity> escrows = escrowAccountService.createEscrows(request);
 
-			resaleEscrowService.requestEscrowPayments(escrows);
+			escrowAccountService.requestEscrowPayments(escrows);
 
 			resaleService.confirmOrder(
 				request.orderId(),
@@ -67,17 +67,17 @@ public class ResaleOrderPaymentService {
 
 		List<UUID> transactionIds = resaleService.getTransactionIds(orderId);
 
-		List<EscrowAccountEntity> escrows = resaleEscrowService.findAllByTransactionIds(transactionIds);
+		List<EscrowAccountEntity> escrows = escrowAccountService.findAllByTransactionIds(transactionIds);
 
-		List<EscrowAccountEntity> holdingEscrows = resaleEscrowService.filterHoldings(escrows);
+		List<EscrowAccountEntity> holdingEscrows = escrowAccountService.filterHoldings(escrows);
 
 		if (holdingEscrows.isEmpty()) {
 			return;
 		}
 
-		resaleEscrowService.requestSettlements(holdingEscrows);
+		escrowAccountService.requestSettlements(holdingEscrows);
 
-		resaleEscrowService.settle(holdingEscrows, LocalDateTime.now());
+		escrowAccountService.settle(holdingEscrows, LocalDateTime.now());
 
 		eventPublisher.publishEvent(new SettlementCompletedEvent(orderId));
 	}

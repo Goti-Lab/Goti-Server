@@ -1,4 +1,4 @@
-package com.goti.payment.service.domain;
+package com.goti.payment.infra;
 
 import java.util.List;
 import java.util.UUID;

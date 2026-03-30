@@ -19,11 +19,12 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class ResaleEscrowServiceImpl implements ResaleEscrowService {
+public class EscrowAccountServiceImpl implements EscrowAccountService {
 	private final ResaleEscrowClient escrowClient;
 	private final EscrowAccountRepository escrowAccountRepository;
 
 	@Override
+	@Transactional
 	public List<EscrowAccountEntity> createEscrows(ResalePaymentRequest request) {
 		return request.items()
 			.stream()
@@ -39,6 +40,7 @@ public class ResaleEscrowServiceImpl implements ResaleEscrowService {
 	}
 
 	@Override
+	@Transactional
 	public void requestEscrowPayments(List<EscrowAccountEntity> escrows) {
 		for (EscrowAccountEntity escrow : escrows) {
 			String externalId = escrowClient.requestEscrowPayment(
@@ -58,6 +60,7 @@ public class ResaleEscrowServiceImpl implements ResaleEscrowService {
 	}
 
 	@Override
+	@Transactional
 	public void settle(List<EscrowAccountEntity> escrows, LocalDateTime releaseTime) {
 		for (EscrowAccountEntity escrow : escrows) {
 			escrow.settle(releaseTime);
@@ -66,6 +69,7 @@ public class ResaleEscrowServiceImpl implements ResaleEscrowService {
 	}
 
 	@Override
+	@Transactional
 	public void requestSettlements(List<EscrowAccountEntity> escrows) {
 		for (EscrowAccountEntity escrow : escrows) {
 			if (escrow.getExternalEscrowId() != null) {

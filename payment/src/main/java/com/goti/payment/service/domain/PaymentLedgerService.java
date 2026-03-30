@@ -7,7 +7,7 @@ import org.springframework.data.domain.Pageable;
 
 import com.goti.payment.domain.entity.payment.PaymentLedgerEntity;
 
-public interface LedgerService {
+public interface PaymentLedgerService {
 	PaymentLedgerEntity create(
 		UUID orderId,
 		UUID paymentId,

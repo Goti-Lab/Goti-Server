@@ -1,11 +1,9 @@
-package com.goti.payment.service.domain;
+package com.goti.payment.infra;
 
 import java.util.List;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
-
-import com.goti.payment.infra.ResaleOrderClient;
 
 import lombok.RequiredArgsConstructor;
 
