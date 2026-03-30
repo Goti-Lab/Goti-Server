@@ -3,6 +3,7 @@ package com.goti.resale.dto.request;
 import java.time.LocalDate;
 import java.util.UUID;
 
+import com.goti.resale.constants.ResaleSalesStatus;
 import com.goti.resale.service.domain.command.ResaleSalesSearchCommand;
 
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -19,7 +20,7 @@ public record ResaleSalesSearchRequest(
 	LocalDate endDate,
 
 	@Schema(description = "판매 상태 (ALL, LISTING, PENDING, SETTLED, CANCELED)", example = "ALL")
-	String status,
+	ResaleSalesStatus status,
 
 	@Schema(description = "페이지 번호 (0부터 시작)", example = "0")
 	Integer page,
@@ -30,7 +31,7 @@ public record ResaleSalesSearchRequest(
 	public ResaleSalesSearchRequest {
 		if (page == null) page = 0;
 		if (size == null) size = 5;
-		if (status == null) status = "ALL";
+		if (status == null) status = ResaleSalesStatus.ALL;
 	}
 
 	public ResaleSalesSearchCommand toCommand(UUID sellerId) {
