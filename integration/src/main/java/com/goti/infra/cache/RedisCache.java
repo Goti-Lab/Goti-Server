@@ -1,5 +1,7 @@
 package com.goti.infra.cache;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 
@@ -14,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class RedisCache {
 	private final RedisTemplate<String, Object> redisTemplate;
+	private final ObjectMapper objectMapper;
 
 	public <T> void set(String key, T value) {
 		redisTemplate.opsForValue().set(key, value);
@@ -29,7 +32,13 @@ public class RedisCache {
 
 	public <T> T get(String key, Class<T> clazz) {
 		Object value = redisTemplate.opsForValue().get(key);
-		return value != null ? clazz.cast(value) : null;
+		if (value == null) {
+			return null;
+		}
+		if (clazz.isInstance(value)) {
+			return clazz.cast(value);
+		}
+		return objectMapper.convertValue(value, clazz);
 	}
 
 	public boolean delete(String key) {

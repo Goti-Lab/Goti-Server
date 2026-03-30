@@ -12,7 +12,7 @@ import com.goti.ticketing.domain.entity.seat.SeatStatusEntity;
 import com.goti.exception.CustomException;
 import com.goti.ticketing.seat.repository.SeatHoldRepository;
 import com.goti.ticketing.seat.repository.SeatStatusRepository;
-import com.goti.ticketing.seat.service.domain.SeatHoldExpiryService;
+import com.goti.ticketing.seat.service.domain.SeatHoldService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -21,7 +21,7 @@ import lombok.RequiredArgsConstructor;
 public class SeatHoldExpiryTransactionalService {
 	private final SeatHoldRepository seatHoldRepository;
 	private final SeatStatusRepository seatStatusRepository;
-	private final SeatHoldExpiryService seatHoldExpiryService;
+	private final SeatHoldService seatHoldService;
 
 	@Transactional
 	public void expire(UUID holdId, LocalDateTime now) {
@@ -34,7 +34,7 @@ public class SeatHoldExpiryTransactionalService {
 		)
 			.orElseThrow(() -> new CustomException(ErrorCode.SEAT_STATUS_NOT_FOUND));
 
-		seatHoldExpiryService.expire(seatStatus, seatHold, now);
+		seatHoldService.expire(seatStatus, seatHold, now);
 		seatStatusRepository.save(seatStatus);
 		seatHoldRepository.save(seatHold);
 	}

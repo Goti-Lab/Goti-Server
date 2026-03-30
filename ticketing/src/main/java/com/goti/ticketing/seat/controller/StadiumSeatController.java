@@ -64,9 +64,10 @@ public class StadiumSeatController {
 	public ResponseEntity<ApiSuccessResponse<SeatGradeSearchResultResponse>> getSeatGrades(
 		@AuthenticationPrincipal(expression = "id") UUID userId,
 		@PathVariable UUID stadiumId,
-		@PathVariable UUID gameId
+		@PathVariable UUID gameId,
+		@RequestParam(defaultValue = "false") boolean forceNewSession
 	) {
-		return wrap(seatGradeService.get(stadiumId, gameId, userId));
+		return wrap(seatGradeService.get(stadiumId, gameId, userId, forceNewSession));
 	}
 
 	@Operation(

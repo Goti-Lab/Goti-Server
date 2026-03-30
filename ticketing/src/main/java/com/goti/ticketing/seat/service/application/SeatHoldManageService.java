@@ -6,18 +6,17 @@ import org.springframework.stereotype.Service;
 
 import com.goti.constants.messages.ErrorCode;
 import com.goti.ticketing.domain.entity.seat.SeatHoldEntity;
-import com.goti.exception.CustomException;
 import com.goti.infra.lock.DistributedLockManager;
 import com.goti.global.validation.Preconditions;
-import com.goti.ticketing.seat.repository.SeatHoldRepository;
+import com.goti.ticketing.seat.service.domain.SeatHoldService;
 import com.goti.ticketing.session.service.application.ReservationSessionService;
 
 import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-public class SeatHoldService {
-	private final SeatHoldRepository seatHoldRepository;
+public class SeatHoldManageService {
+	private final SeatHoldService seatHoldService;
 	private final DistributedLockManager distributedLockManager;
 	private final SeatHoldTransactionalService seatHoldTransactionalService;
 	private final ReservationSessionService reservationSessionService;
@@ -33,16 +32,14 @@ public class SeatHoldService {
 	}
 
 	public UUID release(UUID holdId, UUID userId) {
-		SeatHoldEntity seatHold = seatHoldRepository.findById(holdId)
-			.orElseThrow(() -> new CustomException(ErrorCode.SEAT_HOLD_NOT_FOUND));
+		SeatHoldEntity seatHold = seatHoldService.findSeatHold(holdId);
 
 		String lockKey = buildLockKey(seatHold.getGameSchedule().getId(), seatHold.getSeat().getId());
 		return distributedLockManager.withLock(lockKey, () -> seatHoldTransactionalService.release(holdId, userId));
 	}
 
 	public UUID release(UUID gameId, UUID holdId, UUID userId) {
-		SeatHoldEntity seatHold = seatHoldRepository.findById(holdId)
-			.orElseThrow(() -> new CustomException(ErrorCode.SEAT_HOLD_NOT_FOUND));
+		SeatHoldEntity seatHold = seatHoldService.findSeatHold(holdId);
 
 		Preconditions.validate(
 			seatHold.getGameSchedule().getId().equals(gameId),

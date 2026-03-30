@@ -1,7 +1,9 @@
 package com.goti.ticketing.seat.service.domain;
 
+import com.goti.constants.messages.ErrorCode;
 import com.goti.ticketing.domain.entity.seat.SeatHoldEntity;
 import com.goti.ticketing.domain.entity.seat.SeatStatusEntity;
+import com.goti.exception.CustomException;
 import com.goti.global.validation.Preconditions;
 import com.goti.ticketing.seat.repository.SeatHoldRepository;
 import org.springframework.stereotype.Service;
@@ -14,12 +16,28 @@ import java.util.stream.Collectors;
 
 import lombok.RequiredArgsConstructor;
 
+import org.springframework.transaction.annotation.Transactional;
+
 @Service
 @RequiredArgsConstructor
-public class SeatHoldExpiryServiceImpl implements SeatHoldExpiryService {
+public class SeatHoldServiceImpl implements SeatHoldService {
 	private final SeatHoldRepository seatHoldRepository;
 
 	@Override
+	@Transactional(readOnly = true)
+	public SeatHoldEntity findSeatHold(UUID holdId) {
+		return seatHoldRepository.findById(holdId)
+			.orElseThrow(() -> new CustomException(ErrorCode.SEAT_HOLD_NOT_FOUND));
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public List<SeatHoldEntity> getHoldingSeats(UUID gameId, UUID userId) {
+		return seatHoldRepository.findAllHoldingSeats(gameId, userId);
+	}
+
+	@Override
+	@Transactional(readOnly = true)
 	public Map<UUID, SeatHoldEntity> getByIds(List<UUID> holdIds) {
 		return seatHoldRepository.findAllWithDetailsByIdIn(holdIds).stream()
 			.collect(Collectors.toMap(SeatHoldEntity::getId, seatHold -> seatHold));
