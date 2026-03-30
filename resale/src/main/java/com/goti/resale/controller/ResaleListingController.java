@@ -151,6 +151,18 @@ public class ResaleListingController {
 	}
 
 	@Operation(
+		summary = "대시보드 리셀 조회",
+		description = "마이페이지 대시보드 판매중, 판매완료 갯수 조회 API"
+	)
+	@GetMapping("/listings/count/listing")
+	public ResponseEntity<ApiSuccessResponse<ResaleListingMyPageCountResponse>> getCountListings(
+		@AuthenticationPrincipal(expression = "id") UUID sellerId
+	) {
+		ResaleListingMyPageCountResponse count = listingService.getCountListings(sellerId);
+		return wrap(count);
+	}
+
+	@Operation(
 		summary = "경기의 판매 기록 조회",
 		description = "경기의 지난 시간(HOUR, DAY, WEEK) 내 등급 별 판매 기록 조회 API"
 	)
