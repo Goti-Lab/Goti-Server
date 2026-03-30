@@ -123,33 +123,33 @@ public class QueueRedisRepository {
 
 	public void initializeMetaIfAbsent(UUID gameId, long maxCapacity) {
 		String metaKey = RedisKey.QUEUE_META.getKey(gameId);
-		if (redisTemplate.hasKey(metaKey)) {
+		if (stringRedisTemplate.hasKey(metaKey)) {
 			return;
 		}
 
 		// TODO: 구조가 잡힌 뒤 queue open/init 단계에서만 메타를 생성하도록 변경
-		redisTemplate.opsForHash().putAll(metaKey, Map.of(
-			QueueMetaField.MAX_CAPACITY, maxCapacity,
-			QueueMetaField.ACTIVE_COUNT, 0L,
-			QueueMetaField.PUBLISHED_RANK, 0L,
-			QueueMetaField.CURRENT_ALLOWED_RANK, 0L,
-			QueueMetaField.LAST_ENTERED_RANK, 0L,
+		stringRedisTemplate.opsForHash().putAll(metaKey, Map.of(
+			QueueMetaField.MAX_CAPACITY, String.valueOf(maxCapacity),
+			QueueMetaField.ACTIVE_COUNT, "0",
+			QueueMetaField.PUBLISHED_RANK, "0",
+			QueueMetaField.CURRENT_ALLOWED_RANK, "0",
+			QueueMetaField.LAST_ENTERED_RANK, "0",
 			QueueMetaField.UPDATED_AT, Instant.now().toString()
 		));
 	}
 
 	public QueueMeta getMeta(UUID gameId) {
-		Map<Object, Object> meta = redisTemplate.opsForHash().entries(RedisKey.QUEUE_META.getKey(gameId));
+		Map<Object, Object> meta = stringRedisTemplate.opsForHash().entries(RedisKey.QUEUE_META.getKey(gameId));
 		if (meta.isEmpty()) {
 			return null;
 		}
 
 		return new QueueMeta(
-			longValue(meta.get(QueueMetaField.MAX_CAPACITY)),
-			longValue(meta.get(QueueMetaField.ACTIVE_COUNT)),
-			longValue(meta.get(QueueMetaField.PUBLISHED_RANK)),
-			longValue(meta.get(QueueMetaField.CURRENT_ALLOWED_RANK)),
-			longValue(meta.get(QueueMetaField.LAST_ENTERED_RANK)),
+			longFromString(meta.get(QueueMetaField.MAX_CAPACITY)),
+			longFromString(meta.get(QueueMetaField.ACTIVE_COUNT)),
+			longFromString(meta.get(QueueMetaField.PUBLISHED_RANK)),
+			longFromString(meta.get(QueueMetaField.CURRENT_ALLOWED_RANK)),
+			longFromString(meta.get(QueueMetaField.LAST_ENTERED_RANK)),
 			Instant.parse(String.valueOf(meta.get(QueueMetaField.UPDATED_AT)))
 		);
 	}
@@ -186,20 +186,20 @@ public class QueueRedisRepository {
 	}
 
 	public long incrementActiveCount(UUID gameId) {
-		Long result = redisTemplate.opsForHash().increment(
+		Long result = stringRedisTemplate.opsForHash().increment(
 			RedisKey.QUEUE_META.getKey(gameId), QueueMetaField.ACTIVE_COUNT, 1L
 		);
-		redisTemplate.opsForHash().put(
+		stringRedisTemplate.opsForHash().put(
 			RedisKey.QUEUE_META.getKey(gameId), QueueMetaField.UPDATED_AT, Instant.now().toString()
 		);
 		return result == null ? 1L : result;
 	}
 
 	public long decrementActiveCount(UUID gameId) {
-		Long result = redisTemplate.opsForHash().increment(
+		Long result = stringRedisTemplate.opsForHash().increment(
 			RedisKey.QUEUE_META.getKey(gameId), QueueMetaField.ACTIVE_COUNT, -1L
 		);
-		redisTemplate.opsForHash().put(
+		stringRedisTemplate.opsForHash().put(
 			RedisKey.QUEUE_META.getKey(gameId), QueueMetaField.UPDATED_AT, Instant.now().toString()
 		);
 		return result == null ? 0L : Math.max(0L, result);
@@ -237,15 +237,15 @@ public class QueueRedisRepository {
 	}
 
 	public void updateStatusMeta(UUID gameId, long currentAllowedRank, long publishedRank, Instant updatedAt) {
-		redisTemplate.opsForHash().putAll(RedisKey.QUEUE_META.getKey(gameId), Map.of(
-			QueueMetaField.CURRENT_ALLOWED_RANK, currentAllowedRank,
-			QueueMetaField.PUBLISHED_RANK, publishedRank,
+		stringRedisTemplate.opsForHash().putAll(RedisKey.QUEUE_META.getKey(gameId), Map.of(
+			QueueMetaField.CURRENT_ALLOWED_RANK, String.valueOf(currentAllowedRank),
+			QueueMetaField.PUBLISHED_RANK, String.valueOf(publishedRank),
 			QueueMetaField.UPDATED_AT, updatedAt.toString()
 		));
 	}
 
-	private long longValue(Object value) {
-		return ((Number)value).longValue();
+	private long longFromString(Object value) {
+		return Long.parseLong(String.valueOf(value));
 	}
 
 	private String expirationMember(UUID gameId, UUID userId) {
