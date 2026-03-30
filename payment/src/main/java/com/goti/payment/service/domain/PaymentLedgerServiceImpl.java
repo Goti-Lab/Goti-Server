@@ -26,6 +26,7 @@ public class PaymentLedgerServiceImpl implements PaymentLedgerService {
 	private static final BigDecimal VAT_DIVISOR = new BigDecimal("1.1");
 
 	@Override
+	@Transactional
 	public PaymentLedgerEntity create(
 		UUID orderId,
 		UUID paymentId,
