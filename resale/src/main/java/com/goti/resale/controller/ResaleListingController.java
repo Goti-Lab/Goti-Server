@@ -20,6 +20,7 @@ import com.goti.resale.constants.ResaleGraphRange;
 import com.goti.resale.dto.request.ResaleListingCancelRequest;
 import com.goti.resale.dto.request.ResaleListingOrderCreateRequest;
 import com.goti.resale.dto.response.ResaleListingCountResponse;
+import com.goti.resale.dto.response.ResaleListingMyPageCountResponse;
 import com.goti.resale.dto.response.ResaleListingOrderCreateResponse;
 import com.goti.resale.dto.response.ResaleListingResponse;
 import com.goti.resale.dto.response.ResalePriceHistoryResponse;
@@ -39,8 +40,8 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class ResaleListingController {
 
-	private final ResaleListingProcessService listingService;
-	private final ResalePriceProcessService priceService;
+	private final ResaleListingProcessService listingProcessService;
+	private final ResalePriceProcessService priceProcessService;
 
 	@Operation(
 		summary = "리셀 일괄 등록",
@@ -52,7 +53,7 @@ public class ResaleListingController {
 		@Valid @RequestBody ResaleListingOrderCreateRequest request
 	) {
 
-		ResaleListingOrderCreateResponse response = listingService.createListingOrder(sellerId, request);
+		ResaleListingOrderCreateResponse response = listingProcessService.createListingOrder(sellerId, request);
 		return wrap(response);
 	}
 
@@ -66,7 +67,7 @@ public class ResaleListingController {
 		@Valid @RequestBody ResaleListingCancelRequest request
 	) {
 
-		ResaleListingResponse response = listingService.cancelListing(sellerId, request);
+		ResaleListingResponse response = listingProcessService.cancelListing(sellerId, request);
 		return wrap(response);
 	}
 
@@ -79,7 +80,7 @@ public class ResaleListingController {
 		@AuthenticationPrincipal(expression = "id") UUID sellerId,
 		@PathVariable UUID listingOrderId
 	) {
-		listingService.cancelListingOrder(sellerId, listingOrderId);
+		listingProcessService.cancelListingOrder(sellerId, listingOrderId);
 		return wrap(null);
 	}
 
@@ -91,8 +92,20 @@ public class ResaleListingController {
 	public ResponseEntity<ApiSuccessResponse<List<ResaleListingResponse>>> getListingsBySellerId(
 		@AuthenticationPrincipal(expression = "id") UUID sellerId
 	) {
-		List<ResaleListingResponse> responses = listingService.getListingsBySellerId(sellerId);
+		List<ResaleListingResponse> responses = listingProcessService.getListingsBySellerId(sellerId);
 		return wrap(responses);
+	}
+
+	@Operation(
+		summary = "마이페이지 판매 조회",
+		description = "마이페이지의 판매중, 판매완료 갯수 조회 API"
+	)
+	@GetMapping("/listings/count/listing")
+	public ResponseEntity<ApiSuccessResponse<ResaleListingMyPageCountResponse>> getCountListings(
+		@AuthenticationPrincipal(expression = "id") UUID sellerId
+	) {
+		ResaleListingMyPageCountResponse count = listingProcessService.getCountListings(sellerId);
+		return wrap(count);
 	}
 
 	@Operation(
@@ -105,7 +118,7 @@ public class ResaleListingController {
 		@PathVariable UUID gradeId,
 		@PathVariable ResaleGraphRange range
 	) {
-		List<ResalePriceHistoryResponse> responses = priceService.getHistory(gameId, gradeId, range);
+		List<ResalePriceHistoryResponse> responses = priceProcessService.getHistory(gameId, gradeId, range);
 		return wrap(responses);
 	}
 
@@ -117,7 +130,7 @@ public class ResaleListingController {
 	public ResponseEntity<ApiSuccessResponse<ResaleListingCountResponse>> getTotalListingCount(
 		@PathVariable UUID gameId
 	) {
-		long count = listingService.getTotalListingCount(gameId);
+		long count = listingProcessService.getTotalListingCount(gameId);
 		return wrap(new ResaleListingCountResponse(count));
 	}
 
@@ -130,7 +143,7 @@ public class ResaleListingController {
 		@PathVariable UUID gameId,
 		@PathVariable UUID sectionId
 	) {
-		long count = listingService.getListingCountBySection(gameId, sectionId);
+		long count = listingProcessService.getListingCountBySection(gameId, sectionId);
 		return wrap(new ResaleListingCountResponse(count));
 	}
 }
