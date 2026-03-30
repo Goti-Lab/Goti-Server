@@ -48,6 +48,7 @@ public enum ErrorCode {
 	RESALE_ESCROW_FAILED(HttpStatus.BAD_REQUEST, "리셀 정산에 실패했습니다."),
 	ESCROW_NOT_FOUND(HttpStatus.BAD_REQUEST, "에스크로 정보를 찾을 수 없습니다."),
 	TRANSFER_OWNERSHIP_FAILED(HttpStatus.BAD_REQUEST, "티켓 소유권 전환에 실패했습니다."),
+	LEDGER_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 장부입니다."),
 
 	AUTH_INVALID_ACCESS_PATH(HttpStatus.UNAUTHORIZED, "올바르지 않은 접근 경로입니다."),
 	AUTH_PERMISSION_DENIED(HttpStatus.FORBIDDEN, "접근 권한이 없습니다."),
