@@ -4,10 +4,10 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-import com.goti.resale.config.properties.ResaleHoldExpiryProperties;
 import com.goti.infra.lock.DistributedLockManager;
+import com.goti.resale.config.properties.ResaleHoldExpiryProperties;
 import com.goti.resale.service.application.ResaleHoldExpiryBatchResult;
-import com.goti.resale.service.application.ResaleHoldExpiryService;
+import com.goti.resale.service.application.ResaleHoldExpiryProcessService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,7 +24,7 @@ import lombok.extern.slf4j.Slf4j;
 public class ResaleHoldScheduler {
 	private static final String EXPIRY_JOB_LOCK_KEY = "lock:resale-expiry-job";
 
-	private final ResaleHoldExpiryService resaleHoldExpiryService;
+	private final ResaleHoldExpiryProcessService resaleHoldExpiryProcessService;
 	private final DistributedLockManager distributedLockManager;
 	private final ResaleHoldExpiryProperties resaleHoldExpiryProperties;
 
@@ -33,7 +33,7 @@ public class ResaleHoldScheduler {
 		boolean acquired = distributedLockManager.withLockIfAvailable(
 			EXPIRY_JOB_LOCK_KEY,
 			() -> {
-				ResaleHoldExpiryBatchResult result = resaleHoldExpiryService.expireHolds(
+				ResaleHoldExpiryBatchResult result = resaleHoldExpiryProcessService.expireHolds(
 					resaleHoldExpiryProperties.batchSize()
 				);
 
