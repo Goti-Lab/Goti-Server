@@ -10,7 +10,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.goti.payment.constants.PaymentStatus;
 import com.goti.payment.domain.entity.payment.EscrowAccountEntity;
-import com.goti.payment.domain.entity.payment.PaymentLedgerEntity;
 import com.goti.payment.dto.internal.SettlementCompletedEvent;
 import com.goti.payment.dto.request.ResalePaymentRequest;
 import com.goti.payment.dto.response.PaymentResponse;
@@ -43,20 +42,16 @@ public class ResaleOrderPaymentService {
 		);
 
 		if (payment.paymentStatus() == PaymentStatus.SUCCESS) {
-			PaymentLedgerEntity ledger = ledgerService.create(
+			ledgerService.create(
 				request.orderId(),
 				payment.paymentId(),
 				request.totalAmount(),
 				request.totalBuyerFee(),
 				request.totalSellerFee()
 			);
-			ledgerService.save(ledger);
-
 			List<EscrowAccountEntity> escrows = resaleEscrowService.createEscrows(request);
 
 			resaleEscrowService.requestEscrowPayments(escrows);
-
-			resaleEscrowService.saveAll(escrows);
 
 			resaleService.confirmOrder(
 				request.orderId(),
@@ -83,7 +78,6 @@ public class ResaleOrderPaymentService {
 		resaleEscrowService.requestSettlements(holdingEscrows);
 
 		resaleEscrowService.settle(holdingEscrows, LocalDateTime.now());
-		resaleEscrowService.saveAll(holdingEscrows);
 
 		eventPublisher.publishEvent(new SettlementCompletedEvent(orderId));
 	}

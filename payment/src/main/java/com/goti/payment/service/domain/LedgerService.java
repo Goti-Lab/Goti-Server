@@ -16,8 +16,6 @@ public interface LedgerService {
 		Integer sellerFee
 	);
 
-	void save(PaymentLedgerEntity ledger);
-
 	Page<PaymentLedgerEntity> findAll(Pageable pageable);
 
 	PaymentLedgerEntity findByOrderId(UUID orderId);

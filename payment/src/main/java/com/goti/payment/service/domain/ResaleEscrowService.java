@@ -19,7 +19,5 @@ public interface ResaleEscrowService {
 
 	void requestSettlements(List<EscrowAccountEntity> escrows);
 
-	void saveAll(List<EscrowAccountEntity> escrows);
-
 	List<EscrowAccountEntity> findAllByTransactionIds(List<UUID> transactionIds);
 }

@@ -43,7 +43,7 @@ public class LedgerServiceImpl implements LedgerService {
 		int netProfit = totalFee - vat;
 		int settlementAmount = totalAmount - buyerFee - sellerFee;
 
-		return PaymentLedgerEntity.create(
+		PaymentLedgerEntity ledger = PaymentLedgerEntity.create(
 			orderId,
 			paymentId,
 			totalAmount,
@@ -53,12 +53,7 @@ public class LedgerServiceImpl implements LedgerService {
 			netProfit,
 			settlementAmount
 		);
-	}
-
-	@Override
-	@Transactional
-	public void save(PaymentLedgerEntity ledger) {
-		ledgerRepository.save(ledger);
+		return ledgerRepository.save(ledger);
 	}
 
 	@Override

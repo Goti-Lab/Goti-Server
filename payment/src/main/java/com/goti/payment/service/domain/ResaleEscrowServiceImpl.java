@@ -47,6 +47,7 @@ public class ResaleEscrowServiceImpl implements ResaleEscrowService {
 			);
 			escrow.updateExternalId(externalId);
 		}
+		escrowAccountRepository.saveAll(escrows);
 	}
 
 	@Override
@@ -61,6 +62,7 @@ public class ResaleEscrowServiceImpl implements ResaleEscrowService {
 		for (EscrowAccountEntity escrow : escrows) {
 			escrow.settle(releaseTime);
 		}
+		escrowAccountRepository.saveAll(escrows);
 	}
 
 	@Override
@@ -70,12 +72,6 @@ public class ResaleEscrowServiceImpl implements ResaleEscrowService {
 				escrowClient.requestSettlement(escrow.getExternalEscrowId());
 			}
 		}
-	}
-
-	@Override
-	@Transactional
-	public void saveAll(List<EscrowAccountEntity> escrows) {
-		escrowAccountRepository.saveAll(escrows);
 	}
 
 	@Override
