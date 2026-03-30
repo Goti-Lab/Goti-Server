@@ -14,8 +14,6 @@ import com.goti.payment.domain.entity.payment.PaymentLedgerEntity;
 import com.goti.payment.dto.internal.SettlementCompletedEvent;
 import com.goti.payment.dto.request.ResalePaymentRequest;
 import com.goti.payment.dto.response.PaymentResponse;
-import com.goti.payment.repository.EscrowAccountRepository;
-import com.goti.payment.repository.PaymentLedgerRepository;
 import com.goti.payment.service.domain.LedgerService;
 import com.goti.payment.service.domain.PaymentService;
 import com.goti.payment.service.domain.ResaleEscrowService;
@@ -30,10 +28,8 @@ import lombok.extern.slf4j.Slf4j;
 public class ResaleOrderPaymentService {
 	private final PaymentService paymentService;
 	private final LedgerService ledgerService;
-	private final PaymentLedgerRepository paymentLedgerRepository;
 	private final ResaleEscrowService resaleEscrowService;
 	private final ResaleService resaleService;
-	private final EscrowAccountRepository escrowAccountRepository;
 	private final ApplicationEventPublisher eventPublisher;
 
 	@Transactional
@@ -54,17 +50,16 @@ public class ResaleOrderPaymentService {
 				request.totalBuyerFee(),
 				request.totalSellerFee()
 			);
-			paymentLedgerRepository.save(ledger);
+			ledgerService.save(ledger);
 
 			List<EscrowAccountEntity> escrows = resaleEscrowService.createEscrows(request);
 
 			resaleEscrowService.requestEscrowPayments(escrows);
 
-			escrowAccountRepository.saveAll(escrows);
+			resaleEscrowService.saveAll(escrows);
 
-			confirmResalePayment(
+			resaleService.confirmOrder(
 				request.orderId(),
-				request.buyerId(),
 				payment.paymentId()
 			);
 		}
@@ -75,9 +70,9 @@ public class ResaleOrderPaymentService {
 	@Transactional
 	public void releaseEscrow(UUID orderId) {
 
-		List<UUID> transactionIds = getTransactionIds(orderId);
+		List<UUID> transactionIds = resaleService.getTransactionIds(orderId);
 
-		List<EscrowAccountEntity> escrows = escrowAccountRepository.findAllByTransactionIdIn(transactionIds);
+		List<EscrowAccountEntity> escrows = resaleEscrowService.findAllByTransactionIds(transactionIds);
 
 		List<EscrowAccountEntity> holdingEscrows = resaleEscrowService.filterHoldings(escrows);
 
@@ -88,21 +83,8 @@ public class ResaleOrderPaymentService {
 		resaleEscrowService.requestSettlements(holdingEscrows);
 
 		resaleEscrowService.settle(holdingEscrows, LocalDateTime.now());
-		escrowAccountRepository.saveAll(holdingEscrows);
+		resaleEscrowService.saveAll(holdingEscrows);
 
 		eventPublisher.publishEvent(new SettlementCompletedEvent(orderId));
-	}
-
-	public void confirmResalePayment(
-		UUID orderId,
-		UUID buyerId,
-		UUID paymentId
-	) {
-		log.info("리셀 주문 결제 확정 - orderId: {}, buyerId: {}", orderId, buyerId);
-		resaleService.confirmOrder(orderId, paymentId);
-	}
-
-	public List<UUID> getTransactionIds(UUID orderId) {
-		return resaleService.getTransactionIds(orderId);
 	}
 }
