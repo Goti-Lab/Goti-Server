@@ -3,6 +3,7 @@ package com.goti.payment.dto.response;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.goti.payment.constants.PaymentMethod;
 import com.goti.payment.constants.PaymentStatus;
 import com.goti.payment.constants.PaymentType;
@@ -38,6 +39,7 @@ public record PaymentResponse(
 	PaymentStatus paymentStatus,
 
 	@Schema(description = "결제 완료 시각")
+	@JsonFormat(pattern = "yyyy-MM-dd HH:mm")
 	LocalDateTime paidAt,
 
 	@Schema(description = "결제 실패 사유", example = "mock 결제 실패")
