@@ -13,10 +13,10 @@ import com.goti.payment.domain.entity.payment.EscrowAccountEntity;
 import com.goti.payment.dto.internal.SettlementCompletedEvent;
 import com.goti.payment.dto.request.ResalePaymentRequest;
 import com.goti.payment.dto.response.PaymentResponse;
-import com.goti.payment.infra.ResaleService;
 import com.goti.payment.service.domain.EscrowAccountService;
 import com.goti.payment.service.domain.PaymentLedgerService;
 import com.goti.payment.service.domain.PaymentService;
+import com.goti.payment.service.infra.ResaleService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

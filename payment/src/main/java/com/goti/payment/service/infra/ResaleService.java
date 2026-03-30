@@ -1,4 +1,4 @@
-package com.goti.payment.infra;
+package com.goti.payment.service.infra;
 
 import java.util.List;
 import java.util.UUID;
