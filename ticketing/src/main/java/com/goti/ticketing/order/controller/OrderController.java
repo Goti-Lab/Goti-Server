@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.goti.global.api.ApiSuccessResponse;
 import com.goti.ticketing.order.dto.request.OrderCreateRequest;
+import com.goti.ticketing.order.dto.request.OrderPeriodFilterRequest;
 import com.goti.ticketing.order.dto.request.OrderPaymentConfirmRequest;
 import com.goti.ticketing.order.dto.response.OrderCreateResponse;
 import com.goti.ticketing.order.dto.response.OrderListResponse;
@@ -35,6 +36,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springdoc.core.annotations.ParameterObject;
 
 @Tag(name = "Order", description = "주문 API")
 @RestController
@@ -64,9 +66,15 @@ public class OrderController {
 	)
 	@GetMapping
 	public ResponseEntity<ApiSuccessResponse<List<OrderListResponse>>> getMyOrders(
-		@AuthenticationPrincipal(expression = "id") UUID memberId
+		@AuthenticationPrincipal(expression = "id") UUID memberId,
+		@ParameterObject OrderPeriodFilterRequest request
 	) {
-		return wrap(orderService.getMyOrders(memberId));
+		return wrap(orderService.getMyOrders(
+			memberId,
+			request.months(),
+			request.startDate(),
+			request.endDate()
+		));
 	}
 
 	@Operation(

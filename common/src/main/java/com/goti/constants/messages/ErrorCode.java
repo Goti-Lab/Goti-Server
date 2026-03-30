@@ -65,6 +65,10 @@ public enum ErrorCode {
 
 	ORDER_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 주문입니다."),
 	ORDER_HISTORY_NOT_FOUND(HttpStatus.NOT_FOUND, "주문자 정보를 찾을 수 없습니다."),
+	ORDER_HISTORY_PERIOD_DATE_REQUIRED(HttpStatus.BAD_REQUEST, "시작 날짜와 종료 날짜는 함께 요청되어야 합니다."),
+	ORDER_HISTORY_PERIOD_FILTER_CONFLICT(HttpStatus.BAD_REQUEST, "개월 조회와 직접 기간 조회는 함께 사용할 수 없습니다."),
+	ORDER_HISTORY_PERIOD_MONTHS_INVALID(HttpStatus.BAD_REQUEST, "조회 기간은 1개월, 3개월, 6개월만 허용됩니다."),
+	ORDER_HISTORY_PERIOD_INVALID_RANGE(HttpStatus.BAD_REQUEST, "시작 날짜는 종료 날짜보다 이후일 수 없습니다."),
 	ORDER_PAYMENT_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "결제 가능한 주문 상태가 아닙니다."),
 	ORDER_CANCELLATION_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "취소 가능한 주문 상태가 아닙니다."),
 	ORDER_CANCELLATION_ITEMS_REQUIRED(HttpStatus.BAD_REQUEST, "부분 취소할 주문 상세를 선택해주세요."),

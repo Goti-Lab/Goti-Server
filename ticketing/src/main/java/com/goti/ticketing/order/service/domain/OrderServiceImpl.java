@@ -26,6 +26,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class OrderServiceImpl implements OrderService {
 	private static final DateTimeFormatter ORDER_NUMBER_FORMATTER = DateTimeFormatter.ofPattern("yyMMdd");
+	private static final List<Integer> ALLOWED_MONTHS = List.of(1, 3, 6);
 
 	private final OrderRepository orderRepository;
 	private final ReservationSessionService reservationSessionService;
@@ -63,13 +64,19 @@ public class OrderServiceImpl implements OrderService {
 
 	@Override
 	@Transactional(readOnly = true)
-	public List<OrderListResponse> getMyOrders(UUID memberId) {
+	public List<OrderListResponse> getMyOrders(
+		UUID memberId,
+		Integer months,
+		LocalDate startDate,
+		LocalDate endDate
+	) {
 		Preconditions.validate(
 			memberId != null,
 			ErrorCode.AUTH_INVALID
 		);
+		validatePeriodFilter(months, startDate, endDate);
 
-		return orderRepository.findAllByMemberIdOrderByCreatedAtDesc(memberId).stream()
+		return orderRepository.findMyOrders(memberId, months, startDate, endDate).stream()
 			.map(OrderListResponse::from)
 			.toList();
 	}
@@ -117,6 +124,36 @@ public class OrderServiceImpl implements OrderService {
 		return "ORD" + "-" +
 			LocalDate.now().format(ORDER_NUMBER_FORMATTER) +
 			tsidSuffix.substring(tsidSuffix.length() - 6);
+	}
+
+	private void validatePeriodFilter(
+		Integer months,
+		LocalDate startDate,
+		LocalDate endDate
+	) {
+		Preconditions.validate(
+			months == null || (startDate == null && endDate == null),
+			ErrorCode.ORDER_HISTORY_PERIOD_FILTER_CONFLICT
+		);
+
+		Preconditions.validate(
+			(startDate == null) == (endDate == null),
+			ErrorCode.ORDER_HISTORY_PERIOD_DATE_REQUIRED
+		);
+
+		if (months != null) {
+			Preconditions.validate(
+				ALLOWED_MONTHS.contains(months),
+				ErrorCode.ORDER_HISTORY_PERIOD_MONTHS_INVALID
+			);
+		}
+
+		if (startDate != null && endDate != null) {
+			Preconditions.validate(
+				!startDate.isAfter(endDate),
+				ErrorCode.ORDER_HISTORY_PERIOD_INVALID_RANGE
+			);
+		}
 	}
 
 }
