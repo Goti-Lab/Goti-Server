@@ -205,13 +205,35 @@ public class QueueRedisRepository {
 		return result == null ? 0L : Math.max(0L, result);
 	}
 
+	/**
+	 * lastEnteredRank / currentAllowedRank를 원자적으로 갱신.
+	 * 동시 seat-enter 시 race condition 방지 — max(기존값, 새값)으로만 갱신.
+	 * WHY: putAll은 last-write-wins라서 늦게 도착한 낮은 queueNumber가 높은 값을 덮어쓸 수 있음.
+	 */
 	public void updateSeatEnterMeta(UUID gameId, long lastEnteredRank) {
-		String metaKey = RedisKey.QUEUE_META.getKey(gameId);
-		redisTemplate.opsForHash().putAll(metaKey, Map.of(
-			QueueMetaField.LAST_ENTERED_RANK, lastEnteredRank,
-			QueueMetaField.CURRENT_ALLOWED_RANK, lastEnteredRank,
-			QueueMetaField.UPDATED_AT, Instant.now().toString()
-		));
+		String script =
+			"local key = KEYS[1] " +
+			"local newRank = tonumber(ARGV[1]) " +
+			"local curLast = tonumber(redis.call('HGET', key, ARGV[2]) or '0') " +
+			"local curAllowed = tonumber(redis.call('HGET', key, ARGV[3]) or '0') " +
+			"if newRank > curLast then " +
+			"  redis.call('HSET', key, ARGV[2], newRank) " +
+			"end " +
+			"if newRank > curAllowed then " +
+			"  redis.call('HSET', key, ARGV[3], newRank) " +
+			"end " +
+			"redis.call('HSET', key, ARGV[4], ARGV[5]) " +
+			"return 1";
+
+		stringRedisTemplate.execute(
+			org.springframework.data.redis.core.script.RedisScript.of(script, Long.class),
+			java.util.List.of(RedisKey.QUEUE_META.getKey(gameId)),
+			String.valueOf(lastEnteredRank),
+			QueueMetaField.LAST_ENTERED_RANK,
+			QueueMetaField.CURRENT_ALLOWED_RANK,
+			QueueMetaField.UPDATED_AT,
+			Instant.now().toString()
+		);
 	}
 
 	public void updateStatusMeta(UUID gameId, long currentAllowedRank, long publishedRank, Instant updatedAt) {
