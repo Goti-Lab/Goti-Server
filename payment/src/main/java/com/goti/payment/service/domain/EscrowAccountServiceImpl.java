@@ -2,6 +2,7 @@ package com.goti.payment.service.domain;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
@@ -83,4 +84,13 @@ public class EscrowAccountServiceImpl implements EscrowAccountService {
 	public List<EscrowAccountEntity> findAllByTransactionIds(List<UUID> transactionIds) {
 		return escrowAccountRepository.findAllByTransactionIdIn(transactionIds);
 	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public Long sumUnsettledAmounts(UUID sellerId) {
+		return Optional.ofNullable(
+			escrowAccountRepository.sumTotalAmountByStatus(sellerId, EscrowStatus.HOLDING)
+		).orElse(0L);
+	}
+
 }
