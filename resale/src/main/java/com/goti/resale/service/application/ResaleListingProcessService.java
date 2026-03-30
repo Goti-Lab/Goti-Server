@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.goti.resale.constants.ResaleListingStatus;
+import com.goti.resale.constants.ResaleSalesStatus;
 import com.goti.resale.domain.entity.resale.ResaleListingEntity;
 import com.goti.resale.domain.entity.resale.ResaleRestrictionEntity;
 import com.goti.resale.dto.request.ResaleListingCancelRequest;
@@ -62,12 +63,12 @@ public class ResaleListingProcessService {
 
 	@Transactional(readOnly = true)
 	public Page<ResaleListingResponse> getMySales(ResaleSalesSearchCommand command) {
-		List<ResaleListingStatus> statuses = mapStatus(command.status());
+		List<ResaleListingStatus> targetStatuses = mapToStatuses(command.status());
 		Pageable pageable = PageRequest.of(command.page(), command.size());
 
 		return listingService.getMySales(
 			command.sellerId(),
-			statuses,
+			targetStatuses,
 			command.months(),
 			command.startDate(),
 			command.endDate(),
@@ -75,17 +76,13 @@ public class ResaleListingProcessService {
 		).map(ResaleListingResponse::from);
 	}
 
-	private List<ResaleListingStatus> mapStatus(String status) {
-		if (status == null || status.equalsIgnoreCase("ALL")) {
-			return null;
-		}
-
-		return switch (status.toUpperCase()) {
-			case "LISTING" -> List.of(ResaleListingStatus.LISTING, ResaleListingStatus.HOLD);
-			case "PENDING" -> List.of(ResaleListingStatus.SOLD);
-			case "SETTLED" -> List.of(ResaleListingStatus.SETTLED);
-			case "CANCELED" -> List.of(ResaleListingStatus.CANCELED);
-			default -> null;
+	private List<ResaleListingStatus> mapToStatuses(ResaleSalesStatus status) {
+		return switch (status) {
+			case ALL -> null;
+			case LISTING -> List.of(ResaleListingStatus.LISTING, ResaleListingStatus.HOLD);
+			case PENDING -> List.of(ResaleListingStatus.SOLD);
+			case SETTLED -> List.of(ResaleListingStatus.SETTLED);
+			case CANCELED -> List.of(ResaleListingStatus.CANCELED);
 		};
 	}
 
