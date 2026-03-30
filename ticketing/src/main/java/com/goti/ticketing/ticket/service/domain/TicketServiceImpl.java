@@ -3,17 +3,24 @@ package com.goti.ticketing.ticket.service.domain;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.github.f4b6a3.tsid.TsidCreator;
+import com.goti.constants.messages.ErrorCode;
 import com.goti.ticketing.domain.entity.order.OrderItemEntity;
 import com.goti.ticketing.domain.entity.ticket.TicketEntity;
+import com.goti.exception.CustomException;
+import com.goti.global.validation.Preconditions;
+import com.goti.ticketing.ticket.dto.response.TicketResponse;
 import com.goti.ticketing.ticket.repository.TicketRepository;
 
 import lombok.RequiredArgsConstructor;
+import static java.util.stream.Collectors.toMap;
 
 @Service
 @RequiredArgsConstructor
@@ -53,6 +60,43 @@ public class TicketServiceImpl implements TicketService {
 		);
 
 		return ticketRepository.save(ticket);
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public Map<UUID, TicketEntity> getByOrderItemIds(List<UUID> orderItemIds) {
+		return ticketRepository.findAllByOrderItemIdIn(orderItemIds).stream()
+			.collect(toMap(TicketEntity::getOrderItemId, ticket -> ticket));
+	}
+
+	@Override
+	@Transactional
+	public void invalidate(TicketEntity ticket) {
+		ticket.invalidate();
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public TicketResponse getDetail(
+		UUID ticketId,
+		UUID userId
+	) {
+		Preconditions.validate(
+			userId != null,
+			ErrorCode.AUTH_INVALID
+		);
+
+		TicketEntity ticket = ticketRepository.findByIdAndUserId(ticketId, userId)
+			.orElseThrow(() -> new CustomException(ErrorCode.TICKET_NOT_FOUND));
+
+		return TicketResponse.from(ticket);
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public TicketEntity get(UUID ticketId) {
+		return ticketRepository.findById(ticketId)
+			.orElseThrow(() -> new CustomException(ErrorCode.TICKET_NOT_FOUND));
 	}
 
 	private String generateTicketNumber() {

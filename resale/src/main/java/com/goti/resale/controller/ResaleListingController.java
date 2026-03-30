@@ -22,8 +22,8 @@ import com.goti.resale.dto.request.ResaleListingCreateRequest;
 import com.goti.resale.dto.response.ResaleListingCountResponse;
 import com.goti.resale.dto.response.ResaleListingResponse;
 import com.goti.resale.dto.response.ResalePriceHistoryResponse;
-import com.goti.resale.service.application.ResaleListingService;
-import com.goti.resale.service.application.ResalePriceService;
+import com.goti.resale.service.application.ResaleListingProcessService;
+import com.goti.resale.service.application.ResalePriceProcessService;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -38,8 +38,8 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class ResaleListingController {
 
-	private final ResaleListingService listingService;
-	private final ResalePriceService priceService;
+	private final ResaleListingProcessService listingService;
+	private final ResalePriceProcessService priceService;
 
 	@Operation(
 		summary = "리셀 등록",

@@ -15,6 +15,10 @@ public record BaseballTeamCreateRequest(
 	@NotNull(message = "구단(팀) 코드는 필수 항목입니다.")
 	TeamCode teamCode,
 
+	@Schema(description = "구단명(표시명)", example = "SS")
+	@NotBlank(message = "구단명(표시명)은 필수 항목입니다.")
+	String displayName,
+
 	@Schema(description = "구단명", example = "삼성라이온즈")
 	@NotBlank(message = "구단(팀)이름은 필수 항목입니다.")
 	String teamName,
@@ -76,7 +80,7 @@ public record BaseballTeamCreateRequest(
 
 	public BaseballTeamCreateCommand toCommand() {
 		return new BaseballTeamCreateCommand(
-			teamCode, teamName, teamNameEn, sponsor, homeGround,
+			teamCode, displayName, teamName, teamNameEn, sponsor, homeGround,
 			foundedYear, officeAddress, zipCode, siteAddress,
 			owner, ownerAgency, ceo, generalManager, director, logoUrl
 		);

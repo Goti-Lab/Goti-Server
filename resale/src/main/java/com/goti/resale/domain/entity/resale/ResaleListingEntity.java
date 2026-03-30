@@ -5,10 +5,10 @@ import static lombok.AccessLevel.*;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-import com.goti.resale.constants.ResaleAvailableStatus;
-import com.goti.resale.constants.ResaleListingStatus;
 import com.goti.domain.base.ModificationTimestampEntity;
 import com.goti.global.validation.Preconditions;
+import com.goti.resale.constants.ResaleAvailableStatus;
+import com.goti.resale.constants.ResaleListingStatus;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -74,7 +74,7 @@ public class ResaleListingEntity extends ModificationTimestampEntity {
 
 	private LocalDateTime canceledAt;
 
-	public ResaleListingEntity(
+	private ResaleListingEntity(
 		UUID ticketId,
 		UUID sellerId,
 		UUID gameId,
@@ -174,7 +174,7 @@ public class ResaleListingEntity extends ModificationTimestampEntity {
 		this.listingStatus = ResaleListingStatus.LISTING;
 	}
 
-	public void SoldOut(Integer transactionPrice) {
+	public void soldOut(Integer transactionPrice) {
 		Preconditions.domainValidate(
 			this.listingStatus == ResaleListingStatus.HOLD,
 			"HOLD상태에서만 판매할 수 있습니다."

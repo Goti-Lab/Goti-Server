@@ -1,14 +1,18 @@
 package com.goti.ticketing.game.api.game;
 
-import com.github.tomakehurst.wiremock.client.WireMock;
 import com.goti.ticketing.GotiTicketingApplication;
-import com.goti.ticketing.constants.LeagueType;
 import com.goti.stadium.constants.TeamCode;
 import com.goti.stadium.domain.entity.stadium.StadiumEntity;
 import com.goti.stadium.domain.entity.team.BaseballTeamEntity;
+import com.goti.ticketing.constants.LeagueType;
 import com.goti.ticketing.game.service.application.GameManagementService;
 import com.goti.stadium.repository.BaseballTeamRepository;
 import com.goti.stadium.repository.StadiumRepository;
+
+import com.goti.ticketing.infra.api.StadiumApiClient;
+
+import com.goti.ticketing.infra.api.dto.response.BaseballTeamDisplayNameResponse;
+import com.goti.ticketing.infra.api.dto.response.StadiumLocationResponse;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -20,21 +24,23 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.cloud.contract.wiremock.AutoConfigureWireMock;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.*;
+import static org.mockito.BDDMockito.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-
 
 @Slf4j
 @SpringBootTest(classes = GotiTicketingApplication.class)
@@ -47,6 +53,9 @@ public class GameSchedulesSearchApiTest {
 
 	@Autowired
 	MockMvc mockMvc;
+
+	@MockitoBean
+	private StadiumApiClient stadiumApiClient;
 
 	@Autowired
 	GameManagementService gameManagementService;
@@ -61,45 +70,26 @@ public class GameSchedulesSearchApiTest {
 	BaseballTeamEntity samsung;
 	StadiumEntity stadium;
 
-	private static final String BASEBALL_GET_API_URI = "/api/v1/baseball-teams/";
-	private static final String STADIUM_GET_API_URI = "/api/v1/stadiums/";
+	private static final String BASEBALL_GET_API_URI = "/api/v1/baseball-teams";
+	private static final String STADIUM_GET_API_URI = "/api/v1/stadiums";
+
 
 	@BeforeEach
 	void setup() {
-
 		saveKia();
 		saveSamsung();
 		saveStadium();
 
-		stubFor(
-			WireMock.get(
-				urlEqualTo(BASEBALL_GET_API_URI + kia.getId())
-			).willReturn(aResponse().withStatus(200))
-		);
+		given(stadiumApiClient.getBaseballTeamDisplayNames(any()))
+			.willReturn(List.of(
+				new BaseballTeamDisplayNameResponse(kia.getId(), "KIA"),
+				new BaseballTeamDisplayNameResponse(samsung.getId(), "삼성")
+			));
 
-		stubFor(
-			WireMock.get(
-				urlEqualTo(BASEBALL_GET_API_URI + samsung.getId())
-			).willReturn(aResponse().withStatus(200))
-		);
-
-		stubFor(
-			WireMock.get(
-				urlEqualTo(STADIUM_GET_API_URI + stadium.getId())
-			).willReturn(aResponse().withStatus(200))
-		);
-
-		gameManagementService.register(
-			kia.getId(), samsung.getId(), stadium.getId(),
-			LocalDateTime.now().plusDays(10).withHour(18).withMinute(30).withSecond(0).withNano(0),
-			LeagueType.REGULAR
-		);
-
-		gameManagementService.register(
-			samsung.getId(), kia.getId(), stadium.getId(),
-			LocalDateTime.now().plusDays(11).withHour(14).withMinute(0).withSecond(0).withNano(0),
-			LeagueType.REGULAR
-		);
+		given(stadiumApiClient.getStadiumLocations(any()))
+			.willReturn(List.of(
+				new StadiumLocationResponse(stadium.getId(), "광주")
+			));
 	}
 
 	@Test
@@ -117,7 +107,7 @@ public class GameSchedulesSearchApiTest {
 			samsung.getId(), kia.getId(), stadium.getId(), secondGameDate, LeagueType.REGULAR
 		);
 
-		mockMvc.perform(
+		MvcResult result = mockMvc.perform(
 				get("/api/v1/games/schedules")
 					.with(csrf())
 					.param("year", String.valueOf(testYear))
@@ -126,12 +116,18 @@ public class GameSchedulesSearchApiTest {
 					.contentType(MediaType.APPLICATION_JSON)
 			)
 			.andExpect(status().isOk())
-			.andExpect(jsonPath("$.data.length()").value(2));
+			.andExpect(
+				jsonPath("$.data.length()").value(2)
+			).andReturn();
+
+		String responseJson = result.getResponse().getContentAsString();
+		log.info("response : {}", responseJson);
 	}
 
 	private void saveSamsung() {
 		samsung = BaseballTeamEntity.create(
 			TeamCode.SS,
+			"삼성",
 			"삼성 라이온즈",
 			"Samsung Lions",
 			"삼성",
@@ -153,6 +149,7 @@ public class GameSchedulesSearchApiTest {
 	private void saveKia() {
 		kia = BaseballTeamEntity.create(
 			TeamCode.KIA,
+			"KIA",
 			"KIA 타이거즈",
 			"KIA Tigers",
 			"기아",

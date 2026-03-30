@@ -31,4 +31,15 @@ public class SeatStatusRepositoryImpl implements SeatStatusRepositoryCustom {
 			)
 			.fetch();
 	}
+
+	@Override
+	public List<UUID> findSeatIdsByGameId(UUID gameId) {
+		QSeatStatusEntity seatStatus = QSeatStatusEntity.seatStatusEntity;
+
+		return queryFactory
+			.select(seatStatus.seat.id)
+			.from(seatStatus)
+			.where(seatStatus.game.id.eq(gameId))
+			.fetch();
+	}
 }

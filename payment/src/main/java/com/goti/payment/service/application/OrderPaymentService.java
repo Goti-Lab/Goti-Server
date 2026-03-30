@@ -30,6 +30,17 @@ public class OrderPaymentService {
 		PaymentMethod paymentMethod,
 		String idempotencyKey
 	) {
+		Preconditions.validate(
+			memberId != null,
+			ErrorCode.AUTH_INVALID
+		);
+
+		Preconditions.validate(
+			orderId != null,
+			ErrorCode.MISSING_PARAMETER,
+			"orderId"
+		);
+
 		PaymentOrderInfo order = ticketingOrderClient.getPaymentOrder(orderId, memberId);
 
 		Preconditions.validate(

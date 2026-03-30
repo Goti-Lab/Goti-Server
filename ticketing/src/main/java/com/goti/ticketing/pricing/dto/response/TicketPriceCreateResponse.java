@@ -2,8 +2,8 @@ package com.goti.ticketing.pricing.dto.response;
 
 import java.util.UUID;
 
+import com.goti.ticketing.constants.LeagueType;
 import com.goti.ticketing.constants.TicketPricingDayType;
-import com.goti.ticketing.constants.TicketPricingMatchType;
 import com.goti.ticketing.constants.TicketType;
 import com.goti.ticketing.domain.entity.pricing.TicketPriceEntity;
 
@@ -22,8 +22,8 @@ public record TicketPriceCreateResponse(
 	@Schema(description = "요일 유형", example = "WEEKDAY")
 	TicketPricingDayType dayType,
 
-	@Schema(description = "매치 유형", example = "REGULAR")
-	TicketPricingMatchType matchType,
+	@Schema(description = "리그 유형", example = "REGULAR")
+	LeagueType leagueType,
 
 	@Schema(description = "가격", example = "15000")
 	Integer price
@@ -34,7 +34,7 @@ public record TicketPriceCreateResponse(
 			ticketPrice.getGrade().getId(),
 			ticketPrice.getTicketType(),
 			ticketPrice.getDayType(),
-			ticketPrice.getMatchType(),
+			ticketPrice.getLeagueType(),
 			ticketPrice.getPrice()
 		);
 	}

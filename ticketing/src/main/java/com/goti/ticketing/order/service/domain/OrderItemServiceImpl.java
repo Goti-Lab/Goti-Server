@@ -42,4 +42,10 @@ public class OrderItemServiceImpl implements OrderItemService {
 	public void expire(OrderItemEntity orderItem) {
 		orderItem.expire();
 	}
+
+	@Override
+	@Transactional
+	public void cancel(OrderItemEntity orderItem) {
+		orderItem.cancel();
+	}
 }

@@ -111,6 +111,40 @@ class OrderEntityTest {
 			.hasMessageContaining("PENDING 상태에서만 주문 만료 처리가 가능합니다.");
 	}
 
+	@Test
+	void 주문_취소_성공() {
+		OrderEntity order = OrderEntity.create(
+			orderNumber,
+			userId,
+			gameSchedule,
+			totalQuantity,
+			totalAmount
+		);
+		order.confirm();
+
+		order.cancel();
+
+		assertThat(order.getOrderStatus()).isEqualTo(OrderStatus.CANCELED);
+		assertThat(order.getCanceledAt()).isNotNull();
+	}
+
+	@Test
+	void 주문_부분취소_성공() {
+		OrderEntity order = OrderEntity.create(
+			orderNumber,
+			userId,
+			gameSchedule,
+			totalQuantity,
+			totalAmount
+		);
+		order.confirm();
+
+		order.partialCancel();
+
+		assertThat(order.getOrderStatus()).isEqualTo(OrderStatus.PARTIALLY_CANCELED);
+		assertThat(order.getCanceledAt()).isNull();
+	}
+
 	@ParameterizedTest
 	@NullAndEmptySource
 	@ValueSource(strings = {" ", "   "})

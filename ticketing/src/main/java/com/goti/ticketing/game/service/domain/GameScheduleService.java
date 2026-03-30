@@ -15,4 +15,6 @@ public interface GameScheduleService {
 		LocalDateTime startAt,
 		LeagueType leagueType
 	);
+
+	GameScheduleEntity get(UUID gameId);
 }

@@ -2,8 +2,8 @@ package com.goti.ticketing.game.service;
 
 import com.goti.ticketing.GotiTicketingApplication;
 
-import com.goti.ticketing.constants.LeagueType;
 import com.goti.stadium.constants.TeamCode;
+import com.goti.ticketing.constants.LeagueType;
 import com.goti.ticketing.constants.TicketingStatus;
 import com.goti.stadium.domain.entity.stadium.StadiumEntity;
 import com.goti.stadium.domain.entity.team.BaseballTeamEntity;
@@ -14,7 +14,7 @@ import com.goti.stadium.repository.BaseballTeamRepository;
 
 import com.goti.stadium.repository.StadiumRepository;
 
-import com.goti.ticketing.infra.api.StadiumClient;
+import com.goti.ticketing.infra.api.StadiumApiClient;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -51,7 +51,7 @@ public class GameManagementServiceTest {
 	StadiumRepository stadiumRepository;
 
 	@MockitoBean
-	private StadiumClient stadiumClient;
+	private StadiumApiClient StadiumApiClient;
 
 	BaseballTeamEntity homeTeam;
 	BaseballTeamEntity awayTeam;
@@ -102,6 +102,7 @@ public class GameManagementServiceTest {
 	void saveHomeTeam() {
 		homeTeam = BaseballTeamEntity.create(
 			TeamCode.KIA,
+			"KIA",
 			"KIA 타이거즈",
 			"KIA Tigers",
 			"기아",
@@ -123,6 +124,7 @@ public class GameManagementServiceTest {
 	void saveAwayTeam() {
 		awayTeam = BaseballTeamEntity.create(
 			TeamCode.SS,
+			"삼성",
 			"삼성 라이온즈",
 			"Samsung Lions",
 			"삼성",

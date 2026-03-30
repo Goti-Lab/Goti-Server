@@ -7,7 +7,7 @@ import java.util.UUID;
 import org.springframework.stereotype.Repository;
 
 import com.goti.ticketing.constants.TicketPricingDayType;
-import com.goti.ticketing.constants.TicketPricingMatchType;
+import com.goti.ticketing.constants.LeagueType;
 import com.goti.ticketing.constants.TicketType;
 import com.goti.ticketing.domain.entity.pricing.QTicketPriceEntity;
 import com.goti.ticketing.domain.entity.pricing.QTicketPricingPolicyEntity;
@@ -29,7 +29,7 @@ public class TicketPriceRepositoryImpl implements TicketPriceRepositoryCustom {
 		SeatGradeEntity grade,
 		TicketType ticketType,
 		TicketPricingDayType dayType,
-		TicketPricingMatchType matchType
+		LeagueType leagueType
 	) {
 		QTicketPriceEntity ticketPrice = QTicketPriceEntity.ticketPriceEntity;
 		QTicketPricingPolicyEntity policy = QTicketPricingPolicyEntity.ticketPricingPolicyEntity;
@@ -47,7 +47,7 @@ public class TicketPriceRepositoryImpl implements TicketPriceRepositoryCustom {
 					ticketPrice.grade.eq(grade),
 					ticketPrice.ticketType.eq(ticketType),
 					ticketPrice.dayType.eq(dayType),
-					ticketPrice.matchType.eq(matchType)
+					ticketPrice.leagueType.eq(leagueType)
 				)
 				.orderBy(policy.policyStartAt.desc())
 				.fetchOne()

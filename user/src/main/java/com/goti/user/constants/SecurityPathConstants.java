@@ -15,6 +15,7 @@ public final class SecurityPathConstants {
 		"/api/v1/seats/bulk",
 		"/api/v1/stadium-seats/seat-sections",
 		"/api/v1/stadium-seats/seat-grades",
+		"/api/v1/game-seats/*/init",
 		"/actuator/health",
 		"/actuator/health/**",
 		"/swagger-ui/**",

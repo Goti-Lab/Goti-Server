@@ -31,3 +31,13 @@ sms:
     sender: ${SMS_API_SENDER:}
     content: "[Goti] 인증번호 [{code}]를 입력해주세요."
     domain: ${SMS_API_DOMAIN:https://api.coolsms.co.kr}
+
+app:
+  cookie:
+    secure: ${COOKIE_SECURE:false}
+    same-site: ${COOKIE_SAME_SITE:Lax}
+    refresh:
+      name: ${REFRESH_COOKIE_NAME:refreshToken}
+      path: ${REFRESH_REISSUE_PATH:/api/v1/auth/reissue}
+  cors:
+    allowed-origins: ${GOTI_CORS_ALLOWED_ORIGINS:http://localhost:3000,http://localhost:8080}

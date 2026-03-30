@@ -1,5 +1,6 @@
 package com.goti.ticketing.order.service.domain;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
@@ -20,7 +21,18 @@ public interface OrderService {
 
 	void expire(OrderEntity order);
 
-	List<OrderListResponse> getMyOrders(UUID memberId);
+	List<OrderListResponse> getMyOrders(
+		UUID memberId,
+		Integer months,
+		LocalDate startDate,
+		LocalDate endDate
+	);
 
 	OrderPaymentInfoResponse getPaymentOrder(UUID orderId, UUID memberId);
+
+	OrderEntity get(UUID orderId, UUID memberId);
+
+	void cancel(OrderEntity order);
+
+	void partialCancel(OrderEntity order);
 }

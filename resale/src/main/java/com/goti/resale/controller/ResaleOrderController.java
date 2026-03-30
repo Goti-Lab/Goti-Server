@@ -2,11 +2,9 @@ package com.goti.resale.controller;
 
 import static com.goti.global.api.ApiSuccessResponse.*;
 
-import java.util.List;
 import java.util.UUID;
 
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -23,9 +21,10 @@ import com.goti.resale.dto.request.ResaleOrderRequest;
 import com.goti.resale.dto.response.ResaleHoldResponse;
 import com.goti.resale.dto.response.ResaleOrderCompleteResponse;
 import com.goti.resale.dto.response.ResaleOrderCreateResponse;
+import com.goti.resale.dto.response.ResaleOrderListResponse;
 import com.goti.resale.dto.response.ResaleReleaseResponse;
-import com.goti.resale.service.application.ResaleHoldService;
-import com.goti.resale.service.application.ResaleOrderService;
+import com.goti.resale.service.application.ResaleHoldProcessService;
+import com.goti.resale.service.application.ResaleOrderProcessService;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -37,8 +36,8 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/api/v1/resales")
 @RequiredArgsConstructor
 public class ResaleOrderController {
-	private final ResaleOrderService resaleOrderService;
-	private final ResaleHoldService resaleHoldService;
+	private final ResaleOrderProcessService resaleOrderProcessService;
+	private final ResaleHoldProcessService resaleHoldProcessService;
 
 	@Operation(
 		summary = "리셀 주문 생성",
@@ -49,7 +48,7 @@ public class ResaleOrderController {
 		@AuthenticationPrincipal(expression = "id") UUID buyerId,
 		@Valid @RequestBody ResaleOrderRequest request
 	) {
-		ResaleOrderCreateResponse response = resaleOrderService.initOrder(buyerId, request);
+		ResaleOrderCreateResponse response = resaleOrderProcessService.initOrder(buyerId, request);
 		return wrap(response);
 	}
 
@@ -62,20 +61,19 @@ public class ResaleOrderController {
 		@PathVariable UUID resaleOrderId,
 		@RequestParam UUID paymentId
 	) {
-		ResaleOrderCompleteResponse response = resaleOrderService.completePayment(resaleOrderId, paymentId);
+		ResaleOrderCompleteResponse response = resaleOrderProcessService.completePayment(resaleOrderId, paymentId);
 		return wrap(response);
 	}
 
 	@Operation(
 		summary = "리셀 정산 최종 완료 처리",
-		description = "실제 은행 지급 완료 후 관리자가 정산 상태를 변경 API"
+		description = "실제 은행 송금이 완료 및 정산 완료 처리 API"
 	)
 	@PatchMapping("/orders/{resaleOrderId}/settled")
-	@PreAuthorize("hasRole('ADMIN')")
 	public ResponseEntity<ApiSuccessResponse<Void>> completeSettlement(
 		@PathVariable UUID resaleOrderId
 	) {
-		resaleOrderService.completeSettlement(resaleOrderId);
+		resaleOrderProcessService.completeSettlement(resaleOrderId);
 		return wrap(null);
 	}
 
@@ -84,10 +82,10 @@ public class ResaleOrderController {
 		description = "특정 리셀 주문에 포함된 거래 ID 목록을 조회 API"
 	)
 	@GetMapping("/orders/{resaleOrderId}/transactions")
-	public ResponseEntity<ApiSuccessResponse<List<UUID>>> getTransactionIds(
+	public ResponseEntity<ApiSuccessResponse<ResaleOrderListResponse>> getTransactionIds(
 		@PathVariable UUID resaleOrderId
 	) {
-		return wrap(resaleOrderService.getTransactionIds(resaleOrderId));
+		return wrap(resaleOrderProcessService.getTransactionIds(resaleOrderId));
 	}
 
 	@Operation(
@@ -99,7 +97,7 @@ public class ResaleOrderController {
 		@AuthenticationPrincipal(expression = "id") UUID buyerId,
 		@Valid @RequestBody ResaleHoldRequest request
 	) {
-		ResaleHoldResponse response = resaleHoldService.holdResale(buyerId, request);
+		ResaleHoldResponse response = resaleHoldProcessService.holdResale(buyerId, request);
 		return wrap(response);
 	}
 
@@ -112,7 +110,7 @@ public class ResaleOrderController {
 		@AuthenticationPrincipal(expression = "id") UUID buyerId,
 		@PathVariable UUID holdId
 	) {
-		ResaleReleaseResponse response = resaleHoldService.releaseResaleHold(buyerId, holdId);
+		ResaleReleaseResponse response = resaleHoldProcessService.releaseResaleHold(buyerId, holdId);
 		return wrap(response);
 	}
 }

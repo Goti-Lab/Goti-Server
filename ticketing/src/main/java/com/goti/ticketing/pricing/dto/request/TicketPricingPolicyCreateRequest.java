@@ -4,8 +4,8 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
+import com.goti.ticketing.constants.LeagueType;
 import com.goti.ticketing.constants.TicketPricingDayType;
-import com.goti.ticketing.constants.TicketPricingMatchType;
 import com.goti.ticketing.constants.TicketType;
 import com.fasterxml.jackson.annotation.JsonFormat;
 
@@ -42,9 +42,9 @@ public record TicketPricingPolicyCreateRequest(
 		@NotNull(message = "요일 유형은 필수입니다.")
 		TicketPricingDayType dayType,
 
-		@Schema(description = "매치 유형", example = "REGULAR")
-		@NotNull(message = "매치 유형은 필수입니다.")
-		TicketPricingMatchType matchType,
+		@Schema(description = "리그 유형", example = "REGULAR")
+		@NotNull(message = "리그 유형은 필수입니다.")
+		LeagueType leagueType,
 
 		@Schema(description = "가격", example = "15000")
 		@NotNull(message = "가격은 필수입니다.")

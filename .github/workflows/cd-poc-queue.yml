@@ -1,0 +1,185 @@
+# ============================================================================
+# [POC] Queue 구현체 비교 테스트용 이미지 빌드
+# ============================================================================
+# 목적: 3개 대기열 구현체(수연/준상/성전)를 각각 ECR에 빌드+푸시
+# 사용법: GitHub Actions > Run workflow > 브랜치 선택 > Run
+# 삭제 시점: 최종 구현체 결정 후 이 워크플로우 삭제
+# ============================================================================
+
+name: CD (POC Queue Build)
+
+on:
+  workflow_dispatch:
+    inputs:
+      poc_author:
+        description: "빌드할 POC 구현체"
+        required: true
+        type: choice
+        options:
+          - suyeon
+          - junsang
+          - sungjeon
+          - all
+      poc_branch:
+        description: "브랜치 (auto: poc_author에 맞는 브랜치 자동 선택)"
+        required: false
+        type: string
+        default: "auto"
+      build_module:
+        description: "빌드할 모듈 (queue: MSA 큐, ticketing: MSA 티켓팅, api: 모놀리스)"
+        required: true
+        type: choice
+        options:
+          - queue
+          - ticketing
+          - api
+        default: queue
+
+env:
+  AWS_REGION: ap-northeast-2
+  ECR_REPO: goti-queue
+
+jobs:
+  resolve-branches:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+      - name: Set build matrix
+        id: set-matrix
+        run: |
+          if [ "${{ inputs.poc_author }}" = "all" ]; then
+            echo 'matrix={"include":[{"author":"suyeon","branch":"poc/queue-waiting-suyeon-cdn-optimized"},{"author":"junsang","branch":"poc/queue-waiting-junsang"},{"author":"sungjeon","branch":"poc/queue-waiting-sungjeon"}]}' >> "$GITHUB_OUTPUT"
+          else
+            AUTHOR="${{ inputs.poc_author }}"
+            if [ "${{ inputs.poc_branch }}" = "auto" ]; then
+              case "$AUTHOR" in
+                suyeon)    BRANCH="poc/queue-waiting-suyeon-cdn-optimized" ;;
+                junsang)   BRANCH="poc/queue-waiting-junsang" ;;
+                sungjeon)  BRANCH="poc/queue-waiting-sungjeon" ;;
+              esac
+            else
+              BRANCH="${{ inputs.poc_branch }}"
+            fi
+            echo "matrix={\"include\":[{\"author\":\"${AUTHOR}\",\"branch\":\"${BRANCH}\"}]}" >> "$GITHUB_OUTPUT"
+          fi
+
+  build-and-push:
+    needs: resolve-branches
+    runs-on: ubuntu-latest
+    strategy:
+      matrix: ${{ fromJson(needs.resolve-branches.outputs.matrix) }}
+      fail-fast: false
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - name: Checkout (${{ matrix.branch }})
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ matrix.branch }}
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Build ${{ inputs.build_module || 'queue' }} bootJar
+        run: |
+          MODULE="${{ inputs.build_module || 'queue' }}"
+          if [ "$MODULE" = "api" ]; then
+            ./gradlew :api:bootJar --no-daemon -x test
+          else
+            ./gradlew :${MODULE}:bootJar -Pmsa --no-daemon -x test
+          fi
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: ecr-login
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Generate image tag
+        id: tag
+        run: |
+          SHA7="${GITHUB_SHA::7}"
+          SEQ="${{ github.run_number }}"
+          TAG="poc-${{ matrix.author }}-${SEQ}-${SHA7}"
+          REGISTRY="${{ steps.ecr-login.outputs.registry }}"
+          IMAGE="${REGISTRY}/${ECR_REPO}:${TAG}"
+          echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
+          echo "image=${IMAGE}" >> "$GITHUB_OUTPUT"
+          echo "::notice::📦 Image: ${IMAGE}"
+
+      - name: Build and push to ECR
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          build-args: MODULE=${{ inputs.build_module || 'queue' }}
+          tags: ${{ steps.tag.outputs.image }}
+          cache-from: type=gha,scope=poc-queue-${{ matrix.author }}
+          cache-to: type=gha,mode=max,scope=poc-queue-${{ matrix.author }}
+
+      - name: Update Goti-k8s values.yaml
+        env:
+          GH_TOKEN: ${{ secrets.GOTI_K8S_DISPATCH_TOKEN }}
+        run: |
+          AUTHOR="${{ matrix.author }}"
+          TAG="${{ steps.tag.outputs.tag }}"
+
+          # 구현체별 values.yaml 경로 매핑
+          case "$AUTHOR" in
+            suyeon)    FILE_PATH="environments/dev/goti-queue/values.yaml" ;;
+            junsang)   FILE_PATH="environments/dev/goti-queue-junsang/values.yaml" ;;
+            sungjeon)  FILE_PATH="environments/dev/goti-queue-sungjeon/values.yaml" ;;
+          esac
+
+          echo "📝 Updating ${FILE_PATH} → tag: ${TAG}"
+
+          # 현재 파일 조회
+          RESPONSE=$(gh api "repos/Team-Ikujo/Goti-k8s/contents/${FILE_PATH}?ref=main" \
+            --jq '{sha: .sha, content: .content}')
+
+          FILE_SHA=$(echo "$RESPONSE" | jq -r '.sha')
+          CURRENT=$(echo "$RESPONSE" | jq -r '.content' | base64 -d)
+
+          # 현재 태그 추출
+          CURRENT_TAG=$(echo "$CURRENT" | grep -oP 'tag:\s*"\K[^"]+')
+          echo "  Current tag: ${CURRENT_TAG}"
+          echo "  New tag:     ${TAG}"
+
+          # 태그 교체
+          UPDATED=$(echo "$CURRENT" | sed "s|tag: \"${CURRENT_TAG}\"|tag: \"${TAG}\"|")
+          NEW_B64=$(echo "$UPDATED" | base64 -w 0)
+
+          # Goti-k8s main 브랜치에 커밋
+          gh api "repos/Team-Ikujo/Goti-k8s/contents/${FILE_PATH}" \
+            -X PUT \
+            -f message="[CHORE] goti-queue-${AUTHOR} POC 이미지 태그 업데이트: ${TAG}" \
+            -f content="${NEW_B64}" \
+            -f sha="${FILE_SHA}" \
+            -f branch="main"
+
+          echo "✅ Updated ${FILE_PATH}"
+
+      - name: Summary
+        run: |
+          echo "## 🏗️ POC Queue Build — ${{ matrix.author }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "| 항목 | 값 |" >> "$GITHUB_STEP_SUMMARY"
+          echo "|------|-----|" >> "$GITHUB_STEP_SUMMARY"
+          echo "| 구현체 | ${{ matrix.author }} |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| 브랜치 | \`${{ matrix.branch }}\` |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| 빌드 모듈 | \`${{ inputs.build_module || 'queue' }}\` |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| 이미지 태그 | \`${{ steps.tag.outputs.tag }}\` |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| 전체 이미지 | \`${{ steps.tag.outputs.image }}\` |" >> "$GITHUB_STEP_SUMMARY"

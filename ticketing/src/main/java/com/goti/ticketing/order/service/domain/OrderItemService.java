@@ -20,4 +20,6 @@ public interface OrderItemService {
 	List<OrderItemEntity> get(UUID orderId);
 
 	void expire(OrderItemEntity orderItem);
+
+	void cancel(OrderItemEntity orderItem);
 }

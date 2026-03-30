@@ -3,12 +3,12 @@ server:
 spring:
   jpa:
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: update
     properties:
       hibernate:
         hbm2ddl.create_namespaces: true
   datasource:
-    url: ${DATASOURCE_URL:jdbc:postgresql://localhost:5432/goti}
+    url: ${DATASOURCE_URL:jdbc:postgresql://localhost:5432/goti_test}
     username: ${DATASOURCE_USERNAME:goti}
     password: ${DATASOURCE_PASSWORD:goti1234}
     driver-class-name: org.postgresql.Driver

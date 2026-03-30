@@ -6,6 +6,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.UUID;
 
+import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,10 +29,12 @@ import com.goti.ticketing.order.service.domain.OrderItemService;
 import com.goti.ticketing.order.service.domain.OrderPricingResult;
 import com.goti.ticketing.order.service.domain.OrderPricingService;
 import com.goti.ticketing.order.service.domain.OrderService;
+import com.goti.ticketing.session.service.application.ReservationSessionService;
 import com.goti.ticketing.seat.repository.SeatHoldRepository;
 
 import lombok.RequiredArgsConstructor;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class OrderCreateService {
@@ -41,6 +45,7 @@ public class OrderCreateService {
 	private final OrderHistoryService orderHistoryService;
 	private final OrderItemService orderItemService;
 	private final OrderPricingService orderPricingService;
+	private final ReservationSessionService reservationSessionService;
 
 	@Transactional
 	public OrderCreateResponse create(OrderCreateCommand command) {
@@ -48,6 +53,7 @@ public class OrderCreateService {
 			command.memberId() != null,
 			ErrorCode.AUTH_INVALID
 		);
+		reservationSessionService.validateActiveSession(command.memberId(), command.gameId());
 
 		validateDuplicateHoldIds(command.holdIds());
 
@@ -75,6 +81,15 @@ public class OrderCreateService {
 		);
 
 		createOrderItems(order, pricingResult.pricedHolds());
+
+		log.info(
+			"action=ORDER_CREATE gameId={} userId={} orderId={} quantity={} totalAmount={}",
+			command.gameId(),
+			command.memberId(),
+			order.getId(),
+			order.getTotalQuantity(),
+			order.getTotalAmount()
+		);
 
 		return OrderCreateResponse.from(
 			order.getId(),
@@ -117,10 +132,14 @@ public class OrderCreateService {
 				hold.getStatus() == SeatHoldStatus.HOLDING,
 				ErrorCode.SEAT_HOLD_STATUS_INVALID
 			);
-			Preconditions.validate(
-				hold.getExpiredAt().isAfter(LocalDateTime.now()),
-				ErrorCode.SEAT_HOLD_EXPIRED
-			);
+			if (!hold.getExpiredAt().isAfter(LocalDateTime.now())) {
+				throw new CustomException(ErrorCode.SEAT_HOLD_EXPIRED)
+					.withContext("action", "SESSION_BLOCK")
+					.withContext("stage", "ORDER_CREATE")
+					.withContext("gameId", gameId)
+					.withContext("userId", userId)
+					.withContext("holdId", hold.getId());
+			}
 		}
 	}
 

@@ -13,6 +13,7 @@ import com.goti.ticketing.domain.entity.seat.SeatGradeEntity;
 import com.goti.ticketing.domain.entity.seat.SeatSectionEntity;
 import com.goti.exception.CustomException;
 import com.goti.global.validation.Preconditions;
+import com.goti.ticketing.session.service.application.ReservationSessionService;
 import com.goti.ticketing.seat.repository.SeatGradeRepository;
 import com.goti.ticketing.seat.repository.SeatSectionRepository;
 
@@ -23,6 +24,7 @@ import lombok.RequiredArgsConstructor;
 public class SeatSectionServiceImpl implements SeatSectionService {
 	private final SeatGradeRepository seatGradeRepository;
 	private final SeatSectionRepository seatSectionRepository;
+	private final ReservationSessionService reservationSessionService;
 
 	@Override
 	@Transactional
@@ -53,11 +55,12 @@ public class SeatSectionServiceImpl implements SeatSectionService {
 
 	@Override
 	@Transactional(readOnly = true)
-	public List<SeatSectionResponse> get(UUID stadiumId, UUID userId) {
+	public List<SeatSectionResponse> get(UUID stadiumId, UUID gameId, UUID userId) {
 		Preconditions.validate(
 			userId != null,
 			ErrorCode.AUTH_INVALID
 		);
+		reservationSessionService.validateActiveSession(userId, gameId);
 
 		return seatSectionRepository.findAllByStadiumId(stadiumId).stream()
 			.map(SeatSectionResponse::from)

@@ -4,9 +4,6 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
-import com.goti.ticketing.constants.TicketPricingDayType;
-import com.goti.ticketing.constants.TicketPricingMatchType;
-import com.goti.ticketing.constants.TicketType;
 import com.goti.ticketing.domain.entity.pricing.TicketPriceEntity;
 import com.goti.ticketing.domain.entity.pricing.TicketPricingPolicyEntity;
 

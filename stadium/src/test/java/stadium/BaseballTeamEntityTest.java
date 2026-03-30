@@ -30,6 +30,7 @@ public class BaseballTeamEntityTest {
 	void 구단_생성_성공() {
 		baseballTeam = BaseballTeamEntity.create(
 			TeamCode.SS,
+			"삼성",
 			"삼성라이온즈",
 			"Samsung Lions",
 			"삼성",
@@ -54,6 +55,7 @@ public class BaseballTeamEntityTest {
 		assertThatThrownBy(
 			() -> BaseballTeamEntity.create(
 				null,
+				"삼성",
 				"삼성라이온즈",
 				"Samsung Lions",
 				"삼성",
@@ -76,6 +78,35 @@ public class BaseballTeamEntityTest {
 			}
 		);
 	}
+	@NullAndEmptySource
+	@ParameterizedTest
+	void 구단_생성_실패_displayName_null_또는_공백(String displayName) {
+		assertThatThrownBy(
+			() -> BaseballTeamEntity.create(
+				TeamCode.SS,
+				displayName,
+				"삼성라이온즈",
+				"Samsung Lions",
+				"삼성",
+				"대구",
+				1982,
+				"대구광역시 수성구 야구전설로 1",
+				"42250",
+				"https://www.samsunglions.com/",
+				"홍길동",
+				"삼성그룹",
+				"이재용",
+				"이종열",
+				"박진만",
+				"https://image.url/logo.png"
+			)
+		).isInstanceOfSatisfying(
+			FieldValidationException.class, ex -> {
+				log.info("BaseballTeamEntity:Field-displayName invalid ErrorMessage : {}", ex.getMessage());
+				assertEquals("도메인 필드 오류 : 구단(팀) 표시명은 비어있을 수 없습니다.", ex.getMessage());
+			}
+		);
+	}
 
 	@NullAndEmptySource
 	@ParameterizedTest
@@ -83,6 +114,7 @@ public class BaseballTeamEntityTest {
 		assertThatThrownBy(
 			() -> BaseballTeamEntity.create(
 				TeamCode.SS,
+				"삼성",
 				teamName,
 				"Samsung Lions",
 				"삼성",
@@ -112,6 +144,7 @@ public class BaseballTeamEntityTest {
 		assertThatThrownBy(
 			() -> BaseballTeamEntity.create(
 				TeamCode.SS,
+				"삼성",
 				"삼성라이온즈",
 				teamNameEn,
 				"삼성",
@@ -141,6 +174,7 @@ public class BaseballTeamEntityTest {
 		assertThatThrownBy(
 			() -> BaseballTeamEntity.create(
 				TeamCode.SS,
+				"삼성",
 				"삼성라이온즈",
 				"Samsung Lions",
 				sponsor,
@@ -170,6 +204,7 @@ public class BaseballTeamEntityTest {
 		assertThatThrownBy(
 			() -> BaseballTeamEntity.create(
 				TeamCode.SS,
+				"삼성",
 				"삼성라이온즈",
 				"Samsung Lions",
 				"삼성",
@@ -200,6 +235,7 @@ public class BaseballTeamEntityTest {
 		assertThatThrownBy(() ->
 			BaseballTeamEntity.create(
 				TeamCode.SS,
+				"삼성",
 				"삼성라이온즈",
 				"Samsung Lions",
 				"삼성",
@@ -227,6 +263,7 @@ public class BaseballTeamEntityTest {
 		assertThatThrownBy(
 			() -> BaseballTeamEntity.create(
 				TeamCode.SS,
+				"삼성",
 				"삼성라이온즈",
 				"Samsung Lions",
 				"삼성",
@@ -256,6 +293,7 @@ public class BaseballTeamEntityTest {
 		assertThatThrownBy(
 			() -> BaseballTeamEntity.create(
 				TeamCode.SS,
+				"삼성",
 				"삼성라이온즈",
 				"Samsung Lions",
 				"삼성",
@@ -285,6 +323,7 @@ public class BaseballTeamEntityTest {
 		assertThatThrownBy(
 			() -> BaseballTeamEntity.create(
 				TeamCode.SS,
+				"삼성",
 				"삼성라이온즈",
 				"Samsung Lions",
 				"삼성",
@@ -314,6 +353,7 @@ public class BaseballTeamEntityTest {
 		assertThatThrownBy(
 			() -> BaseballTeamEntity.create(
 				TeamCode.SS,
+				"삼성",
 				"삼성라이온즈",
 				"Samsung Lions",
 				"삼성",
@@ -343,6 +383,7 @@ public class BaseballTeamEntityTest {
 		assertThatThrownBy(
 			() -> BaseballTeamEntity.create(
 				TeamCode.SS,
+				"삼성",
 				"삼성라이온즈",
 				"Samsung Lions",
 				"삼성",
@@ -372,6 +413,7 @@ public class BaseballTeamEntityTest {
 		assertThatThrownBy(
 			() -> BaseballTeamEntity.create(
 				TeamCode.SS,
+				"삼성",
 				"삼성라이온즈",
 				"Samsung Lions",
 				"삼성",
