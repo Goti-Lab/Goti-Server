@@ -4,6 +4,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,6 +22,7 @@ import com.goti.resale.repository.ResaleRestrictionRepository;
 import com.goti.resale.repository.listing.ResaleListingRepository;
 import com.goti.resale.service.domain.ResaleListingService;
 import com.goti.resale.service.domain.ResaleRestrictionService;
+import com.goti.resale.service.domain.command.ResaleSalesSearchCommand;
 import com.goti.resale.utils.ResaleRestrictionHandler;
 
 import lombok.RequiredArgsConstructor;
@@ -54,6 +58,35 @@ public class ResaleListingProcessService {
 		return resaleListings.stream()
 			.map(ResaleListingResponse::from)
 			.toList();
+	}
+
+	@Transactional(readOnly = true)
+	public Page<ResaleListingResponse> getMySales(ResaleSalesSearchCommand command) {
+		List<ResaleListingStatus> statuses = mapStatus(command.status());
+		Pageable pageable = PageRequest.of(command.page(), command.size());
+
+		return listingService.getMySales(
+			command.sellerId(),
+			statuses,
+			command.months(),
+			command.startDate(),
+			command.endDate(),
+			pageable
+		).map(ResaleListingResponse::from);
+	}
+
+	private List<ResaleListingStatus> mapStatus(String status) {
+		if (status == null || status.equalsIgnoreCase("ALL")) {
+			return null;
+		}
+
+		return switch (status.toUpperCase()) {
+			case "LISTING" -> List.of(ResaleListingStatus.LISTING, ResaleListingStatus.HOLD);
+			case "PENDING" -> List.of(ResaleListingStatus.SOLD);
+			case "SETTLED" -> List.of(ResaleListingStatus.SETTLED);
+			case "CANCELED" -> List.of(ResaleListingStatus.CANCELED);
+			default -> null;
+		};
 	}
 
 	@Transactional(readOnly = true)
