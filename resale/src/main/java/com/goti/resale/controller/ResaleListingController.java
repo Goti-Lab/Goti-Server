@@ -5,6 +5,8 @@ import static com.goti.global.api.ApiSuccessResponse.*;
 import java.util.List;
 import java.util.UUID;
 
+import org.springdoc.core.annotations.ParameterObject;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,6 +21,7 @@ import com.goti.global.api.ApiSuccessResponse;
 import com.goti.resale.constants.ResaleGraphRange;
 import com.goti.resale.dto.request.ResaleListingCancelRequest;
 import com.goti.resale.dto.request.ResaleListingOrderCreateRequest;
+import com.goti.resale.dto.request.ResaleSalesSearchRequest;
 import com.goti.resale.dto.response.ResaleListingCountResponse;
 import com.goti.resale.dto.response.ResaleListingMyPageCountResponse;
 import com.goti.resale.dto.response.ResaleListingOrderCreateResponse;
@@ -42,6 +45,19 @@ public class ResaleListingController {
 
 	private final ResaleListingProcessService listingService;
 	private final ResalePriceProcessService priceService;
+
+	@Operation(
+		summary = "내 판매 내역 조회 (마이페이지)",
+		description = "판매 내역 상태별, 기간별 페이징 조회 API"
+	)
+	@GetMapping("/listings/sales")
+	public ResponseEntity<ApiSuccessResponse<Page<ResaleListingResponse>>> getMySales(
+		@AuthenticationPrincipal(expression = "id") UUID sellerId,
+		@ParameterObject ResaleSalesSearchRequest request
+	) {
+		Page<ResaleListingResponse> responses = listingService.getMySales(request.toCommand(sellerId));
+		return wrap(responses);
+	}
 
 	@Operation(
 		summary = "리셀 등록 (일괄 포함)",
