@@ -1,4 +1,4 @@
-package com.goti.payment.service.application;
+package com.goti.payment.service.domain;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -10,24 +10,24 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.goti.constants.messages.ErrorCode;
-import com.goti.payment.domain.entity.payment.PaymentLedgerEntity;
-import com.goti.payment.dto.response.ResalePaymentLedgerResponse;
 import com.goti.exception.CustomException;
+import com.goti.payment.domain.entity.payment.PaymentLedgerEntity;
 import com.goti.payment.repository.PaymentLedgerRepository;
 
 import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-public class PaymentLedgerService {
+public class PaymentLedgerServiceImpl implements PaymentLedgerService {
+
+	private final PaymentLedgerRepository ledgerRepository;
 
 	private static final BigDecimal VAT_RATE = new BigDecimal("0.1");
 	private static final BigDecimal VAT_DIVISOR = new BigDecimal("1.1");
 
-	private final PaymentLedgerRepository ledgerRepository;
-
+	@Override
 	@Transactional
-	public void createLedger(
+	public PaymentLedgerEntity create(
 		UUID orderId,
 		UUID paymentId,
 		Integer totalAmount,
@@ -54,19 +54,19 @@ public class PaymentLedgerService {
 			netProfit,
 			settlementAmount
 		);
-		ledgerRepository.save(ledger);
+		return ledgerRepository.save(ledger);
 	}
 
+	@Override
 	@Transactional(readOnly = true)
-	public Page<ResalePaymentLedgerResponse> getLedgers(Pageable pageable) {
-		return ledgerRepository.findAll(pageable)
-			.map(ResalePaymentLedgerResponse::from);
+	public Page<PaymentLedgerEntity> findAll(Pageable pageable) {
+		return ledgerRepository.findAll(pageable);
 	}
 
+	@Override
 	@Transactional(readOnly = true)
-	public ResalePaymentLedgerResponse getLedgerByOrderId(UUID orderId) {
+	public PaymentLedgerEntity findByOrderId(UUID orderId) {
 		return ledgerRepository.findByOrderId(orderId)
-			.map(ResalePaymentLedgerResponse::from)
-			.orElseThrow(() -> new CustomException(ErrorCode.ORDER_NOT_FOUND));
+			.orElseThrow(() -> new CustomException(ErrorCode.LEDGER_NOT_FOUND));
 	}
 }

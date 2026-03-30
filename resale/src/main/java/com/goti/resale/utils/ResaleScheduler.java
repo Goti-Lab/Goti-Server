@@ -9,8 +9,8 @@ import org.springframework.stereotype.Component;
 
 import com.goti.resale.dto.internal.TicketGameInfo;
 import com.goti.resale.infra.TicketClient;
-import com.goti.resale.service.application.ResaleListingService;
-import com.goti.resale.service.application.ResalePriceService;
+import com.goti.resale.service.application.ResaleListingProcessService;
+import com.goti.resale.service.application.ResalePriceProcessService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -21,8 +21,8 @@ import lombok.extern.slf4j.Slf4j;
 public class ResaleScheduler {
 
 	private final TicketClient ticketClient;
-	private final ResaleListingService listingService;
-	private final ResalePriceService priceService;
+	private final ResaleListingProcessService listingService;
+	private final ResalePriceProcessService priceService;
 
 	@Scheduled(cron = "0 0 14,15,18,19 * * *")
 	@Scheduled(cron = "0 30 19 * * *")

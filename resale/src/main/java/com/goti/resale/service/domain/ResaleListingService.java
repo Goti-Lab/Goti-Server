@@ -6,7 +6,7 @@ import com.goti.resale.domain.entity.resale.ResaleListingEntity;
 import com.goti.resale.domain.entity.resale.ResaleRestrictionEntity;
 import com.goti.resale.dto.response.ResaleTicketResponse;
 
-public interface ListingService {
+public interface ResaleListingService {
 	void validateListingCreation(
 		ResaleTicketResponse ticketInfo,
 		UUID sellerId,

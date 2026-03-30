@@ -21,7 +21,7 @@ import com.goti.resale.infra.TicketClient;
 import com.goti.resale.repository.ResaleRestrictionRepository;
 import com.goti.resale.repository.history.ResalePriceHistoryRepository;
 import com.goti.resale.repository.listing.ResaleListingRepository;
-import com.goti.resale.service.domain.ListingService;
+import com.goti.resale.service.domain.ResaleListingService;
 import com.goti.resale.service.domain.ResaleRestrictionService;
 import com.goti.resale.utils.ResaleRestrictionHandler;
 
@@ -29,13 +29,13 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-public class ResaleListingService {
+public class ResaleListingProcessService {
 	private final ResaleListingRepository listingRepository;
 	private final ResaleRestrictionRepository restrictionRepository;
 	private final ResalePriceHistoryRepository priceHistoryRepository;
 	private final ResaleRestrictionHandler restrictionHandler;
 	private final ResaleRestrictionService restrictionService;
-	private final ListingService listingService;
+	private final ResaleListingService resaleListingService;
 	private final TicketClient ticketClient;
 
 	@Transactional
@@ -44,7 +44,7 @@ public class ResaleListingService {
 
 		ResaleRestrictionEntity resaleRestriction = restrictionService.getOrCreateRestriction(sellerId);
 
-		listingService.validateListingCreation(ticketInfo, sellerId, request.listingPrice(), resaleRestriction);
+		resaleListingService.validateListingCreation(ticketInfo, sellerId, request.listingPrice(), resaleRestriction);
 
 		Integer lastTransactionPrice = priceHistoryRepository
 			.findLatestByGameAndGrade(ticketInfo.gameId(), ticketInfo.gradeId())
@@ -84,7 +84,7 @@ public class ResaleListingService {
 
 		ResaleRestrictionEntity resaleRestriction = restrictionService.getOrCreateRestriction(sellerId);
 
-		listingService.validateListingCancellation(
+		resaleListingService.validateListingCancellation(
 			sellerId,
 			resaleListing,
 			resaleRestriction

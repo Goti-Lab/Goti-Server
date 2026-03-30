@@ -1,18 +1,22 @@
 package com.goti.payment.service.application;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.goti.payment.constants.PaymentStatus;
 import com.goti.payment.domain.entity.payment.EscrowAccountEntity;
+import com.goti.payment.dto.internal.SettlementCompletedEvent;
 import com.goti.payment.dto.request.ResalePaymentRequest;
 import com.goti.payment.dto.response.PaymentResponse;
-import com.goti.payment.infra.ResaleOrderClient;
-import com.goti.payment.repository.EscrowAccountRepository;
+import com.goti.payment.service.domain.EscrowAccountService;
+import com.goti.payment.service.domain.PaymentLedgerService;
 import com.goti.payment.service.domain.PaymentService;
+import com.goti.payment.service.infra.ResaleService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -21,11 +25,11 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 @RequiredArgsConstructor
 public class ResaleOrderPaymentService {
-	private final ResaleOrderClient resaleOrderClient;
 	private final PaymentService paymentService;
-	private final ResaleEscrowService escrowService;
 	private final PaymentLedgerService paymentLedgerService;
-	private final EscrowAccountRepository escrowAccountRepository;
+	private final EscrowAccountService escrowAccountService;
+	private final ResaleService resaleService;
+	private final ApplicationEventPublisher eventPublisher;
 
 	@Transactional
 	public PaymentResponse createResaleEscrow(ResalePaymentRequest request) {
@@ -38,35 +42,19 @@ public class ResaleOrderPaymentService {
 		);
 
 		if (payment.paymentStatus() == PaymentStatus.SUCCESS) {
-			paymentLedgerService.createLedger(
+			paymentLedgerService.create(
 				request.orderId(),
 				payment.paymentId(),
 				request.totalAmount(),
 				request.totalBuyerFee(),
 				request.totalSellerFee()
 			);
+			List<EscrowAccountEntity> escrows = escrowAccountService.createEscrows(request);
 
-			List<EscrowAccountEntity> escrows = request.items()
-				.stream()
-				.map(item ->
-					EscrowAccountEntity
-						.create(
-							item.transactionId(),
-							request.buyerId(),
-							item.sellerId(),
-							item.settlementAmount()
-						))
-				.toList();
+			escrowAccountService.requestEscrowPayments(escrows);
 
-			for (EscrowAccountEntity escrow : escrows) {
-				escrowService.createEscrow(escrow);
-			}
-
-			escrowAccountRepository.saveAll(escrows);
-
-			confirmResalePayment(
+			resaleService.confirmOrder(
 				request.orderId(),
-				request.buyerId(),
 				payment.paymentId()
 			);
 		}
@@ -77,24 +65,20 @@ public class ResaleOrderPaymentService {
 	@Transactional
 	public void releaseEscrow(UUID orderId) {
 
-		List<UUID> transactionIds = getTransactionIds(orderId);
+		List<UUID> transactionIds = resaleService.getTransactionIds(orderId);
 
-		List<EscrowAccountEntity> escrows = escrowAccountRepository.findAllByTransactionIdIn(transactionIds);
+		List<EscrowAccountEntity> escrows = escrowAccountService.findAllByTransactionIds(transactionIds);
 
-		escrowService.processSettlement(orderId, escrows);
-		escrowAccountRepository.saveAll(escrows);
-	}
+		List<EscrowAccountEntity> holdingEscrows = escrowAccountService.filterHoldings(escrows);
 
-	public void confirmResalePayment(
-		UUID orderId,
-		UUID buyerId,
-		UUID paymentId
-	) {
-		log.info("리셀 주문 결제 확정 - orderId: {}, buyerId: {}", orderId, buyerId);
-		resaleOrderClient.completeOrder(orderId, paymentId);
-	}
+		if (holdingEscrows.isEmpty()) {
+			return;
+		}
 
-	public List<UUID> getTransactionIds(UUID orderId) {
-		return resaleOrderClient.getTransactionIds(orderId);
+		escrowAccountService.requestSettlements(holdingEscrows);
+
+		escrowAccountService.settle(holdingEscrows, LocalDateTime.now());
+
+		eventPublisher.publishEvent(new SettlementCompletedEvent(orderId));
 	}
 }

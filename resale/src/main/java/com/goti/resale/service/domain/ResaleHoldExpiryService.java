@@ -6,7 +6,7 @@ import java.util.UUID;
 import com.goti.resale.domain.entity.resale.ResaleHoldEntity;
 import com.goti.resale.domain.entity.resale.ResaleListingEntity;
 
-public interface HoldExpiryService {
+public interface ResaleHoldExpiryService {
 	void expire(
 		ResaleListingEntity resaleListing,
 		ResaleHoldEntity resaleHold,

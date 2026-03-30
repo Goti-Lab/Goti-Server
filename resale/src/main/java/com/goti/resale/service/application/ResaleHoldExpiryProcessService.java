@@ -11,7 +11,7 @@ import com.goti.infra.lock.DistributedLockManager;
 import com.goti.resale.constants.ResaleHoldStatus;
 import com.goti.resale.domain.entity.resale.ResaleHoldEntity;
 import com.goti.resale.repository.hold.ResaleHoldRepository;
-import com.goti.resale.service.domain.HoldExpiryService;
+import com.goti.resale.service.domain.ResaleHoldExpiryService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -19,10 +19,10 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class ResaleHoldExpiryService {
+public class ResaleHoldExpiryProcessService {
 	private final ResaleHoldRepository resaleHoldRepository;
 	private final DistributedLockManager distributedLockManager;
-	private final HoldExpiryService holdExpiryService;
+	private final ResaleHoldExpiryService resaleHoldExpiryService;
 
 	public ResaleHoldExpiryBatchResult expireHolds(int batchSize) {
 		LocalDateTime now = LocalDateTime.now();
@@ -70,7 +70,7 @@ public class ResaleHoldExpiryService {
 
 		return distributedLockManager.withLockIfAvailable(
 			lockKey,
-			() -> holdExpiryService.expire(resaleHold.getId(), now)
+			() -> resaleHoldExpiryService.expire(resaleHold.getId(), now)
 		);
 	}
 

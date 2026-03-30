@@ -25,7 +25,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class ResalePriceService {
+public class ResalePriceProcessService {
 	private final ResalePriceHistoryRepository priceHistoryRepository;
 	private final ResaleListingRepository listingRepository;
 
