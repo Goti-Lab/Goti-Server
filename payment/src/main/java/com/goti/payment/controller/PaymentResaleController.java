@@ -8,6 +8,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -20,6 +21,7 @@ import com.goti.global.api.ApiSuccessResponse;
 import com.goti.payment.dto.request.ResalePaymentRequest;
 import com.goti.payment.dto.response.PaymentResponse;
 import com.goti.payment.dto.response.ResalePaymentLedgerResponse;
+import com.goti.payment.dto.response.UnsettledAmountResponse;
 import com.goti.payment.service.application.PaymentLedgerProcessService;
 import com.goti.payment.service.application.ResaleOrderPaymentService;
 
@@ -59,6 +61,16 @@ public class PaymentResaleController {
 	) {
 		resaleOrderPaymentService.releaseEscrow(orderId);
 		return empty();
+	}
+
+	@Operation(
+		summary = "미정산 금액 조회",
+		description = "미정산 된 금액을 조회"
+	)
+	@GetMapping("/unsettled")
+	public ResponseEntity<ApiSuccessResponse<UnsettledAmountResponse>> getUnsettledAmounts(
+		@AuthenticationPrincipal(expression = "id") UUID sellerId) {
+		return wrap(paymentLedgerProcessService.getUnsettledAmounts(sellerId));
 	}
 
 	@Operation(
