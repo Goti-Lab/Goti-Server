@@ -20,7 +20,7 @@ import com.goti.global.api.ApiSuccessResponse;
 import com.goti.payment.dto.request.ResalePaymentRequest;
 import com.goti.payment.dto.response.PaymentResponse;
 import com.goti.payment.dto.response.ResalePaymentLedgerResponse;
-import com.goti.payment.service.application.PaymentLedgerService;
+import com.goti.payment.service.application.PaymentLedgerProcessService;
 import com.goti.payment.service.application.ResaleOrderPaymentService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -34,7 +34,7 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/api/v1/payments/resales")
 public class PaymentResaleController {
 	private final ResaleOrderPaymentService resaleOrderPaymentService;
-	private final PaymentLedgerService paymentLedgerService;
+	private final PaymentLedgerProcessService paymentLedgerProcessService;
 
 	@Operation(
 		summary = "리셀 결제 요청",
@@ -70,7 +70,7 @@ public class PaymentResaleController {
 	public ResponseEntity<ApiSuccessResponse<Page<ResalePaymentLedgerResponse>>> getLedgers(
 		Pageable pageable
 	) {
-		return wrap(paymentLedgerService.getLedgers(pageable));
+		return wrap(paymentLedgerProcessService.getLedgers(pageable));
 	}
 
 	@Operation(
@@ -82,6 +82,6 @@ public class PaymentResaleController {
 	public ResponseEntity<ApiSuccessResponse<ResalePaymentLedgerResponse>> getLedgerByOrderId(
 		@PathVariable UUID orderId
 	) {
-		return wrap(paymentLedgerService.getLedgerByOrderId(orderId));
+		return wrap(paymentLedgerProcessService.getLedgerByOrderId(orderId));
 	}
 }
