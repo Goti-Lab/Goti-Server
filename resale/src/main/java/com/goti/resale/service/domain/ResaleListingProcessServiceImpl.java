@@ -9,6 +9,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -43,6 +45,7 @@ import lombok.RequiredArgsConstructor;
 public class ResaleListingProcessServiceImpl implements ResaleListingService {
 
 	private static final DateTimeFormatter ORDER_NUMBER_FORMATTER = DateTimeFormatter.ofPattern("yyMMdd");
+	private static final List<Integer> ALLOWED_MONTHS = List.of(1, 3, 6);
 
 	private final ResaleListingRepository listingRepository;
 	private final ResaleListingOrderRepository listingOrderRepository;
@@ -171,7 +174,7 @@ public class ResaleListingProcessServiceImpl implements ResaleListingService {
 
 		Preconditions.validate(order.getSellerId().equals(sellerId), ErrorCode.AUTH_PERMISSION_DENIED);
 
-		List<ResaleListingEntity> listings = listingRepository.findAllByListingOrderId(orderId);
+		List<ResaleListingEntity> listings = listingRepository.findAllBySellerId(sellerId);
 		ResaleRestrictionEntity restriction = restrictionService.getOrCreateRestriction(sellerId);
 
 		for (ResaleListingEntity listing : listings) {
@@ -187,6 +190,25 @@ public class ResaleListingProcessServiceImpl implements ResaleListingService {
 		listingRepository.saveAll(listings);
 		listingOrderRepository.save(order);
 		restrictionRepository.save(restriction);
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public Page<ResaleListingEntity> getMySales(
+		UUID sellerId,
+		List<ResaleListingStatus> statuses,
+		Integer months,
+		LocalDate startDate,
+		LocalDate endDate,
+		Pageable pageable
+	) {
+		Preconditions.validate(
+			sellerId != null,
+			ErrorCode.AUTH_INVALID
+		);
+		validatePeriodFilter(months, startDate, endDate);
+
+		return listingRepository.findMySales(sellerId, statuses, months, startDate, endDate, pageable);
 	}
 
 	@Override
@@ -255,5 +277,35 @@ public class ResaleListingProcessServiceImpl implements ResaleListingService {
 			ErrorCode.AUTH_PERMISSION_DENIED,
 			"본인의 리셀만 취소할 수 있습니다"
 		);
+	}
+
+	private void validatePeriodFilter(
+		Integer months,
+		LocalDate startDate,
+		LocalDate endDate
+	) {
+		Preconditions.validate(
+			months == null || (startDate == null && endDate == null),
+			ErrorCode.ORDER_HISTORY_PERIOD_FILTER_CONFLICT
+		);
+
+		Preconditions.validate(
+			(startDate == null) == (endDate == null),
+			ErrorCode.ORDER_HISTORY_PERIOD_DATE_REQUIRED
+		);
+
+		if (months != null) {
+			Preconditions.validate(
+				ALLOWED_MONTHS.contains(months),
+				ErrorCode.ORDER_HISTORY_PERIOD_MONTHS_INVALID
+			);
+		}
+
+		if (startDate != null && endDate != null) {
+			Preconditions.validate(
+				!startDate.isAfter(endDate),
+				ErrorCode.ORDER_HISTORY_PERIOD_INVALID_RANGE
+			);
+		}
 	}
 }
