@@ -40,6 +40,10 @@ public class GameTicketingStatusEntity extends ModificationTimestampEntity {
 	@Column(nullable = false)
 	private TicketingStatus status;
 
+	public void updateStatus(TicketingStatus status) {
+		this.status = status;
+	}
+
 	private GameTicketingStatusEntity(
 		GameScheduleEntity gameSchedule,
 		LocalDateTime ticketingOpenedAt,
