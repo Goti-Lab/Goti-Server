@@ -4,6 +4,8 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
+import com.goti.ticketing.domain.entity.seat.SeatStatusEntity;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -64,9 +66,13 @@ public class OrderPaymentConfirmService {
 		for (OrderItemEntity orderItem : orderItems) {
 			validateActiveHold(order, orderItem);
 
-			seatStatusRepository.findByGameAndSeat(order.getGameSchedule(), orderItem.getSeat())
-				.orElseThrow(() -> new CustomException(ErrorCode.SEAT_STATUS_NOT_FOUND))
-				.sell();
+			SeatStatusEntity seatStatus = seatStatusRepository.findByGameAndSeat(
+				order.getGameSchedule(), orderItem.getSeat()
+				).orElseThrow(
+					() -> new CustomException(ErrorCode.SEAT_STATUS_NOT_FOUND)
+				);
+
+			seatStatus.sell();
 			orderItem.pay();
 		}
 

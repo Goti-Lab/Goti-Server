@@ -1,60 +1,49 @@
 package com.goti.payment.infra;
 
+import java.util.Map;
 import java.util.UUID;
 
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
-import org.springframework.web.util.UriComponentsBuilder;
 
+import com.goti.constants.messages.ErrorCode;
+import com.goti.exception.CustomException;
 import com.goti.global.api.ApiSuccessResponse;
+import com.goti.infra.api.base.BaseRestClient;
 import com.goti.payment.config.properties.TicketingApiProperties;
 import com.goti.payment.service.dto.OrderPaymentConfirmApiRequest;
 import com.goti.payment.service.dto.PaymentOrderInfo;
 
 @Component
-public class TicketingOrderClient {
-	private final RestClient restClient;
-	private final TicketingApiProperties properties;
+public class TicketingOrderClient extends BaseRestClient {
+	private static final String ORDER_API = "/api/v1/orders";
 
-	public TicketingOrderClient(RestClient restClient, TicketingApiProperties properties) {
-		this.restClient = restClient;
-		this.properties = properties;
+	public TicketingOrderClient(RestClient.Builder builder, TicketingApiProperties properties) {
+		super(builder, properties.baseUrl());
 	}
 
 	public void confirmPayment(
 		UUID orderId,
 		OrderPaymentConfirmApiRequest request
 	) {
-		restClient.post()
-			.uri(
-				UriComponentsBuilder.fromUriString(properties.baseUrl())
-					.path("/api/v1/orders/{orderId}/payment-confirmations")
-					.buildAndExpand(orderId)
-					.toUri()
-			)
-			.body(request)
-			.retrieve()
-			.toBodilessEntity();
+		String uri = String.format("%s/%s/payment-confirmations", ORDER_API, orderId);
+		postVoid(uri, request);
 	}
 
 	public PaymentOrderInfo getPaymentOrder(UUID orderId, UUID memberId) {
-		ApiSuccessResponse<PaymentOrderInfo> response = restClient.get()
-			.uri(
-				UriComponentsBuilder.fromUriString(properties.baseUrl())
-					.path("/api/v1/orders/{orderId}/payment-order")
-					.queryParam("memberId", memberId)
-					.buildAndExpand(orderId)
-					.toUri()
-			)
-			.retrieve()
-			.body(new ParameterizedTypeReference<ApiSuccessResponse<PaymentOrderInfo>>() {
-			});
+		String uri = String.format("%s/%s/payment-order", ORDER_API, orderId);
+		var response = getGotiResponse(
+			uri,
+			null,
+			Map.of("memberId", memberId),
+			new ParameterizedTypeReference<ApiSuccessResponse<PaymentOrderInfo>>() {}
+		);
 
-		if (response == null || response.getData() == null) {
-			throw new IllegalStateException("ticketing 주문 조회 응답이 비어 있습니다.");
+		if (response == null) {
+			throw new CustomException(ErrorCode.INTERNAL_API_INVALID_RESPONSE);
 		}
 
-		return response.getData();
+		return response;
 	}
 }

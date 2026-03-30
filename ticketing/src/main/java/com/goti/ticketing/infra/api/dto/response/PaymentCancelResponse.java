@@ -1,4 +1,4 @@
-package com.goti.ticketing.infra.api.dto;
+package com.goti.ticketing.infra.api.dto.response;
 
 public record PaymentCancelResponse(
 	String paymentStatus,

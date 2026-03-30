@@ -107,6 +107,7 @@ public enum ErrorCode {
 	BASEBALL_TEAM_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 야구 구단(팀)입니다."),
 	STADIUM_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 구장입니다."),
 
+	INTERNAL_API_INVALID_RESPONSE(HttpStatus.INTERNAL_SERVER_ERROR, "내부 API 응답이 올바르지 않습니다."),
 	INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "서버 내부 오류가 발생하였습니다. 잠시 후 다시 시도해주세요.");
 
 	private final HttpStatus status;

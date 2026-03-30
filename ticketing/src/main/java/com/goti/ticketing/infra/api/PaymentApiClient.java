@@ -9,7 +9,7 @@ import org.springframework.web.client.RestClient;
 import com.goti.config.properties.ApiEndpointProperties;
 import com.goti.global.api.ApiSuccessResponse;
 import com.goti.infra.api.base.BaseRestClient;
-import com.goti.ticketing.infra.api.dto.PaymentCancelResponse;
+import com.goti.ticketing.infra.api.dto.response.PaymentCancelResponse;
 import com.goti.ticketing.order.dto.request.OrderPaymentCancelRequest;
 
 @Component

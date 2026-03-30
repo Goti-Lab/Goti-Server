@@ -20,7 +20,7 @@ import com.goti.ticketing.constants.GameStatus;
 import com.goti.ticketing.constants.OrderCancellationRequestType;
 import com.goti.ticketing.constants.OrderItemStatus;
 import com.goti.ticketing.constants.TicketStatus;
-import com.goti.ticketing.infra.api.dto.PaymentCancelResponse;
+import com.goti.ticketing.infra.api.dto.response.PaymentCancelResponse;
 import com.goti.ticketing.domain.entity.order.OrderCancellationEntity;
 import com.goti.ticketing.domain.entity.order.OrderEntity;
 import com.goti.ticketing.domain.entity.order.OrderItemEntity;
