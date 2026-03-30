@@ -1,4 +1,4 @@
-package com.goti.resale.utils;
+package com.goti.resale.scheduler;
 
 import java.time.LocalDateTime;
 import java.util.List;
