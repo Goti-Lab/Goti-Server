@@ -28,6 +28,10 @@ public interface ResaleListingService {
 		UUID orderId
 	);
 
+	Long countListings(UUID sellerId);
+
+	Long countSold(UUID sellerId);
+
 	void validateListingCreation(
 		ResaleTicketResponse ticketInfo,
 		UUID sellerId,

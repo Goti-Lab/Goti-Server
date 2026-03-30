@@ -189,6 +189,24 @@ public class ResaleListingServiceImpl implements ResaleListingService {
 	}
 
 	@Override
+	@Transactional(readOnly = true)
+	public Long countListings(UUID sellerId) {
+		return listingRepository.countBySellerIdAndListingStatusIn(
+			sellerId,
+			List.of(ResaleListingStatus.LISTING, ResaleListingStatus.HOLD)
+		);
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public Long countSold(UUID sellerId) {
+		return listingRepository.countBySellerIdAndListingStatusIn(
+			sellerId,
+			List.of(ResaleListingStatus.SOLD, ResaleListingStatus.SETTLED)
+		);
+	}
+
+	@Override
 	public void validateListingCreation(
 		ResaleTicketResponse ticketInfo,
 		UUID sellerId,
