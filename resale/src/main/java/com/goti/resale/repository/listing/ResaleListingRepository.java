@@ -10,7 +10,7 @@ import org.springframework.data.repository.query.Param;
 import com.goti.resale.constants.ResaleListingStatus;
 import com.goti.resale.domain.entity.resale.ResaleListingEntity;
 
-public interface ResaleListingRepository extends JpaRepository<ResaleListingEntity, UUID> {
+public interface ResaleListingRepository extends JpaRepository<ResaleListingEntity, UUID>, ResaleListingRepositoryCustom {
 
 	List<ResaleListingEntity> findAllBySellerId(UUID sellerId);
 
