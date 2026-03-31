@@ -26,7 +26,7 @@ import com.goti.ticketing.domain.entity.order.OrderEntity;
 import com.goti.ticketing.domain.entity.order.OrderItemEntity;
 import com.goti.ticketing.domain.entity.ticket.TicketEntity;
 import com.goti.ticketing.game.repository.GameStatusRepository;
-import com.goti.ticketing.infra.api.PaymentApiClient;
+import com.goti.ticketing.infra.api.TicketPaymentApiClient;
 import com.goti.ticketing.order.dto.request.OrderCancelRequest;
 import com.goti.ticketing.order.dto.response.OrderCancelResponse;
 import com.goti.ticketing.order.service.domain.OrderCancellationItemService;
@@ -55,7 +55,7 @@ public class OrderCancelService {
 	private final TicketService ticketService;
 	private final TicketFreezeService ticketFreezeService;
 	private final SeatStatusService seatStatusService;
-	private final PaymentApiClient paymentApiClient;
+	private final TicketPaymentApiClient ticketPaymentApiClient;
 	private final GameStatusRepository gameStatusRepository;
 
 	@Transactional
@@ -132,7 +132,7 @@ public class OrderCancelService {
 		}
 
 		updateOrderStatus(order, orderItems);
-		PaymentCancelResponse paymentData = paymentApiClient.cancelPayment(orderId, cancellation.getId());
+		PaymentCancelResponse paymentData = ticketPaymentApiClient.cancelPayment(orderId, cancellation.getId());
 		orderCancellationService.complete(cancellation);
 
 		log.info(

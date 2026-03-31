@@ -13,11 +13,11 @@ import com.goti.ticketing.infra.api.dto.response.PaymentCancelResponse;
 import com.goti.ticketing.order.dto.request.OrderPaymentCancelRequest;
 
 @Component
-public class PaymentApiClient extends BaseRestClient {
+public class TicketPaymentApiClient extends BaseRestClient {
 	private static final String PAYMENT_CANCEL_API = "/api/v1/payments/orders";
 	private static final String PATH_SEPARATOR = "/";
 
-	public PaymentApiClient(RestClient.Builder builder, ApiEndpointProperties properties) {
+	public TicketPaymentApiClient(RestClient.Builder builder, ApiEndpointProperties properties) {
 		super(builder, properties.payment());
 	}
 

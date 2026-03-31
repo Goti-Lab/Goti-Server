@@ -11,7 +11,9 @@ import org.springframework.transaction.annotation.Transactional;
 import com.goti.constants.messages.ErrorCode;
 import com.goti.global.validation.Preconditions;
 import com.goti.ticketing.constants.SeatStatus;
+import com.goti.ticketing.domain.entity.game.GameScheduleEntity;
 import com.goti.ticketing.domain.entity.seat.SeatGradeEntity;
+import com.goti.ticketing.game.service.domain.GameScheduleService;
 import com.goti.ticketing.session.model.ReservationSessionCache;
 import com.goti.ticketing.session.service.application.ReservationSessionService;
 import com.goti.ticketing.seat.dto.response.SeatGradeRegisterResponse;
@@ -29,6 +31,7 @@ public class SeatGradeServiceImpl implements SeatGradeService {
 	private final SeatGradeRepository seatGradeRepository;
 	private final SeatStatusRepository seatStatusRepository;
 	private final ReservationSessionService reservationSessionService;
+	private final GameScheduleService gameScheduleService;
 
 	@Override
 	@Transactional
@@ -45,21 +48,16 @@ public class SeatGradeServiceImpl implements SeatGradeService {
 
 	@Override
 	@Transactional(readOnly = true)
-	public SeatGradeSearchResultResponse get(
-		UUID stadiumId,
-		UUID gameId,
-		UUID userId,
-		boolean forceNewSession
-	) {
+	public SeatGradeSearchResultResponse findSeatGrades(UUID gameId, UUID userId, boolean forceNewSession) {
 		Preconditions.validate(
 			userId != null,
 			ErrorCode.AUTH_INVALID
 		);
 
-		ReservationSessionCache reservationSession = reservationSessionService
-			.getOrCreate(userId, gameId, forceNewSession);
+		GameScheduleEntity gameSchedule = gameScheduleService.get(gameId);
+		ReservationSessionCache reservationSession = reservationSessionService.getOrCreate(userId, gameId, forceNewSession);
 
-		List<SeatGradeEntity> seatGrades = seatGradeRepository.findAllByStadiumId(stadiumId);
+		List<SeatGradeEntity> seatGrades = seatGradeRepository.findAllByStadiumId(gameSchedule.getStadiumId());
 		List<UUID> seatGradeIds = seatGrades.stream()
 			.map(SeatGradeEntity::getId)
 			.toList();

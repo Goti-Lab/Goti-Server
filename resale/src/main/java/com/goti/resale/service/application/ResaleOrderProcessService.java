@@ -9,8 +9,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.goti.constants.messages.ErrorCode;
-import com.goti.dto.internal.ResaleOrderPaymentCompletedEvent;
-import com.goti.dto.internal.SettlementCompletedEvent;
 import com.goti.exception.CustomException;
 import com.goti.global.validation.Preconditions;
 import com.goti.infra.lock.DistributedLockManager;
@@ -23,6 +21,8 @@ import com.goti.resale.dto.request.ResaleOrderRequest;
 import com.goti.resale.dto.response.ResaleOrderCompleteResponse;
 import com.goti.resale.dto.response.ResaleOrderCreateResponse;
 import com.goti.resale.dto.response.ResaleOrderListResponse;
+import com.goti.resale.infra.dto.ResaleOrderPaymentCompletedEvent;
+import com.goti.resale.infra.dto.SettlementCompletedEvent;
 import com.goti.resale.repository.ResaleOrderRepository;
 import com.goti.resale.repository.ResaleTransactionRepository;
 import com.goti.resale.repository.hold.ResaleHoldRepository;
