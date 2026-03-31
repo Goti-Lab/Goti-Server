@@ -147,8 +147,8 @@ public class ResaleListingProcessServiceImpl implements ResaleListingService {
 		ResaleListingOrderEntity order = resaleListing.getListingOrder();
 		order.partial();
 
-		List<ResaleListingEntity> ListingsByOrderId = listingRepository.findAllByListingOrderId(order.getId());
-		boolean allCancelled = ListingsByOrderId.stream()
+		List<ResaleListingEntity> listingsByOrderId = listingRepository.findAllByListingOrderId(order.getId());
+		boolean allCancelled = listingsByOrderId.stream()
 			.allMatch(l -> l.getListingStatus() == ResaleListingStatus.CANCELED);
 
 		if (allCancelled) {
