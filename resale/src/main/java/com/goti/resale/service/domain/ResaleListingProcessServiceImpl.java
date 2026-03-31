@@ -174,7 +174,7 @@ public class ResaleListingProcessServiceImpl implements ResaleListingService {
 
 		Preconditions.validate(order.getSellerId().equals(sellerId), ErrorCode.AUTH_PERMISSION_DENIED);
 
-		List<ResaleListingEntity> listings = listingRepository.findAllBySellerId(sellerId);
+		List<ResaleListingEntity> listings = listingRepository.findAllByListingOrderId(orderId);
 		ResaleRestrictionEntity restriction = restrictionService.getOrCreateRestriction(sellerId);
 
 		for (ResaleListingEntity listing : listings) {
