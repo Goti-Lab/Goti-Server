@@ -80,7 +80,7 @@ public class ResaleListingController {
 		@PathVariable UUID listingOrderId
 	) {
 		listingService.cancelListingOrder(sellerId, listingOrderId);
-		return wrap(null);
+		return empty();
 	}
 
 	@Operation(

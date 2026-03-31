@@ -74,7 +74,7 @@ public class ResaleOrderController {
 		@PathVariable UUID resaleOrderId
 	) {
 		resaleOrderProcessService.completeSettlement(resaleOrderId);
-		return wrap(null);
+		return empty();
 	}
 
 	@Operation(
