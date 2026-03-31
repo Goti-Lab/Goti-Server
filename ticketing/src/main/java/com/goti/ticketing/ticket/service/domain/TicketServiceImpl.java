@@ -1,8 +1,6 @@
 package com.goti.ticketing.ticket.service.domain;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -10,7 +8,6 @@ import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.github.f4b6a3.tsid.TsidCreator;
 import com.goti.constants.messages.ErrorCode;
 import com.goti.ticketing.domain.entity.order.OrderItemEntity;
 import com.goti.ticketing.domain.entity.ticket.TicketEntity;
@@ -25,13 +22,12 @@ import static java.util.stream.Collectors.toMap;
 @Service
 @RequiredArgsConstructor
 public class TicketServiceImpl implements TicketService {
-	private static final DateTimeFormatter TICKET_NUMBER_FORMATTER = DateTimeFormatter.ofPattern("yyMMdd");
-
 	private final TicketRepository ticketRepository;
 
 	@Override
 	@Transactional
 	public TicketEntity create(
+		String ticketNumber,
 		OrderItemEntity orderItem,
 		UUID gameId,
 		UUID memberId,
@@ -44,7 +40,7 @@ public class TicketServiceImpl implements TicketService {
 		Integer ticketPrice
 	) {
 		TicketEntity ticket = TicketEntity.create(
-			generateTicketNumber(),
+			ticketNumber,
 			orderItem.getId(),
 			null,
 			gameId,
@@ -97,18 +93,5 @@ public class TicketServiceImpl implements TicketService {
 	public TicketEntity get(UUID ticketId) {
 		return ticketRepository.findById(ticketId)
 			.orElseThrow(() -> new CustomException(ErrorCode.TICKET_NOT_FOUND));
-	}
-
-	private String generateTicketNumber() {
-		String ticketNumber = "TKT" +
-			LocalDate.now().format(TICKET_NUMBER_FORMATTER) +
-			getTsid(6);
-
-		return ticketNumber;
-	}
-
-	private String getTsid(int length) {
-		String tsid = TsidCreator.getTsid().toString();
-		return tsid.substring(tsid.length() - length);
 	}
 }

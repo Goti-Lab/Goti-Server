@@ -11,6 +11,7 @@ import com.goti.ticketing.ticket.dto.response.TicketResponse;
 
 public interface TicketService {
 	TicketEntity create(
+		String ticketNumber,
 		OrderItemEntity orderItem,
 		UUID gameId,
 		UUID userId,
