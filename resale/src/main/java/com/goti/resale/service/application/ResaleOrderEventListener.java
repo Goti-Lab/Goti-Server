@@ -33,7 +33,7 @@ import com.goti.resale.repository.ResaleRestrictionRepository;
 import com.goti.resale.repository.ResaleTransactionRepository;
 import com.goti.resale.repository.history.ResalePriceHistoryRepository;
 import com.goti.resale.repository.listing.ResaleListingRepository;
-import com.goti.resale.service.domain.ResaleRestrictionDomainService;
+import com.goti.resale.service.domain.ResaleRestrictionService;
 import com.goti.resale.service.infra.PaymentService;
 import com.goti.resale.utils.ResaleRestrictionHandler;
 
@@ -51,7 +51,7 @@ public class ResaleOrderEventListener {
 	private final ResalePriceHistoryRepository priceHistoryRepository;
 	private final ResaleRestrictionRepository restrictionRepository;
 	private final ResaleRestrictionHandler restrictionHandler;
-	private final ResaleRestrictionDomainService restrictionDomainService;
+	private final ResaleRestrictionService restrictionService;
 	private final PaymentService paymentService;
 	private final TicketClient ticketClient;
 
@@ -80,7 +80,7 @@ public class ResaleOrderEventListener {
 		List<ResalePriceHistoryEntity> priceHistories = new ArrayList<>();
 		Set<ResaleListingOrderEntity> listingOrders = new HashSet<>();
 
-		ResaleRestrictionEntity restriction = restrictionDomainService.getOrCreateRestriction(event.buyerId());
+		ResaleRestrictionEntity restriction = restrictionService.getOrCreateRestriction(event.buyerId());
 
 		for (ResaleTransactionEntity transaction : transactions) {
 			ResaleListingEntity resaleListing = transaction.getListing();

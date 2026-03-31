@@ -40,7 +40,7 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-public class ResaleListingServiceImpl implements ResaleListingService {
+public class ResaleListingProcessServiceImpl implements ResaleListingService {
 
 	private static final DateTimeFormatter ORDER_NUMBER_FORMATTER = DateTimeFormatter.ofPattern("yyMMdd");
 

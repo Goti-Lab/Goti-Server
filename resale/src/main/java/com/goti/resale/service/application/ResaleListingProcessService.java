@@ -15,7 +15,7 @@ import com.goti.resale.dto.request.ResaleListingOrderCreateRequest;
 import com.goti.resale.dto.response.ResaleListingOrderCreateResponse;
 import com.goti.resale.dto.response.ResaleListingResponse;
 import com.goti.resale.repository.listing.ResaleListingRepository;
-import com.goti.resale.service.domain.ListingService;
+import com.goti.resale.service.domain.ResaleListingService;
 import com.goti.resale.service.domain.ResaleRestrictionService;
 import com.goti.resale.utils.ResaleRestrictionHandler;
 
@@ -23,26 +23,26 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-public class ResaleListingService {
+public class ResaleListingProcessService {
 	private final ResaleListingRepository listingRepository;
 	private final com.goti.resale.repository.ResaleRestrictionRepository restrictionRepository;
 	private final ResaleRestrictionHandler restrictionHandler;
 	private final ResaleRestrictionService restrictionService;
-	private final ListingService listingService;
+	private final ResaleListingService resaleListingService;
 
 	@Transactional
 	public ResaleListingOrderCreateResponse createListingOrder(UUID sellerId, ResaleListingOrderCreateRequest request) {
-		return listingService.createListingOrder(sellerId, request);
+		return resaleListingService.createListingOrder(sellerId, request);
 	}
 
 	@Transactional
 	public ResaleListingResponse cancelListing(UUID sellerId, ResaleListingCancelRequest request) {
-		return listingService.cancelListing(sellerId, request);
+		return resaleListingService.cancelListing(sellerId, request);
 	}
 
 	@Transactional
 	public void cancelListingOrder(UUID sellerId, UUID listingOrderId) {
-		listingService.cancelListingOrder(sellerId, listingOrderId);
+		resaleListingService.cancelListingOrder(sellerId, listingOrderId);
 	}
 
 	@Transactional(readOnly = true)

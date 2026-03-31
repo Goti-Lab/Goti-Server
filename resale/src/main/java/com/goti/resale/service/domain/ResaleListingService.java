@@ -10,7 +10,7 @@ import com.goti.resale.dto.response.ResaleListingOrderCreateResponse;
 import com.goti.resale.dto.response.ResaleListingResponse;
 import com.goti.resale.dto.response.ResaleTicketResponse;
 
-public interface ListingService {
+public interface ResaleListingService {
 	String generateListingOrderNumber();
 
 	ResaleListingOrderCreateResponse createListingOrder(
