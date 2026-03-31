@@ -36,6 +36,17 @@ public class AddressEntity extends ModificationTimestampEntity {
 	@JoinColumn(name = "member_id", unique = true, nullable = false)
 	private MemberEntity member;
 
+	public void updateDetails(
+		final String zipCode,
+		final String baseAddress,
+		final String detailAddress
+	) {
+		validate(zipCode, baseAddress, detailAddress, member);
+		this.zipCode = zipCode;
+		this.baseAddress = baseAddress;
+		this.detailAddress = detailAddress;
+	}
+
 	private AddressEntity(
 		String zipCode, String baseAddress, String detailAddress, MemberEntity member
 	) {
