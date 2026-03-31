@@ -7,8 +7,8 @@ import java.util.UUID;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-import com.goti.resale.dto.internal.TicketGameInfo;
 import com.goti.resale.infra.TicketClient;
+import com.goti.resale.infra.dto.TicketGameInfo;
 import com.goti.resale.service.application.ResaleListingProcessService;
 import com.goti.resale.service.application.ResalePriceProcessService;
 
