@@ -22,7 +22,7 @@ import lombok.NoArgsConstructor;
 @Table(name = "resale_listing_orders",
 	indexes = {
 		@Index(name = "idx_listing_order_seller_id", columnList = "sellerId"),
-		@Index(name = "idx_listing_order_section_id", columnList = "sectionId"),
+		@Index(name = "idx_listing_order_grade_id", columnList = "gradeId"),
 		@Index(name = "idx_listing_order_number", columnList = "orderNumber", unique = true)
 	})
 @NoArgsConstructor(access = PROTECTED)
@@ -35,29 +35,29 @@ public class ResaleListingOrderEntity extends ModificationTimestampEntity {
 	private UUID sellerId;
 
 	@Column(nullable = false)
-	private UUID sectionId;
+	private UUID gradeId;
 
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false)
 	private ResaleListingOrderStatus orderStatus;
 
-	private ResaleListingOrderEntity(String orderNumber, UUID sellerId, UUID sectionId) {
+	private ResaleListingOrderEntity(String orderNumber, UUID sellerId, UUID gradeId) {
 		this.orderNumber = orderNumber;
 		this.sellerId = sellerId;
-		this.sectionId = sectionId;
+		this.gradeId = gradeId;
 		this.orderStatus = ResaleListingOrderStatus.LISTING;
 	}
 
 	public static ResaleListingOrderEntity create(
 		String orderNumber,
 		UUID sellerId,
-		UUID sectionId
+		UUID gradeId
 	) {
 		Preconditions.domainValidate(orderNumber != null, "주문 번호는 필수입니다.");
 		Preconditions.domainValidate(sellerId != null, "판매자 ID는 필수입니다.");
-		Preconditions.domainValidate(sectionId != null, "구역 ID는 필수입니다.");
+		Preconditions.domainValidate(gradeId != null, "등급 ID는 필수입니다.");
 
-		return new ResaleListingOrderEntity(orderNumber, sellerId, sectionId);
+		return new ResaleListingOrderEntity(orderNumber, sellerId, gradeId);
 	}
 
 	public void soldOut() {

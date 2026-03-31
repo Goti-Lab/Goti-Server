@@ -74,7 +74,7 @@ public class ResaleListingProcessServiceImpl implements ResaleListingService {
 			validateListingCreation(ticketInfo, sellerId, listingRequest.listingPrice(), resaleRestriction);
 
 			ResaleListingOrderEntity listingOrder = orderMap.computeIfAbsent(ticketInfo.gradeId(), gradeId ->
-				listingOrderRepository.findBySellerIdAndSectionIdAndOrderStatusIn(
+				listingOrderRepository.findBySellerIdAndGradeIdAndOrderStatusIn(
 					sellerId,
 					gradeId,
 					List.of(ResaleListingOrderStatus.LISTING, ResaleListingOrderStatus.PARTIAL)

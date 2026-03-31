@@ -10,9 +10,9 @@ import com.goti.resale.constants.ResaleListingOrderStatus;
 import com.goti.resale.domain.entity.resale.ResaleListingOrderEntity;
 
 public interface ResaleListingOrderRepository extends JpaRepository<ResaleListingOrderEntity, UUID> {
-	Optional<ResaleListingOrderEntity> findBySellerIdAndSectionIdAndOrderStatusIn(
+	Optional<ResaleListingOrderEntity> findBySellerIdAndGradeIdAndOrderStatusIn(
 		UUID sellerId,
-		UUID sectionId,
+		UUID gradeId,
 		List<ResaleListingOrderStatus> statuses
 	);
 }
