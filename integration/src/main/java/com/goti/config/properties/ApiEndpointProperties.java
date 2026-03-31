@@ -6,6 +6,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 public record ApiEndpointProperties(
 	String stadium,
 	String payment,
-	String resale
+	String resale,
+	String ticketing
 ) {
 }
