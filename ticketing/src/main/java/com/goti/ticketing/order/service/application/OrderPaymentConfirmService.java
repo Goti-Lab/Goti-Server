@@ -14,6 +14,7 @@ import com.goti.constants.messages.ErrorCode;
 import com.goti.ticketing.constants.SeatHoldStatus;
 import com.goti.ticketing.domain.entity.order.OrderEntity;
 import com.goti.ticketing.domain.entity.order.OrderItemEntity;
+import com.goti.ticketing.domain.entity.seat.SeatHoldEntity;
 import com.goti.exception.CustomException;
 import com.goti.global.validation.Preconditions;
 import com.goti.ticketing.order.dto.response.OrderPaymentConfirmResponse;
@@ -64,7 +65,7 @@ public class OrderPaymentConfirmService {
 
 		List<OrderItemEntity> orderItems = orderItemRepository.findOrderItemsByOrderId(orderId);
 		for (OrderItemEntity orderItem : orderItems) {
-			validateActiveHold(order, orderItem);
+			SeatHoldEntity seatHold = getValidActiveHold(order, orderItem);
 
 			SeatStatusEntity seatStatus = seatStatusRepository.findByGameAndSeat(
 				order.getGameSchedule(), orderItem.getSeat()
@@ -73,6 +74,7 @@ public class OrderPaymentConfirmService {
 				);
 
 			seatStatus.sell();
+			seatHold.release();
 			orderItem.pay();
 		}
 
@@ -93,8 +95,8 @@ public class OrderPaymentConfirmService {
 		);
 	}
 
-	private void validateActiveHold(OrderEntity order, OrderItemEntity orderItem) {
-		boolean activeHoldExists = seatHoldRepository
+	private SeatHoldEntity getValidActiveHold(OrderEntity order, OrderItemEntity orderItem) {
+		return seatHoldRepository
 			.findLatestActiveHold(
 				order.getGameSchedule(),
 				orderItem.getSeat(),
@@ -102,16 +104,12 @@ public class OrderPaymentConfirmService {
 				SeatHoldStatus.HOLDING
 			)
 			.filter(seatHold -> seatHold.getExpiredAt().isAfter(LocalDateTime.now()))
-			.isPresent();
-
-		if (!activeHoldExists) {
-			throw new CustomException(ErrorCode.SEAT_HOLD_EXPIRED)
+			.orElseThrow(() -> new CustomException(ErrorCode.SEAT_HOLD_EXPIRED)
 				.withContext("action", "SESSION_BLOCK")
 				.withContext("stage", "PAYMENT_CONFIRM")
 				.withContext("gameId", order.getGameSchedule().getId())
 				.withContext("userId", order.getMemberId())
 				.withContext("orderId", order.getId())
-				.withContext("seatId", orderItem.getSeat().getId());
-		}
+				.withContext("seatId", orderItem.getSeat().getId()));
 	}
 }
