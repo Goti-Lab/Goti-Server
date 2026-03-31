@@ -64,16 +64,6 @@ public class PaymentResaleController {
 	}
 
 	@Operation(
-		summary = "미정산 금액 조회",
-		description = "미정산 된 금액을 조회"
-	)
-	@GetMapping("/unsettled")
-	public ResponseEntity<ApiSuccessResponse<UnsettledAmountResponse>> getUnsettledAmounts(
-		@AuthenticationPrincipal(expression = "id") UUID sellerId) {
-		return wrap(paymentLedgerProcessService.getUnsettledAmounts(sellerId));
-	}
-
-	@Operation(
 		summary = "장부 목록 조회",
 		description = "모든 결제 장부 내역을 페이징하여 조회"
 	)
