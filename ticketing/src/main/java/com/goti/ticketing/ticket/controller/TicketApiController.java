@@ -2,8 +2,11 @@ package com.goti.ticketing.ticket.controller;
 
 import static com.goti.global.api.ApiSuccessResponse.*;
 
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -16,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.goti.global.api.ApiSuccessResponse;
 import com.goti.ticketing.ticket.dto.request.TicketTransferRequest;
+import com.goti.ticketing.ticket.dto.response.ResaleTicketGameInfoResponse;
 import com.goti.ticketing.ticket.dto.response.ResaleTicketResponse;
 import com.goti.ticketing.ticket.dto.response.TicketResponse;
 import com.goti.ticketing.ticket.service.application.TicketResaleService;
@@ -43,6 +47,38 @@ public class TicketApiController {
 		@RequestParam UUID userId
 	) {
 		return wrap(ticketResaleService.getResaleTicketInfo(ticketId, userId));
+	}
+
+	@Operation(
+		summary = "소유 티켓 수 조회",
+		description = "사용자의 특정 경기 티켓 소유 수 조회 API"
+	)
+	@GetMapping("/count")
+	public ResponseEntity<ApiSuccessResponse<Integer>> getOwnedTicketCount(
+		@RequestParam UUID userId,
+		@RequestParam UUID gameId
+	) {
+		return wrap(ticketResaleService.getOwnedTicketCount(userId, gameId));
+	}
+
+	@Operation(
+		summary = "만료 경기 목록 조회",
+		description = "특정 시간 이전의 만료된 경기 ID 목록 조회 API"
+	)
+	@GetMapping("/expired")
+	public ResponseEntity<ApiSuccessResponse<List<UUID>>> getExpiredGameIds(
+		@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime threshold
+	) {
+		return wrap(ticketResaleService.getExpiredGameIds(threshold));
+	}
+
+	@Operation(
+		summary = "예정 경기 목록 조회",
+		description = "향후 진행될 경기 및 등급 정보 목록 조회 API"
+	)
+	@GetMapping("/upcoming")
+	public ResponseEntity<ApiSuccessResponse<List<ResaleTicketGameInfoResponse>>> getUpcomingGames() {
+		return wrap(ticketResaleService.getUpcomingGames());
 	}
 
 	@Operation(
