@@ -83,7 +83,14 @@ public class ResaleOrderServiceImpl implements ResaleOrderService {
 
 	@Override
 	@Transactional
-	public ResaleOrderCreateResponse initOrder(UUID buyerId, List<ResaleHoldEntity> holds, UUID gameId) {
+	public ResaleOrderCreateResponse initOrder(
+		UUID buyerId,
+		List<ResaleHoldEntity> holds,
+		UUID gameId,
+		String buyerNickname,
+		String buyerEmail,
+		String buyerPhone
+	) {
 		int ownedCount = ticketClient.getOwnedTicketCount(buyerId, gameId);
 		int pendingCount = resaleTransactionRepository.countByBuyerIdAndListing_GameIdAndTransactionStatus(
 			buyerId, gameId, ResaleTransactionStatus.PENDING);
@@ -103,7 +110,7 @@ public class ResaleOrderServiceImpl implements ResaleOrderService {
 			.mapToInt(TransactionItemVO::getSellerFee)
 			.sum();
 
-		ResaleOrderEntity resaleOrder = createOrder(buyerId, totalBuyerAmount);
+		ResaleOrderEntity resaleOrder = createOrder(buyerId, totalBuyerAmount, buyerNickname, buyerEmail, buyerPhone);
 
 		List<ResaleTransactionEntity> transactions = createTransactions(resaleOrder, buyerId, itemVOs);
 
@@ -130,10 +137,19 @@ public class ResaleOrderServiceImpl implements ResaleOrderService {
 		);
 	}
 
-	private ResaleOrderEntity createOrder(UUID buyerId, int totalAmount) {
+	private ResaleOrderEntity createOrder(
+		UUID buyerId,
+		int totalAmount,
+		String buyerNickname,
+		String buyerEmail,
+		String buyerPhone
+	) {
 		ResaleOrderEntity resaleOrder = ResaleOrderEntity.create(
 			generateOrderNumber(),
 			buyerId,
+			buyerNickname,
+			buyerEmail,
+			buyerPhone,
 			totalAmount
 		);
 		return resaleOrderRepository.save(resaleOrder);

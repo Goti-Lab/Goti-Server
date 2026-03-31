@@ -18,5 +18,12 @@ public interface ResaleOrderService {
 
 	void validatePossessionLimit(int currentOwnedCount, int pendingCount, int requestCount);
 
-	ResaleOrderCreateResponse initOrder(UUID buyerId, List<ResaleHoldEntity> holds, UUID gameId);
+	ResaleOrderCreateResponse initOrder(
+		UUID buyerId,
+		List<ResaleHoldEntity> holds,
+		UUID gameId,
+		String buyerNickname,
+		String buyerEmail,
+		String buyerPhone
+	);
 }
