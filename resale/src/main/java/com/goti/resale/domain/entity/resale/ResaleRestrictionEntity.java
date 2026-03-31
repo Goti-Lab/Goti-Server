@@ -26,7 +26,7 @@ import lombok.NoArgsConstructor;
 @Entity
 @Table(name = "resale_restrictions",
 	indexes = {
-		@Index(name = "unique_idx_user_id", columnList = "user_id", unique = true)
+		@Index(name = "uk_user_id", columnList = "user_id", unique = true)
 	})
 @NoArgsConstructor(access = PROTECTED)
 public class ResaleRestrictionEntity extends ModificationTimestampEntity {
