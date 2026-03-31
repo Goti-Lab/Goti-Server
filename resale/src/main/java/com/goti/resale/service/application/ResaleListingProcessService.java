@@ -66,7 +66,7 @@ public class ResaleListingProcessService {
 		List<ResaleListingStatus> targetStatuses = mapToStatuses(command.status());
 		Pageable pageable = PageRequest.of(command.page(), command.size());
 
-		return listingService.getMySales(
+		return resaleListingService.getMySales(
 			command.sellerId(),
 			targetStatuses,
 			command.months(),
@@ -88,8 +88,8 @@ public class ResaleListingProcessService {
 
 	@Transactional(readOnly = true)
 	public ResaleListingMyPageCountResponse getCountListings(UUID sellerId) {
-		long listingCount = listingService.countListings(sellerId);
-		long soldCount = listingService.countSold(sellerId);
+		long listingCount = resaleListingService.countListings(sellerId);
+		long soldCount = resaleListingService.countSold(sellerId);
 
 		return new ResaleListingMyPageCountResponse(listingCount, soldCount);
 	}
