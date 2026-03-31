@@ -1,4 +1,4 @@
-package account;
+package domain.account;
 
 import com.goti.constants.Gender;
 import com.goti.exception.FieldValidationException;

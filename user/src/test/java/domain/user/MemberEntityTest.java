@@ -1,4 +1,4 @@
-package user;
+package domain.user;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.*;
