@@ -1,10 +1,9 @@
-package com.goti.user.service.auth.application;
+package com.goti.user.service.application.auth;
 
 import com.goti.user.config.jwt.JwtTokenProvider;
 import com.goti.constants.Gender;
 import com.goti.constants.OAuthProvider;
 import com.goti.constants.messages.ErrorCode;
-import com.goti.user.constants.TokenType;
 import com.goti.user.domain.entity.user.MemberEntity;
 import com.goti.user.dto.response.SocialVerifyResponse;
 import com.goti.exception.CustomException;
@@ -120,7 +119,7 @@ public class SocialAuthService {
 	@Transactional
 	public Pair<String, String> reissueToken(String refreshToken) {
 		UUID memberId = authService.validateTokenAndGetMemberId(refreshToken);
-		MemberEntity member = memberService.getById(memberId);
+		MemberEntity member = memberService.getMember(memberId);
 		return authService.issueTokens(member);
 	}
 

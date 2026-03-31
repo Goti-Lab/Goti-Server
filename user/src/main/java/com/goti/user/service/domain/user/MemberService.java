@@ -13,5 +13,5 @@ public interface MemberService {
 
   Optional<MemberEntity> findByMobile(String mobile);
 
-	MemberEntity getById(UUID memberId);
+	MemberEntity getMember(UUID memberId);
 }

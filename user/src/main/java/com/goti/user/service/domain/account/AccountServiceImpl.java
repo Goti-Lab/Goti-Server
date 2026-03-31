@@ -2,7 +2,7 @@ package com.goti.user.service.domain.account;
 
 import com.goti.user.domain.entity.user.AccountEntity;
 import com.goti.user.domain.entity.user.MemberEntity;
-import com.goti.user.dto.response.AccountCreateResponse;
+import com.goti.user.dto.response.AccountRegisterResponse;
 import com.goti.user.repository.AccountRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -18,7 +18,7 @@ public class AccountServiceImpl implements AccountService {
 
 	@Override
 	@Transactional
-	public AccountCreateResponse create(
+	public AccountRegisterResponse register(
 		String accountNumber, String bankName, String accountHolder, MemberEntity member
 	) {
 		AccountEntity account = accountRepository.findByMember(member)
@@ -32,6 +32,6 @@ public class AccountServiceImpl implements AccountService {
 
 		accountRepository.save(account);
 
-		return AccountCreateResponse.from(account);
+		return AccountRegisterResponse.from(account);
 	}
 }

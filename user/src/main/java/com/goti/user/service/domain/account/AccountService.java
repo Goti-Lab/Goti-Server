@@ -1,11 +1,11 @@
 package com.goti.user.service.domain.account;
 
 import com.goti.user.domain.entity.user.MemberEntity;
-import com.goti.user.dto.response.AccountCreateResponse;
+import com.goti.user.dto.response.AccountRegisterResponse;
 
 public interface AccountService {
 
-	AccountCreateResponse create(
+	AccountRegisterResponse register(
 		String accountNumber, String bankName, String accountHolder, MemberEntity member
 	);
 }

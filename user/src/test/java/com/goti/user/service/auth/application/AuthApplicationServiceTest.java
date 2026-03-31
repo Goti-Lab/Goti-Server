@@ -14,6 +14,8 @@ import com.goti.user.dto.response.SocialVerifyResponse;
 
 import com.goti.user.repository.MemberRepository;
 
+import com.goti.user.service.application.auth.SocialAuthService;
+
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
