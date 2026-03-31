@@ -14,6 +14,7 @@ import com.goti.resale.dto.request.ResaleListingCancelRequest;
 import com.goti.resale.dto.request.ResaleListingOrderCreateRequest;
 import com.goti.resale.dto.response.ResaleListingOrderCreateResponse;
 import com.goti.resale.dto.response.ResaleListingResponse;
+import com.goti.resale.repository.ResaleRestrictionRepository;
 import com.goti.resale.repository.listing.ResaleListingRepository;
 import com.goti.resale.service.domain.ResaleListingService;
 import com.goti.resale.service.domain.ResaleRestrictionService;
@@ -25,7 +26,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class ResaleListingProcessService {
 	private final ResaleListingRepository listingRepository;
-	private final com.goti.resale.repository.ResaleRestrictionRepository restrictionRepository;
+	private final ResaleRestrictionRepository restrictionRepository;
 	private final ResaleRestrictionHandler restrictionHandler;
 	private final ResaleRestrictionService restrictionService;
 	private final ResaleListingService resaleListingService;
