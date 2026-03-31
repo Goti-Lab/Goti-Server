@@ -56,7 +56,14 @@ public class ResaleOrderProcessService {
 		return distributedLockManager.withLock(
 			lockKey,
 			ErrorCode.PURCHASABLE_CHECK_FAILED,
-			() -> resaleOrderService.initOrder(buyerId, holds, gameId)
+			() -> resaleOrderService.initOrder(
+				buyerId,
+				holds,
+				gameId,
+				request.buyerNickname(),
+				request.buyerEmail(),
+				request.buyerPhone()
+			)
 		);
 	}
 
