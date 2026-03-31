@@ -43,8 +43,8 @@ public class ResaleListingController {
 	private final ResalePriceProcessService priceService;
 
 	@Operation(
-		summary = "리셀 일괄 등록",
-		description = "티켓을 한 번에 리셀 등록하며 하나의 주문 그룹으로 등록 API"
+		summary = "리셀 등록 (일괄 포함)",
+		description = "티켓을 한 번에 리셀 등록하며, 등급별로 주문 그룹을 생성하여 등록 API"
 	)
 	@PostMapping("/listings")
 	public ResponseEntity<ApiSuccessResponse<ResaleListingOrderCreateResponse>> createListingOrder(
@@ -72,7 +72,7 @@ public class ResaleListingController {
 
 	@Operation(
 		summary = "등록 일괄 취소",
-		description = "리셀 등록 그룹에 속한 모든 판매 중인 티켓을 취소합니다."
+		description = "리셀 등록 그룹에 속한 모든 판매 중인 티켓을 취소 API"
 	)
 	@PatchMapping("/listings/orders/{listingOrderId}/cancel")
 	public ResponseEntity<ApiSuccessResponse<Void>> cancelListingOrder(

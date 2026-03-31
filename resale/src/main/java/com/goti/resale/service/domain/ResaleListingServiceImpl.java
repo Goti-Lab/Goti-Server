@@ -40,7 +40,7 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-public class ResaleListingProcessServiceImpl implements ResaleListingService {
+public class ResaleListingServiceImpl implements ResaleListingService {
 
 	private static final DateTimeFormatter ORDER_NUMBER_FORMATTER = DateTimeFormatter.ofPattern("yyMMdd");
 
@@ -121,8 +121,7 @@ public class ResaleListingProcessServiceImpl implements ResaleListingService {
 			.map(ResaleListingResponse::from)
 			.toList();
 
-		ResaleListingOrderEntity representativeOrder = orderMap.values().iterator().next();
-		return ResaleListingOrderCreateResponse.from(representativeOrder, listingResponses);
+		return ResaleListingOrderCreateResponse.from(orderMap.values(), listingResponses);
 	}
 
 	@Override
