@@ -120,6 +120,10 @@ public class ResaleListingProcessServiceImpl implements ResaleListingService {
 		listingRepository.saveAll(listings);
 		restrictionRepository.save(resaleRestriction);
 
+		for (ResaleListingEntity listing : listings) {
+			ticketClient.markAsResaleListing(listing.getTicketId(), sellerId);
+		}
+
 		List<ResaleListingResponse> listingResponses = listings.stream()
 			.map(ResaleListingResponse::from)
 			.toList();
@@ -146,6 +150,8 @@ public class ResaleListingProcessServiceImpl implements ResaleListingService {
 
 		resaleListing.cancel();
 		listingRepository.save(resaleListing);
+
+		ticketClient.cancelResaleListing(resaleListing.getTicketId(), sellerId);
 
 		ResaleListingOrderEntity order = resaleListing.getListingOrder();
 		order.partial();
@@ -181,6 +187,9 @@ public class ResaleListingProcessServiceImpl implements ResaleListingService {
 			if (listing.isCancelable()) {
 				validateListingCancellation(sellerId, listing, restriction);
 				listing.cancel();
+
+				ticketClient.cancelResaleListing(listing.getTicketId(), sellerId);
+
 				restrictionHandler.handleAfterCancel(restriction, listing.getGameId());
 			}
 		}
