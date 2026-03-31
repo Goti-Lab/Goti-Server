@@ -1,5 +1,6 @@
 package com.goti.ticketing.infra.api;
 
+import java.util.Map;
 import java.util.UUID;
 
 import org.springframework.core.ParameterizedTypeReference;
@@ -10,11 +11,13 @@ import com.goti.config.properties.ApiEndpointProperties;
 import com.goti.global.api.ApiSuccessResponse;
 import com.goti.infra.api.base.BaseRestClient;
 import com.goti.ticketing.infra.api.dto.response.PaymentCancelResponse;
+import com.goti.ticketing.infra.api.dto.response.UnsettledAmountResponse;
 import com.goti.ticketing.order.dto.request.OrderPaymentCancelRequest;
 
 @Component
-public class TicketPaymentApiClient extends BaseRestClient {
+public class TicketPaymentApiClient extends BaseRestClient implements TicketPaymentClient {
 	private static final String PAYMENT_CANCEL_API = "/api/v1/payments/orders";
+	private static final String PAYMENT_UNSETTLED_API = "/api/v1/internal/payments";
 	private static final String PATH_SEPARATOR = "/";
 
 	public TicketPaymentApiClient(RestClient.Builder builder, ApiEndpointProperties properties) {
@@ -27,7 +30,18 @@ public class TicketPaymentApiClient extends BaseRestClient {
 		return postGotiResponse(
 			uri,
 			request,
-			new ParameterizedTypeReference<ApiSuccessResponse<PaymentCancelResponse>>() {}
+			new ParameterizedTypeReference<ApiSuccessResponse<PaymentCancelResponse>>() {
+			}
+		);
+	}
+
+	public UnsettledAmountResponse getUnsettledAmounts(UUID sellerId) {
+		return getGotiResponse(
+			PAYMENT_UNSETTLED_API + PATH_SEPARATOR + "resales" + PATH_SEPARATOR + "unsettled",
+			null,
+			Map.of("sellerId", sellerId),
+			new ParameterizedTypeReference<>() {
+			}
 		);
 	}
 }
