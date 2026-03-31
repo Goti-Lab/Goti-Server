@@ -1,6 +1,7 @@
 package com.goti.ticketing.seat.service.domain;
 
 import com.goti.constants.messages.ErrorCode;
+import com.goti.ticketing.constants.SeatStatus;
 import com.goti.ticketing.domain.entity.seat.SeatHoldEntity;
 import com.goti.ticketing.domain.entity.seat.SeatStatusEntity;
 import com.goti.exception.CustomException;
@@ -57,7 +58,9 @@ public class SeatHoldServiceImpl implements SeatHoldService {
 			"만료되지 않은 점유는 해제할 수 없습니다."
 		);
 
-		seatStatus.release();
+		if (seatStatus.getStatus() == SeatStatus.HELD) {
+			seatStatus.release();
+		}
 		seatHold.release();
 	}
 }
