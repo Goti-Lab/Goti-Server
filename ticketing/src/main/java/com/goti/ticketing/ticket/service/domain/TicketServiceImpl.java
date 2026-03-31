@@ -137,6 +137,12 @@ public class TicketServiceImpl implements TicketService {
 	}
 
 	@Override
+	@Transactional(readOnly = true)
+	public int getOwnedTicketCount(UUID userId, UUID gameId) {
+		return ticketRepository.countByUserIdAndGameId(userId, gameId);
+	}
+
+	@Override
 	@Transactional
 	public TicketEntity createByResale(
 		TicketEntity oldTicket,
