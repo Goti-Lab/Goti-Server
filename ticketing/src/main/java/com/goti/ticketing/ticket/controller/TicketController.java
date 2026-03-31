@@ -1,6 +1,6 @@
 package com.goti.ticketing.ticket.controller;
 
-import static com.goti.global.api.ApiSuccessResponse.wrap;
+import static com.goti.global.api.ApiSuccessResponse.*;
 
 import java.util.UUID;
 
@@ -12,8 +12,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.goti.global.api.ApiSuccessResponse;
+import com.goti.ticketing.ticket.dto.response.TicketMyPageDashboardResponse;
 import com.goti.ticketing.ticket.dto.response.TicketQrResponse;
 import com.goti.ticketing.ticket.dto.response.TicketResponse;
+import com.goti.ticketing.ticket.service.application.TicketMyPageService;
 import com.goti.ticketing.ticket.service.application.TicketQrService;
 import com.goti.ticketing.ticket.service.domain.TicketService;
 
@@ -28,6 +30,18 @@ import lombok.RequiredArgsConstructor;
 public class TicketController {
 	private final TicketService ticketService;
 	private final TicketQrService ticketQrService;
+	private final TicketMyPageService ticketMyPageService;
+
+	@Operation(
+		summary = "마이페이지 티켓 대시보드 조회",
+		description = "마이페이지 통합 대시보드(소유 티켓, 리셀 현황, 미정산 금액) 조회 API"
+	)
+	@GetMapping("/dashboard")
+	public ResponseEntity<ApiSuccessResponse<TicketMyPageDashboardResponse>> getDashboard(
+		@AuthenticationPrincipal(expression = "id") UUID userId
+	) {
+		return wrap(ticketMyPageService.getDashboard(userId));
+	}
 
 	@Operation(
 		summary = "티켓 상세 조회",
