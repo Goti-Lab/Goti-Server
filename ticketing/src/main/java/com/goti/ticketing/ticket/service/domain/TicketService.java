@@ -37,7 +37,9 @@ public interface TicketService {
 
 	ResaleTicketResponse getResaleTicketInfo(UUID ticketId, UUID userId);
 
-	int getOwnedTicketCount(UUID userId, UUID gameId);
+	int getOwnedTicketCountWithGame(UUID userId, UUID gameId);
+
+	int getOwnedTicketCount(UUID userId);
 
 	TicketEntity createByResale(
 		TicketEntity oldTicket,
