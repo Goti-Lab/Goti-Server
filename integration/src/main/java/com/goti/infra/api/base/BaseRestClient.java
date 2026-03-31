@@ -97,7 +97,7 @@ public abstract class BaseRestClient {
 		ParameterizedTypeReference<ApiSuccessResponse<T>> responseType
 	) {
 		ApiSuccessResponse<T> response = get(uri, headers, queryParams, responseType);
-		return response.getData();
+		return (response != null) ? response.getData() : null;
 	}
 
 	protected <T> T post(
@@ -188,6 +188,19 @@ public abstract class BaseRestClient {
 		restClient.patch()
 			.uri(uriBuilder -> getActualUriBuilder(uri, uriBuilder).build())
 			.body(body)
+			.retrieve()
+			.toBodilessEntity();
+	}
+
+	protected void patchVoid(String uri, Map<String, ?> queryParams) {
+		restClient.patch()
+			.uri(uriBuilder -> {
+				UriBuilder builder = getActualUriBuilder(uri, uriBuilder);
+				if (queryParams != null) {
+					builder.queryParams(toParams(queryParams));
+				}
+				return builder.build();
+			})
 			.retrieve()
 			.toBodilessEntity();
 	}

@@ -10,7 +10,7 @@ import java.util.UUID;
  */
 
 public interface ResaleEscrowClient {
-	String requestEscrowPayment(UUID transactionId, Integer amount);
+	String requestEscrowPayment(UUID transactionId, Long amount);
 
 	void requestSettlement(String escrowId);
 }
