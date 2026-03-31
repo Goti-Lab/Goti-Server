@@ -1,7 +1,7 @@
 package com.goti.ticketing.ticket.service.application;
 
 import java.time.Instant;
-import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
@@ -43,7 +43,7 @@ public class TicketResaleService {
 		TicketEntity ticket = ticketService.get(ticketId);
 		validateOwnership(ticket, userId);
 
-		if (ticket.getUpdatedAt().isBefore(Instant.from(LocalDateTime.now().minusHours(1)))) {
+		if (ticket.getUpdatedAt().isBefore(Instant.now().minus(1, ChronoUnit.HOURS))) {
 			log.info("리셀 등록 1시간 경과 후 취소로 인한 티켓 동결: {}", ticketId);
 			ticketFreezeManagementService.freezeTicket(ticketId, TicketFreezeReason.RESALE_CANCEL_AFTER_ONE_HOUR);
 		}
