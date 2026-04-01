@@ -10,7 +10,7 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 
-@ConditionalOnProperty(name = "goti.test-user.enabled", havingValue = "true", matchIfMissing = true)
+@ConditionalOnProperty(name = "goti.test-user.enabled", havingValue = "true", matchIfMissing = false)
 @Configuration
 public class TestSecurityConfig {
 

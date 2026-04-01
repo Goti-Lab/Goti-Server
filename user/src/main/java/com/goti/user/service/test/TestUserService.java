@@ -29,7 +29,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-@ConditionalOnProperty(name = "goti.test-user.enabled", havingValue = "true", matchIfMissing = true)
+@ConditionalOnProperty(name = "goti.test-user.enabled", havingValue = "true", matchIfMissing = false)
 @Service
 @RequiredArgsConstructor
 public class TestUserService {

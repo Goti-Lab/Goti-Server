@@ -23,7 +23,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
-@ConditionalOnProperty(name = "goti.test-user.enabled", havingValue = "true", matchIfMissing = true)
+@ConditionalOnProperty(name = "goti.test-user.enabled", havingValue = "true", matchIfMissing = false)
 @Tag(name = "Test User", description = "테스트 유저 생성/로그인 API (goti.test-user.enabled=true)")
 @RestController
 @RequestMapping("/api/v1/test/users")
