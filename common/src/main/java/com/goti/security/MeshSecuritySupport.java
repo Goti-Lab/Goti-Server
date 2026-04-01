@@ -23,12 +23,10 @@ public final class MeshSecuritySupport {
 	private static final String UNAUTHORIZED_BODY = errorJson(ErrorCode.AUTH_INVALID_ACCESS_PATH);
 	private static final String FORBIDDEN_BODY = errorJson(ErrorCode.AUTH_PERMISSION_DENIED);
 
-	/** MSA 서비스 공통 공개 경로 (health + swagger + API docs) */
+	/** MSA 서비스 공통 공개 경로 (health only — swagger는 prod에서 비활성화) */
 	public static final String[] PUBLIC_PATHS = {
 		"/actuator/health",
 		"/actuator/health/**",
-		"/swagger-ui/**",
-		"/v3/api-docs/**"
 	};
 
 	private MeshSecuritySupport() {

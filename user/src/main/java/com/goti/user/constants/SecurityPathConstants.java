@@ -18,8 +18,6 @@ public final class SecurityPathConstants {
 		"/api/v1/game-seats/*/init",
 		"/actuator/health",
 		"/actuator/health/**",
-		"/swagger-ui/**",
-		"/v3/api-docs/**",
 		"/.well-known/**",
 	};
 
