@@ -22,7 +22,7 @@ import lombok.RequiredArgsConstructor;
  * <p>중복 키(DataIntegrityViolationException) 발생 시
  * 이 트랜잭션만 롤백되고 호출자 트랜잭션은 영향 없음.</p>
  */
-@Profile("!prod")
+@ConditionalOnProperty(name = "goti.test-user.enabled", havingValue = "true", matchIfMissing = true)
 @Component
 @RequiredArgsConstructor
 public class TestUserPersistenceHelper {
