@@ -50,6 +50,7 @@ public class AccountRegisterApiTest {
 
 	MemberEntity member;
 	ExtendedUserDetails authenticator;
+	static final String PROVIDER_ID = "test_provider_id";
 
 	@BeforeEach
 	void setup() {
@@ -63,8 +64,8 @@ public class AccountRegisterApiTest {
 
 		authenticator = new ExtendedUserDetails(
 			member.getId(),
-			member.getMobile(),
-			member.getRole()
+			member.getRole(),
+			PROVIDER_ID
 		);
 	}
 

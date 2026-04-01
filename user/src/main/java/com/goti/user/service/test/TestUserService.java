@@ -14,7 +14,6 @@ import com.goti.constants.OAuthProvider;
 import com.goti.constants.messages.ErrorCode;
 import com.goti.exception.CustomException;
 import com.goti.user.config.jwt.JwtTokenProvider;
-import com.goti.user.constants.UserRole;
 import com.goti.user.domain.entity.user.MemberEntity;
 import com.goti.user.dto.request.BulkCreateTestUserRequest;
 import com.goti.user.dto.request.CreateTestUserRequest;
@@ -42,9 +41,9 @@ public class TestUserService {
 	@Transactional
 	public TestUserResponse createUser(CreateTestUserRequest request) {
 		MemberEntity member = findOrCreateMember(request);
-
+		String providerId = "test_provider_id";
 		String accessToken = jwtTokenProvider.create(
-			member.getId(), member.getMobile(), UserRole.MEMBER, TokenType.ACCESS
+			member.getId(), member.getRole(), providerId, TokenType.ACCESS
 		);
 
 		return new TestUserResponse(
@@ -104,9 +103,9 @@ public class TestUserService {
 	public TokenResponse login(TestLoginRequest request) {
 		MemberEntity member = memberService.findByMobile(request.mobile())
 			.orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
-
+		String providerId = "test_provider_id";
 		String accessToken = jwtTokenProvider.create(
-			member.getId(), member.getMobile(), UserRole.MEMBER, TokenType.ACCESS
+			member.getId(), member.getRole(), providerId, TokenType.ACCESS
 		);
 
 		return new TokenResponse(accessToken);

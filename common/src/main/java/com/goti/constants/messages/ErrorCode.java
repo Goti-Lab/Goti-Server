@@ -105,6 +105,7 @@ public enum ErrorCode {
 	ORDER_SEAT_ALREADY_EXISTS(HttpStatus.CONFLICT, "이미 주문된 좌석이 포함되어 있습니다."),
 
 	MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 회원입니다."),
+	SOCIAL_PROVIDER_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 소셜 계정은 존재하지 않습니다."),
 	SOCIAL_PROVIDER_ALREADY_LINKED(HttpStatus.BAD_REQUEST, "해당 소셜 계정은 이미 다른 회원과 연동되어 있습니다."),
 	BASEBALL_TEAM_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 야구 구단(팀)입니다."),
 	STADIUM_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 구장입니다."),

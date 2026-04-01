@@ -11,7 +11,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -23,24 +22,27 @@ public class ExtendedUserDetailsServiceImpl implements ExtendedUserDetailsServic
 
 	@Override
 	public UserDetails loadUserByUsername(String mobile) throws UsernameNotFoundException {
-		return userService.findUserByMobile(mobile).map(this::convert).orElseThrow(
-			() -> new UsernameNotFoundException(mobile + " 번호로 등록된 사용자 정보를 찾을 수 없습니다.")
-		);
+		UserEntity user = userService.findUserByMobile(mobile)
+			.orElseThrow(
+				() -> new UsernameNotFoundException("사용자 정보를 찾을 수 없습니다.")
+			);
+		return convert(user, null);
 	}
 
 	@Override
-	public UserDetails loadUserById(String userId) throws UsernameNotFoundException {
-		Optional<UserEntity> user = userService.findUserById(UUID.fromString(userId));
-		return user.map(this::convert).orElseThrow(
-			() -> new UsernameNotFoundException("사용자 정보를 찾을 수 없습니다.")
-		);
+	public UserDetails loadUserById(String userId, String providerId) throws UsernameNotFoundException {
+		UserEntity user = userService.findUserById(UUID.fromString(userId))
+			.orElseThrow(
+				() -> new UsernameNotFoundException("사용자 정보를 찾을 수 없습니다.")
+			);
+		return convert(user, providerId);
 	}
 
-	private UserDetails convert(UserEntity user) {
+	private UserDetails convert(UserEntity user, String providerId) {
 		return new ExtendedUserDetails(
 			user.getId(),
-			user.getMobile(),
-			user.getRole()
+			user.getRole(),
+			providerId
 		);
 	}
 }

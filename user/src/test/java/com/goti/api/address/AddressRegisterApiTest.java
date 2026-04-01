@@ -47,6 +47,7 @@ class AddressRegisterApiTest {
 
 	MemberEntity member;
 	ExtendedUserDetails authenticator;
+	private final static String PROVIDER_ID = "test_provider_id";
 
 	@BeforeEach
 	void setup() {
@@ -60,8 +61,8 @@ class AddressRegisterApiTest {
 
 		authenticator = new ExtendedUserDetails(
 			member.getId(),
-			member.getMobile(),
-			member.getRole()
+			member.getRole(),
+			PROVIDER_ID
 		);
 	}
 

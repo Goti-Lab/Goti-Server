@@ -14,10 +14,12 @@ import java.util.UUID;
 @EqualsAndHashCode(callSuper = true)
 public class ExtendedUserDetails extends User {
 	private final UUID id;
+	private final String providerId;
 
-	public ExtendedUserDetails(UUID id, String mobile, UserRole role) {
-		super(mobile, "", AuthorityUtils.createAuthorityList("ROLE_" + role.name()));
+	public ExtendedUserDetails(UUID id, UserRole role, String providerId) {
+		super(String.valueOf(id), "", AuthorityUtils.createAuthorityList("ROLE_" + role.name()));
 		this.id = id;
+		this.providerId = providerId;
 	}
 
 }

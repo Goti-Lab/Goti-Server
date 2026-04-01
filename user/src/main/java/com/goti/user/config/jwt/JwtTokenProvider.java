@@ -29,6 +29,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
+import java.security.Provider;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
 import java.time.Duration;
@@ -79,7 +80,7 @@ public class JwtTokenProvider {
 		}
 	}
 
-	public String create(UUID id, String mobile, UserRole role, TokenType tokenType) {
+	public String create(UUID id, UserRole role, String providerId, TokenType tokenType) {
 		Date issuedAt = new Date();
 		Duration validTime = tokenType == TokenType.ACCESS ?
 			jwtProperties.accessValidTime() : jwtProperties.refreshValidTime();
@@ -91,7 +92,7 @@ public class JwtTokenProvider {
 			.id(jwtId)
 			.issuer(jwtProperties.issuer())
 			.claim(ROLE_CLAIM_KEY, role.name())
-			.claim(MOBILE_CLAIM_KEY, mobile)
+			.claim(PROVIDER_ID_KEY, providerId)
 			.issuedAt(issuedAt)
 			.expiration(expireAt);
 
@@ -156,8 +157,10 @@ public class JwtTokenProvider {
 	}
 
 	public Authentication getAuthentication(String token) {
-		String userId = getClaims(token).getSubject();
-		UserDetails userDetails = userDetailsService.loadUserById(userId);
+		Claims claims = getClaims(token);
+		String userId = claims.getSubject();
+		String providerId = claims.get(PROVIDER_ID_KEY, String.class);
+		UserDetails userDetails = userDetailsService.loadUserById(userId, providerId);
 		return UsernamePasswordAuthenticationToken.authenticated(
 			userDetails,
 			null,
@@ -167,6 +170,10 @@ public class JwtTokenProvider {
 
 	public String extractJti(String token) {
 		return getClaims(token).getId();
+	}
+
+	public String extractProviderId(String token) {
+		return getClaims(token).get(PROVIDER_ID_KEY, String.class);
 	}
 
 	/**

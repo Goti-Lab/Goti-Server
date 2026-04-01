@@ -60,10 +60,12 @@ public class AuthServiceImpl implements AuthService {
 	}
 
 	@Override
-	public Pair<String, String> issueTokens(MemberEntity member) {
+	public Pair<String, String> issueTokens(MemberEntity member, String providerId) {
 		deleteCachedTokenId(member.getId());
-		String accessToken = createToken(member, TokenType.ACCESS);
-		String refreshToken = createToken(member, TokenType.REFRESH);
+
+		String accessToken = createToken(member, providerId, TokenType.ACCESS);
+		String refreshToken = createToken(member, providerId, TokenType.REFRESH);
+
 		saveTokenJti(member.getId(), refreshToken);
 		return Pair.of(accessToken, refreshToken);
 	}
@@ -73,11 +75,13 @@ public class AuthServiceImpl implements AuthService {
 		redisCache.set(RedisKey.REFRESH_TOKEN, memberId, jti);
 	}
 
-	private String createToken(MemberEntity member, TokenType tokenType) {
+	private String createToken(
+		MemberEntity member, String providerId, TokenType tokenType
+	) {
 		return jwtTokenProvider.create(
 			member.getId(),
-			member.getMobile(),
 			member.getRole(),
+			providerId,
 			tokenType
 		);
 	}
