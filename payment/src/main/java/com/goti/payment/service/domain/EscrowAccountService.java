@@ -20,4 +20,6 @@ public interface EscrowAccountService {
 	void requestSettlements(List<EscrowAccountEntity> escrows);
 
 	List<EscrowAccountEntity> findAllByTransactionIds(List<UUID> transactionIds);
+
+	Long sumUnsettledAmounts(UUID sellerId);
 }

@@ -20,6 +20,7 @@ import com.goti.resale.constants.ResaleGraphRange;
 import com.goti.resale.dto.request.ResaleListingCancelRequest;
 import com.goti.resale.dto.request.ResaleListingOrderCreateRequest;
 import com.goti.resale.dto.response.ResaleListingCountResponse;
+import com.goti.resale.dto.response.ResaleListingMyPageCountResponse;
 import com.goti.resale.dto.response.ResaleListingOrderCreateResponse;
 import com.goti.resale.dto.response.ResaleListingResponse;
 import com.goti.resale.dto.response.ResalePriceHistoryResponse;
@@ -93,6 +94,18 @@ public class ResaleListingController {
 	) {
 		List<ResaleListingResponse> responses = listingService.getListingsBySellerId(sellerId);
 		return wrap(responses);
+	}
+
+	@Operation(
+		summary = "마이페이지 판매 조회",
+		description = "마이페이지의 판매중, 판매완료 개수 조회 API"
+	)
+	@GetMapping("/listings/count/listing")
+	public ResponseEntity<ApiSuccessResponse<ResaleListingMyPageCountResponse>> getCountListings(
+		@AuthenticationPrincipal(expression = "id") UUID sellerId
+	) {
+		ResaleListingMyPageCountResponse count = listingService.getCountListings(sellerId);
+		return wrap(count);
 	}
 
 	@Operation(
