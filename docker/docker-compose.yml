@@ -42,6 +42,43 @@ services:
           memory: 256M
     restart: unless-stopped
 
+  zookeeper:
+    image: zookeeper:3.9.2
+    platform: ${DOCKER_PLATFORM:-linux/arm64}
+    container_name: goti-zookeeper
+    ports:
+      - "2181:2181"
+    environment:
+      ZOO_MY_ID: 1
+      ZOO_SERVERS: server.1=zookeeper:2888:3888;2181
+
+  kafka:
+    image: apache/kafka:3.7.0
+    platform: ${DOCKER_PLATFORM:-linux/arm64}
+    container_name: goti-kafka
+    ports:
+      - "9092:9092"
+    environment:
+      # 아파치 공식 이미지 설정 (KRaft 모드 겸용 가능하지만 Zookeeper 연결로 유지)
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    depends_on:
+      - zookeeper
+
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    platform: ${DOCKER_PLATFORM:-linux/arm64}
+    container_name: goti-kafka-ui
+    ports:
+      - "8089:8080"
+    environment:
+      KAFKA_CLUSTERS_0_NAME: local
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
+    depends_on:
+      - kafka
+
 volumes:
   postgres-data:
   redis-data:
