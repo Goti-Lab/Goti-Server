@@ -16,7 +16,7 @@ public interface ResaleListingOrderRepository extends JpaRepository<ResaleListin
 		+ "WHERE r.sellerId = :sellerId "
 		+ "AND r.gradeId = :gradeId "
 		+ "AND r.orderStatus IN :statuses")
-	Optional<ResaleListingOrderEntity> findBySellerAndGradeWithStatus(
+	Optional<ResaleListingOrderEntity> findBySellerAndGrade(
 		@Param("sellerId") UUID sellerId,
 		@Param("gradeId") UUID gradeId,
 		@Param("statuses") List<ResaleListingOrderStatus> statuses
