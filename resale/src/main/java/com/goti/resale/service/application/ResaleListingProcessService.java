@@ -56,8 +56,8 @@ public class ResaleListingProcessService {
 	}
 
 	@Transactional(readOnly = true)
-	public long getListingCountBySection(UUID gameId, UUID sectionId) {
-		return listingRepository.countByGameIdAndSectionIdAndListingStatus(gameId, sectionId, ResaleListingStatus.LISTING);
+	public long getListingCountByGrade(UUID gameId, UUID gradeId) {
+		return listingRepository.countByGameIdAndGradeIdAndListingStatus(gameId, gradeId, ResaleListingStatus.LISTING);
 	}
 
 	@Transactional(readOnly = true)

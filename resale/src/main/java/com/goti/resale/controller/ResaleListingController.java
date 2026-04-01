@@ -122,15 +122,15 @@ public class ResaleListingController {
 	}
 
 	@Operation(
-		summary = "경기의 구역별 리셀 좌석 개수 조회",
-		description = "경기의 구역별 리셀 좌석의 갯수 조회 API"
+		summary = "경기의 등급별 리셀 좌석 개수 조회",
+		description = "경기의 등급별 리셀 좌석의 갯수 조회 API"
 	)
-	@GetMapping("/listings/games/{gameId}/section/{sectionId}/count")
-	public ResponseEntity<ApiSuccessResponse<ResaleListingCountResponse>> getListingCountBySection(
+	@GetMapping("/listings/games/{gameId}/grade/{gradeId}/count")
+	public ResponseEntity<ApiSuccessResponse<ResaleListingCountResponse>> getListingCountByGrade(
 		@PathVariable UUID gameId,
-		@PathVariable UUID sectionId
+		@PathVariable UUID gradeId
 	) {
-		long count = listingService.getListingCountBySection(gameId, sectionId);
+		long count = listingService.getListingCountByGrade(gameId, gradeId);
 		return wrap(new ResaleListingCountResponse(count));
 	}
 }
