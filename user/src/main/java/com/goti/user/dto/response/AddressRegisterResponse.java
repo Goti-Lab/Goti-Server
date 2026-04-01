@@ -7,7 +7,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.UUID;
 
 @Schema(description = "주소 생성 응답")
-public record AddressCreateResponse(
+public record AddressRegisterResponse(
 
 	@Schema(description = "주소 ID", example = "5a484000-e39b-4a44-a716-41265c400000")
 	UUID addressId,
@@ -22,8 +22,8 @@ public record AddressCreateResponse(
 	String detailAddress
 ) {
 
-	public static AddressCreateResponse from(AddressEntity address) {
-		return new AddressCreateResponse(
+	public static AddressRegisterResponse from(AddressEntity address) {
+		return new AddressRegisterResponse(
 			address.getId(),
 			address.getZipCode(),
 			address.getBaseAddress(),

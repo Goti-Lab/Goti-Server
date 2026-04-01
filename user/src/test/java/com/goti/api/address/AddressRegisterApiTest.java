@@ -1,11 +1,11 @@
-package com.goti.api.member;
+package com.goti.api.address;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import com.goti.constants.Gender;
 import com.goti.user.GotiUserApplication;
-
 import com.goti.user.domain.entity.user.MemberEntity;
-import com.goti.user.dto.request.AccountRegisterRequest;
+import com.goti.user.dto.request.AddressRegisterRequest;
 import com.goti.user.repository.MemberRepository;
 
 import com.goti.user.security.ExtendedUserDetails;
@@ -36,17 +36,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Transactional
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
-@DisplayName("계좌 등록 API - Post /api/v1/members/accounts")
-public class AccountRegisterApiTest {
+@DisplayName("회원 주소 등록 API - POST /api/v1/members/addresses")
+class AddressRegisterApiTest {
 
-	@Autowired
-	public MockMvc mockMvc;
+	@Autowired MockMvc mockMvc;
 
-	@Autowired
-	public ObjectMapper objectMapper;
+	@Autowired ObjectMapper objectMapper;
 
-	@Autowired
-	MemberRepository memberRepository;
+	@Autowired MemberRepository memberRepository;
 
 	MemberEntity member;
 	ExtendedUserDetails authenticator;
@@ -56,8 +53,8 @@ public class AccountRegisterApiTest {
 		member = MemberEntity.create(
 			"01012341234",
 			"테스트회원",
-			Gender.MALE,
-			LocalDate.of(2000, 2, 4)
+			Gender.FEMALE,
+			LocalDate.of(2000, 2, 10)
 		);
 		memberRepository.save(member);
 
@@ -69,16 +66,15 @@ public class AccountRegisterApiTest {
 	}
 
 	@Test
-	@DisplayName("계좌 등록 성공")
-	void 계좌_등록_성공__200_OK() throws Exception {
-		AccountRegisterRequest request = new AccountRegisterRequest(
-			"1002-876-543219",
-			"우리은행",
-			"테스트예금주"
+	void 주소_등록_성공__200_OK() throws Exception {
+		AddressRegisterRequest request = new AddressRegisterRequest(
+			"06111",
+			"서울특별시 강남구 학동로 343",
+			"(논현동, 포바강남타워) 4층"
 		);
 
 		MvcResult result = mockMvc.perform(
-				post("/api/v1/members/accounts")
+				post("/api/v1/members/addresses")
 					.with(user(authenticator))
 					.contentType(MediaType.APPLICATION_JSON)
 					.content(objectMapper.writeValueAsString(request))
@@ -89,16 +85,13 @@ public class AccountRegisterApiTest {
 				jsonPath("$.code").value("ok"),
 				jsonPath("$.message").value("성공"),
 				jsonPath("$.data").exists(),
-				jsonPath("$.data.accountId").exists(),
-				jsonPath("$.data.accountNumber").value(request.accountNumber()),
-				jsonPath("$.data.bankName").value(request.bankName()),
-				jsonPath("$.data.accountHolder").value(request.accountHolder())
+				jsonPath("$.data.addressId").exists(),
+				jsonPath("$.data.zipCode").value(request.zipCode()),
+				jsonPath("$.data.baseAddress").value(request.baseAddress()),
+				jsonPath("$.data.detailAddress").value(request.detailAddress())
 			).andReturn();
 
 		String responseJson = result.getResponse().getContentAsString();
 		log.info("response : {}", responseJson);
 	}
-
-
-
 }
