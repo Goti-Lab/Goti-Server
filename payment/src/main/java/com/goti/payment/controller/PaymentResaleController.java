@@ -65,35 +65,44 @@ public class PaymentResaleController {
 
 	@Operation(
 		summary = "미정산 금액 조회",
-		description = "미정산 된 금액을 조회"
+		description = "미정산 된 금액 조회 API"
 	)
 	@GetMapping("/unsettled")
 	public ResponseEntity<ApiSuccessResponse<UnsettledAmountResponse>> getUnsettledAmounts(
 		@AuthenticationPrincipal(expression = "id") UUID sellerId) {
-		return wrap(paymentLedgerProcessService.getUnsettledAmounts(sellerId));
+		return wrap(
+			paymentLedgerProcessService
+				.getUnsettledAmounts(sellerId)
+		);
 	}
 
 	@Operation(
 		summary = "장부 목록 조회",
-		description = "모든 결제 장부 내역을 페이징하여 조회"
+		description = "모든 결제 장부 내역을 페이징하여 조회 API"
 	)
 	@GetMapping("/ledgers")
 	@PreAuthorize("hasRole('ADMIN')")
 	public ResponseEntity<ApiSuccessResponse<Page<ResalePaymentLedgerResponse>>> getLedgers(
 		Pageable pageable
 	) {
-		return wrap(paymentLedgerProcessService.getLedgers(pageable));
+		return wrap(
+			paymentLedgerProcessService
+				.getLedgers(pageable)
+		);
 	}
 
 	@Operation(
 		summary = "주문별 장부 조회",
-		description = "특정 주문 ID에 해당하는 장부를 조회"
+		description = "특정 주문 ID에 해당하는 장부를 조회 API"
 	)
 	@GetMapping("/ledgers/orders/{orderId}")
 	@PreAuthorize("hasRole('ADMIN')")
 	public ResponseEntity<ApiSuccessResponse<ResalePaymentLedgerResponse>> getLedgerByOrderId(
 		@PathVariable UUID orderId
 	) {
-		return wrap(paymentLedgerProcessService.getLedgerByOrderId(orderId));
+		return wrap(
+			paymentLedgerProcessService
+				.getLedgerByOrderId(orderId)
+		);
 	}
 }
