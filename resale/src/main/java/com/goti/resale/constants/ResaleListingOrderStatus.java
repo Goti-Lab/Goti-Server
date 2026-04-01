@@ -5,12 +5,12 @@ import lombok.RequiredArgsConstructor;
 
 @Getter
 @RequiredArgsConstructor
-public enum ResaleListingStatus {
-	LISTING("판매등록"),
-	HOLD("점유상태"),
+public enum ResaleListingOrderStatus {
+	LISTING("판매중"),
+	PARTIAL("부분 처리"),
 	SOLD("판매 완료 대기"),
-	SETTLED("판매완료"),
-	CANCELED("판매취소");
+	SETTLED("판매 완료"),
+	CANCELED("판매 취소");
 
 	private final String description;
 }

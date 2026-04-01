@@ -58,7 +58,7 @@ public class PaymentResaleController {
 		@PathVariable UUID orderId
 	) {
 		resaleOrderPaymentService.releaseEscrow(orderId);
-		return wrap(null);
+		return empty();
 	}
 
 	@Operation(
