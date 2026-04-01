@@ -6,6 +6,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -26,6 +27,8 @@ import com.goti.resale.domain.entity.resale.ResaleTransactionEntity;
 import com.goti.resale.dto.request.ResaleTransactionItemRequest;
 import com.goti.resale.dto.response.ResaleOrderCreateResponse;
 import com.goti.resale.dto.response.ResalePurchaseListResponse;
+import com.goti.resale.infra.dto.ResaleTicketPurchaseInfo;
+import com.goti.resale.infra.TicketApiClient;
 import com.goti.resale.infra.TicketClient;
 import com.goti.resale.infra.dto.ResaleOrderCreatedEvent;
 import com.goti.resale.repository.ResaleOrderRepository;
@@ -48,6 +51,7 @@ public class ResaleOrderServiceImpl implements ResaleOrderService {
 	private final ResaleRestrictionHandler resaleRestrictionHandler;
 	private final ResalePricePolicy resalePricePolicy;
 	private final TicketClient ticketClient;
+	private final TicketApiClient ticketApiClient;
 	private final ApplicationEventPublisher eventPublisher;
 
 	@Override
@@ -220,12 +224,33 @@ public class ResaleOrderServiceImpl implements ResaleOrderService {
 		ResaleOrderEntity order,
 		List<ResaleTransactionEntity> transactions
 	) {
-		UUID gameId = transactions.isEmpty() ? null : transactions.getFirst().getListing().getGameId();
-		List<String> seatInfos = transactions.stream()
-			.map(transaction -> transaction.getListing().getSeatInfo())
+		UUID gameId = transactions.getFirst().getListing().getGameId();
+
+		List<UUID> ticketIds = transactions.stream()
+			.map(transaction -> transaction.getListing().getTicketId())
 			.toList();
 
-		return ResalePurchaseListResponse.of(order, gameId, seatInfos);
+		Map<UUID, ResaleTicketPurchaseInfo> ticketInfoMap = ticketApiClient.getPurchaseInfos(ticketIds).stream()
+			.collect(Collectors.toMap(
+				ResaleTicketPurchaseInfo::ticketId,
+				ticketInfo -> ticketInfo
+			));
+
+		ResaleTicketPurchaseInfo representativeTicket = ticketInfoMap.get(ticketIds.getFirst());
+
+		List<String> seatInfos = ticketIds.stream()
+			.map(ticketInfoMap::get)
+			.filter(Objects::nonNull)
+			.map(ResaleTicketPurchaseInfo::seatInfo)
+			.toList();
+
+		return ResalePurchaseListResponse.of(
+			order,
+			gameId,
+			representativeTicket.gameTitle(),
+			representativeTicket.gameDate(),
+			seatInfos
+		);
 	}
 
 	private void validatePeriodFilter(

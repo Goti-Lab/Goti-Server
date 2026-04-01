@@ -1,6 +1,7 @@
 package com.goti.resale.dto.response;
 
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -27,12 +28,19 @@ public record ResalePurchaseListResponse(
 	Instant orderedAt,
 	@Schema(description = "경기 ID", example = "62c73f2d-87ab-4f5c-9d66-97d4d7771111")
 	UUID gameId,
+	@Schema(description = "경기 제목", example = "두산 베어스 vs LG 트윈스")
+	String gameTitle,
+	@Schema(description = "경기 일시", example = "2026-03-21 18:30")
+	@JsonFormat(pattern = "yyyy-MM-dd HH:mm")
+	LocalDateTime gameDate,
 	@Schema(description = "좌석 정보 목록", example = "[\"1루 K8석(3)\", \"109구역 1열 8번\"]")
 	List<String> seatInfos
 ) {
 	public static ResalePurchaseListResponse of(
 		ResaleOrderEntity order,
 		UUID gameId,
+		String gameTitle,
+		LocalDateTime gameDate,
 		List<String> seatInfos
 	) {
 		return new ResalePurchaseListResponse(
@@ -43,6 +51,8 @@ public record ResalePurchaseListResponse(
 			order.getTotalAmount(),
 			order.getCreatedAt(),
 			gameId,
+			gameTitle,
+			gameDate,
 			seatInfos
 		);
 	}

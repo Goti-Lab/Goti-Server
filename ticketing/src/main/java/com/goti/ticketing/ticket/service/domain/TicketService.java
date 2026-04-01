@@ -7,6 +7,7 @@ import java.util.UUID;
 
 import com.goti.ticketing.domain.entity.order.OrderItemEntity;
 import com.goti.ticketing.domain.entity.ticket.TicketEntity;
+import com.goti.ticketing.ticket.dto.response.TicketPurchaseInfoResponse;
 import com.goti.ticketing.ticket.dto.response.TicketResponse;
 
 public interface TicketService {
@@ -32,6 +33,8 @@ public interface TicketService {
 		UUID ticketId,
 		UUID userId
 	);
+
+	List<TicketPurchaseInfoResponse> getPurchaseInfos(List<UUID> ticketIds);
 
 	TicketEntity get(UUID ticketId);
 }

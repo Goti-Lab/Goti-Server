@@ -13,6 +13,7 @@ import com.goti.ticketing.domain.entity.order.OrderItemEntity;
 import com.goti.ticketing.domain.entity.ticket.TicketEntity;
 import com.goti.exception.CustomException;
 import com.goti.global.validation.Preconditions;
+import com.goti.ticketing.ticket.dto.response.TicketPurchaseInfoResponse;
 import com.goti.ticketing.ticket.dto.response.TicketResponse;
 import com.goti.ticketing.ticket.repository.TicketRepository;
 
@@ -86,6 +87,19 @@ public class TicketServiceImpl implements TicketService {
 			.orElseThrow(() -> new CustomException(ErrorCode.TICKET_NOT_FOUND));
 
 		return TicketResponse.from(ticket);
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public List<TicketPurchaseInfoResponse> getPurchaseInfos(List<UUID> ticketIds) {
+		Preconditions.validate(
+			ticketIds != null && !ticketIds.isEmpty(),
+			ErrorCode.TICKET_IDS_REQUIRED
+		);
+
+		return ticketRepository.findAllByIdIn(ticketIds).stream()
+			.map(TicketPurchaseInfoResponse::from)
+			.toList();
 	}
 
 	@Override
