@@ -65,7 +65,7 @@ public class PaymentResaleController {
 
 	@Operation(
 		summary = "미정산 금액 조회",
-		description = "미정산 된 금액 조회 API"
+		description = "미정산 금액 조회 API"
 	)
 	@GetMapping("/unsettled")
 	public ResponseEntity<ApiSuccessResponse<UnsettledAmountResponse>> getUnsettledAmounts(
@@ -78,7 +78,7 @@ public class PaymentResaleController {
 
 	@Operation(
 		summary = "장부 목록 조회",
-		description = "모든 결제 장부 내역을 페이징하여 조회 API"
+		description = "모든 결제 장부 내역 페이징 조회 API"
 	)
 	@GetMapping("/ledgers")
 	@PreAuthorize("hasRole('ADMIN')")
@@ -93,7 +93,7 @@ public class PaymentResaleController {
 
 	@Operation(
 		summary = "주문별 장부 조회",
-		description = "특정 주문 ID에 해당하는 장부를 조회 API"
+		description = "특정 주문에 대한 장부 조회 API "
 	)
 	@GetMapping("/ledgers/orders/{orderId}")
 	@PreAuthorize("hasRole('ADMIN')")
