@@ -59,4 +59,31 @@ public class QueueStatusService {
 			queueMeta.updatedAt()
 		);
 	}
+
+	/**
+	 * CDN 캐싱용 전역 상태 조회 — 인증 불필요.
+	 * Cache-Control: public, max-age=1 로 Cloudflare CDN 1초 캐싱.
+	 */
+	public QueueStatusResponse getGlobalStatus(UUID gameId) {
+		QueueMeta queueMeta = queueRedisRepository.getMeta(gameId);
+		if (queueMeta == null) {
+			throw new CustomException(ErrorCode.QUEUE_META_NOT_FOUND);
+		}
+
+		long availableSlots = Math.max(0L, queueMeta.maxCapacity() - queueMeta.activeCount());
+		long publishedRank = Math.max(
+			queueMeta.currentAllowedRank(),
+			queueMeta.lastEnteredRank() + availableSlots
+		);
+
+		return new QueueStatusResponse(
+			gameId,
+			queueMeta.maxCapacity(),
+			queueMeta.activeCount(),
+			availableSlots,
+			queueMeta.currentAllowedRank(),
+			publishedRank,
+			queueMeta.updatedAt()
+		);
+	}
 }

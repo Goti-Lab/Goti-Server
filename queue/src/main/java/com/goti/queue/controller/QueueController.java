@@ -3,7 +3,9 @@ package com.goti.queue.controller;
 import static com.goti.global.api.ApiSuccessResponse.wrap;
 
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
+import org.springframework.http.CacheControl;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -13,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.goti.constants.messages.SuccessCode;
 import com.goti.global.api.ApiSuccessResponse;
 import com.goti.queue.dto.request.QueueEnterRequest;
 import com.goti.queue.dto.request.QueueSeatEnterRequest;
@@ -63,6 +66,23 @@ public class QueueController {
 		@PathVariable UUID gameId
 	) {
 		return wrap(queueStatusService.getStatus(gameId, userId));
+	}
+
+	@Operation(
+		summary = "대기열 전역 상태 조회 (CDN 캐싱용)",
+		description = "인증 불필요. CDN에서 1초 캐싱하여 대량 polling 부하를 흡수."
+	)
+	@GetMapping("/{gameId}/global-status")
+	public ResponseEntity<ApiSuccessResponse<QueueStatusResponse>> getGlobalStatus(
+		@PathVariable UUID gameId
+	) {
+		return ResponseEntity.ok()
+			.cacheControl(CacheControl.maxAge(1, TimeUnit.SECONDS).cachePublic())
+			.body(new ApiSuccessResponse<>(
+				SuccessCode.RESULT.getCode(),
+				SuccessCode.RESULT.getMessage(),
+				queueStatusService.getGlobalStatus(gameId)
+			));
 	}
 
 	@Operation(

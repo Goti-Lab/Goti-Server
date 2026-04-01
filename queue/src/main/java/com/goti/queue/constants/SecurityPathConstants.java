@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 public final class SecurityPathConstants {
 
 	public static final String[] PUBLIC_URLS = {
-		"/actuator/prometheus"
+		"/actuator/prometheus",
+		"/api/v1/queue/*/global-status"
 	};
 }
