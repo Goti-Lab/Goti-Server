@@ -44,7 +44,7 @@ public class ResaleListingController {
 
 	@Operation(
 		summary = "리셀 등록 (일괄 포함)",
-		description = "티켓을 한 번에 리셀 등록하며, 등급별로 주문 그룹을 생성하여 등록 API"
+		description = "티켓 리셀 일괄 등록 및 등급별 주문 그룹 생성 API"
 	)
 	@PostMapping("/listings")
 	public ResponseEntity<ApiSuccessResponse<ResaleListingOrderCreateResponse>> createListingOrder(
@@ -111,7 +111,7 @@ public class ResaleListingController {
 
 	@Operation(
 		summary = "경기의 전체 리셀 좌석 개수 조회",
-		description = "경기의 전체 리셀 좌석의 갯수 조회 API"
+		description = "경기의 전체 리셀 좌석 개수 조회 API"
 	)
 	@GetMapping("/listings/games/{gameId}/count")
 	public ResponseEntity<ApiSuccessResponse<ResaleListingCountResponse>> getTotalListingCount(
@@ -123,7 +123,7 @@ public class ResaleListingController {
 
 	@Operation(
 		summary = "경기의 등급별 리셀 좌석 개수 조회",
-		description = "경기의 등급별 리셀 좌석의 갯수 조회 API"
+		description = "경기의 등급별 리셀 좌석 개수 조회 API"
 	)
 	@GetMapping("/listings/games/{gameId}/grade/{gradeId}/count")
 	public ResponseEntity<ApiSuccessResponse<ResaleListingCountResponse>> getListingCountByGrade(

@@ -7,6 +7,7 @@ import com.goti.resale.domain.entity.resale.ResaleListingOrderEntity;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
+@Schema(description = "리셀 등록 응답")
 public record ResaleListingOrderCreateResponse(
 	@Schema(description = "리셀 주문 정보 목록")
 	List<ResaleListingOrderSummaryResponse> orders,
