@@ -93,7 +93,7 @@ public class PaymentResaleController {
 
 	@Operation(
 		summary = "주문별 장부 조회",
-		description = "특정 주문에 대한 장부 조회 API "
+		description = "특정 주문에 대한 결제 내역 조회 API "
 	)
 	@GetMapping("/ledgers/orders/{orderId}")
 	@PreAuthorize("hasRole('ADMIN')")
