@@ -117,12 +117,12 @@ public class ResaleListingController {
 		summary = "특정 리셀 주문 내 상세 목록 조회",
 		description = "특정 리셀 주문에 속한 티켓 상세 목록 조회 API"
 	)
-	@GetMapping("/listings/orders/{orderId}")
+	@GetMapping("/listings/orders/{listingOrderId}")
 	public ResponseEntity<ApiSuccessResponse<List<ResaleListingResponse>>> getListingsByOrderId(
 		@AuthenticationPrincipal(expression = "id") UUID sellerId,
-		@PathVariable UUID orderId
+		@PathVariable UUID listingOrderId
 	) {
-		List<ResaleListingResponse> responses = listingService.getListingsByOrderId(sellerId, orderId);
+		List<ResaleListingResponse> responses = listingService.getListingsByOrderId(sellerId, listingOrderId);
 		return wrap(responses);
 	}
 
