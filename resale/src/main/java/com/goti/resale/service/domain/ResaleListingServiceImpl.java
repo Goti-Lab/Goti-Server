@@ -229,6 +229,18 @@ public class ResaleListingServiceImpl implements ResaleListingService {
 	}
 
 	@Override
+	@Transactional(readOnly = true)
+	public List<ResaleListingOrderEntity> getListingOrdersBySellerId(UUID sellerId) {
+		return listingOrderRepository.findAllBySellerDESC(sellerId);
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public List<ResaleListingEntity> getListingsByOrderId(UUID orderId) {
+		return listingRepository.findAllByListingOrderId(orderId);
+	}
+
+	@Override
 	public void validateListingCreation(
 		ResaleTicketResponse ticketInfo,
 		UUID sellerId,
