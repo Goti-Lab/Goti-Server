@@ -18,10 +18,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.goti.global.api.ApiSuccessResponse;
+import com.goti.global.api.PageResponse;
 import com.goti.resale.constants.ResaleGraphRange;
 import com.goti.resale.dto.request.ResaleListingCancelRequest;
 import com.goti.resale.dto.request.ResaleListingOrderCreateRequest;
-import com.goti.resale.dto.request.ResaleSalesSearchRequest;
+import com.goti.resale.dto.request.ResaleSearchSalesRequest;
 import com.goti.resale.dto.response.ResaleListingCountResponse;
 import com.goti.resale.dto.response.ResaleListingMyPageCountResponse;
 import com.goti.resale.dto.response.ResaleListingOrderCreateResponse;
@@ -46,19 +47,6 @@ public class ResaleListingController {
 
 	private final ResaleListingProcessService listingService;
 	private final ResalePriceProcessService priceService;
-
-	@Operation(
-		summary = "내 판매 내역 조회 (마이페이지)",
-		description = "판매 내역 상태별, 기간별 페이징 조회 API"
-	)
-	@GetMapping("/listings/sales")
-	public ResponseEntity<ApiSuccessResponse<Page<ResaleListingResponse>>> getMySales(
-		@AuthenticationPrincipal(expression = "id") UUID sellerId,
-		@ParameterObject ResaleSalesSearchRequest request
-	) {
-		Page<ResaleListingResponse> responses = listingService.getMySales(request.toCommand(sellerId));
-		return wrap(responses);
-	}
 
 	@Operation(
 		summary = "리셀 등록 (일괄 포함)",
@@ -92,13 +80,26 @@ public class ResaleListingController {
 		summary = "등록 일괄 취소",
 		description = "리셀 등록 그룹에 속한 모든 판매 중인 티켓을 취소 API"
 	)
-	@PatchMapping("/listings/orders/{listingOrderId}/cancel")
+	@PatchMapping("/listings/orders/{orderId}/cancel")
 	public ResponseEntity<ApiSuccessResponse<Void>> cancelListingOrder(
 		@AuthenticationPrincipal(expression = "id") UUID sellerId,
-		@PathVariable UUID listingOrderId
+		@PathVariable UUID orderId
 	) {
-		listingService.cancelListingOrder(sellerId, listingOrderId);
+		listingService.cancelListingOrder(sellerId, orderId);
 		return empty();
+	}
+
+	@Operation(
+		summary = "내 판매 내역 조회 (마이페이지)",
+		description = "판매 내역 상태별, 기간별 페이징 조회 API"
+	)
+	@GetMapping("/listings/sales")
+	public ResponseEntity<ApiSuccessResponse<PageResponse<ResaleListingResponse>>> getSalesHistory(
+		@AuthenticationPrincipal(expression = "id") UUID sellerId,
+		@ParameterObject ResaleSearchSalesRequest request
+	) {
+		Page<ResaleListingResponse> responses = listingService.getSalesHistory(request.toCommand(sellerId));
+		return page(responses);
 	}
 
 	@Operation(
@@ -117,12 +118,12 @@ public class ResaleListingController {
 		summary = "특정 리셀 주문 내 상세 목록 조회",
 		description = "특정 리셀 주문에 속한 티켓 상세 목록 조회 API"
 	)
-	@GetMapping("/listings/orders/{listingOrderId}")
+	@GetMapping("/listings/orders/{orderId}")
 	public ResponseEntity<ApiSuccessResponse<List<ResaleListingResponse>>> getListingsByOrderId(
 		@AuthenticationPrincipal(expression = "id") UUID sellerId,
-		@PathVariable UUID listingOrderId
+		@PathVariable UUID orderId
 	) {
-		List<ResaleListingResponse> responses = listingService.getListingsByOrderId(sellerId, listingOrderId);
+		List<ResaleListingResponse> responses = listingService.getListingsByOrderId(sellerId, orderId);
 		return wrap(responses);
 	}
 
