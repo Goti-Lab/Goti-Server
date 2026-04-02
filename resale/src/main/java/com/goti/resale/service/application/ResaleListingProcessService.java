@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.goti.resale.constants.ResaleListingStatus;
-import com.goti.resale.constants.ResaleSalesStatus;
+import com.goti.resale.constants.ResaleOrderSearchStatus;
 import com.goti.resale.domain.entity.resale.ResaleListingEntity;
 import com.goti.resale.domain.entity.resale.ResaleRestrictionEntity;
 import com.goti.resale.dto.request.ResaleListingCancelRequest;
@@ -78,7 +78,7 @@ public class ResaleListingProcessService {
 	}
 
 	@Transactional(readOnly = true)
-	public Page<ResaleListingResponse> getMySales(ResaleSalesSearchCommand command) {
+	public Page<ResaleListingResponse> getSalesHistory(ResaleSalesSearchCommand command) {
 		List<ResaleListingStatus> targetStatuses = mapToStatuses(command.status());
 		Pageable pageable = PageRequest.of(command.page(), command.size());
 
@@ -92,7 +92,7 @@ public class ResaleListingProcessService {
 		).map(ResaleListingResponse::from);
 	}
 
-	private List<ResaleListingStatus> mapToStatuses(ResaleSalesStatus status) {
+	private List<ResaleListingStatus> mapToStatuses(ResaleOrderSearchStatus status) {
 		return switch (status) {
 			case ALL -> null;
 			case LISTING -> List.of(ResaleListingStatus.LISTING, ResaleListingStatus.HOLD);

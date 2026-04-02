@@ -3,14 +3,14 @@ package com.goti.resale.service.domain.command;
 import java.time.LocalDate;
 import java.util.UUID;
 
-import com.goti.resale.constants.ResaleSalesStatus;
+import com.goti.resale.constants.ResaleOrderSearchStatus;
 
 public record ResaleSalesSearchCommand(
 	UUID sellerId,
 	Integer months,
 	LocalDate startDate,
 	LocalDate endDate,
-	ResaleSalesStatus status,
+	ResaleOrderSearchStatus status,
 	Integer page,
 	Integer size
 ) {

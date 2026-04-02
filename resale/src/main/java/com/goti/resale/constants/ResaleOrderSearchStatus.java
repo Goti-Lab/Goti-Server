@@ -5,7 +5,7 @@ import lombok.RequiredArgsConstructor;
 
 @Getter
 @RequiredArgsConstructor
-public enum ResaleSalesStatus {
+public enum ResaleOrderSearchStatus {
 	ALL("전체"),
 	LISTING("판매중"),
 	PENDING("정산대기"),
