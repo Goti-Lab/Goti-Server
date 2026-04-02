@@ -54,7 +54,7 @@ public class ResaleListingProcessService {
 	}
 
 	@Transactional(readOnly = true)
-	public List<ResaleListingResponse> getListingsBySellerId(UUID sellerId) {
+	public List<ResaleListingResponse> getListings(UUID sellerId) {
 		List<ResaleListingEntity> resaleListings = listingRepository.findAllBySellerId(sellerId);
 
 		return resaleListings.stream()
@@ -63,14 +63,14 @@ public class ResaleListingProcessService {
 	}
 
 	@Transactional(readOnly = true)
-	public List<ResaleListingOrderResponse> getListingOrders(UUID sellerId) {
+	public List<ResaleListingOrderResponse> getResaleSalesGroups(UUID sellerId) {
 		return resaleListingService.getListingOrdersBySellerId(sellerId).stream()
 			.map(ResaleListingOrderResponse::from)
 			.toList();
 	}
 
 	@Transactional(readOnly = true)
-	public List<ResaleListingResponse> getListingsByOrderId(UUID sellerId, UUID orderId) {
+	public List<ResaleListingResponse> getSalesDetails(UUID sellerId, UUID orderId) {
 		return resaleListingService.getListingsByOrderId(orderId).stream()
 			.filter(listing -> listing.getSellerId().equals(sellerId))
 			.map(ResaleListingResponse::from)

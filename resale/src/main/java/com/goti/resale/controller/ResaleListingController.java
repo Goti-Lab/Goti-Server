@@ -107,10 +107,10 @@ public class ResaleListingController {
 		description = "판매자가 등록한 리셀 주문 목록 조회 API"
 	)
 	@GetMapping("/listings/orders")
-	public ResponseEntity<ApiSuccessResponse<List<ResaleListingOrderResponse>>> getListingOrders(
+	public ResponseEntity<ApiSuccessResponse<List<ResaleListingOrderResponse>>> getResaleSalesGroups(
 		@AuthenticationPrincipal(expression = "id") UUID sellerId
 	) {
-		List<ResaleListingOrderResponse> responses = listingService.getListingOrders(sellerId);
+		List<ResaleListingOrderResponse> responses = listingService.getResaleSalesGroups(sellerId);
 		return wrap(responses);
 	}
 
@@ -119,11 +119,11 @@ public class ResaleListingController {
 		description = "특정 리셀 주문에 속한 티켓 상세 목록 조회 API"
 	)
 	@GetMapping("/listings/orders/{orderId}")
-	public ResponseEntity<ApiSuccessResponse<List<ResaleListingResponse>>> getListingsByOrderId(
+	public ResponseEntity<ApiSuccessResponse<List<ResaleListingResponse>>> getSalesDetails(
 		@AuthenticationPrincipal(expression = "id") UUID sellerId,
 		@PathVariable UUID orderId
 	) {
-		List<ResaleListingResponse> responses = listingService.getListingsByOrderId(sellerId, orderId);
+		List<ResaleListingResponse> responses = listingService.getSalesDetails(sellerId, orderId);
 		return wrap(responses);
 	}
 
@@ -132,10 +132,10 @@ public class ResaleListingController {
 		description = "판매자의 리셀 목록 조회 API"
 	)
 	@GetMapping("/listings")
-	public ResponseEntity<ApiSuccessResponse<List<ResaleListingResponse>>> getListingsBySellerId(
+	public ResponseEntity<ApiSuccessResponse<List<ResaleListingResponse>>> getListings(
 		@AuthenticationPrincipal(expression = "id") UUID sellerId
 	) {
-		List<ResaleListingResponse> responses = listingService.getListingsBySellerId(sellerId);
+		List<ResaleListingResponse> responses = listingService.getListings(sellerId);
 		return wrap(responses);
 	}
 
