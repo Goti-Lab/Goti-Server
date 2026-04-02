@@ -25,6 +25,7 @@ import com.goti.resale.dto.request.ResaleSalesSearchRequest;
 import com.goti.resale.dto.response.ResaleListingCountResponse;
 import com.goti.resale.dto.response.ResaleListingMyPageCountResponse;
 import com.goti.resale.dto.response.ResaleListingOrderCreateResponse;
+import com.goti.resale.dto.response.ResaleListingOrderResponse;
 import com.goti.resale.dto.response.ResaleListingResponse;
 import com.goti.resale.dto.response.ResalePriceHistoryResponse;
 import com.goti.resale.service.application.ResaleListingProcessService;
@@ -98,6 +99,31 @@ public class ResaleListingController {
 	) {
 		listingService.cancelListingOrder(sellerId, listingOrderId);
 		return empty();
+	}
+
+	@Operation(
+		summary = "내 리셀 주문 목록 조회",
+		description = "판매자가 등록한 리셀 주문 목록 조회 API"
+	)
+	@GetMapping("/listings/orders")
+	public ResponseEntity<ApiSuccessResponse<List<ResaleListingOrderResponse>>> getListingOrders(
+		@AuthenticationPrincipal(expression = "id") UUID sellerId
+	) {
+		List<ResaleListingOrderResponse> responses = listingService.getListingOrders(sellerId);
+		return wrap(responses);
+	}
+
+	@Operation(
+		summary = "특정 리셀 주문 내 상세 목록 조회",
+		description = "특정 리셀 주문에 속한 티켓 상세 목록 조회 API"
+	)
+	@GetMapping("/listings/orders/{orderId}")
+	public ResponseEntity<ApiSuccessResponse<List<ResaleListingResponse>>> getListingsByOrderId(
+		@AuthenticationPrincipal(expression = "id") UUID sellerId,
+		@PathVariable UUID orderId
+	) {
+		List<ResaleListingResponse> responses = listingService.getListingsByOrderId(sellerId, orderId);
+		return wrap(responses);
 	}
 
 	@Operation(
