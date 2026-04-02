@@ -56,7 +56,7 @@ class JwtTokenProviderRs256Test {
 		);
 		ExtendedUserDetailsService mockService = new ExtendedUserDetailsService() {
 			@Override
-			public UserDetails loadUserById(String userId) throws UsernameNotFoundException {
+			public UserDetails loadUserById(String userId, String providerId) throws UsernameNotFoundException {
 				return null;
 			}
 
@@ -84,9 +84,10 @@ class JwtTokenProviderRs256Test {
 		void should_createAndValidate_when_rs256Enabled() {
 			// Given
 			UUID userId = UUID.randomUUID();
+			String providerId = "test_provider_id";
 
 			// When
-			String token = provider.create(userId, "01012345678", UserRole.MEMBER, TokenType.ACCESS);
+			String token = provider.create(userId, UserRole.MEMBER, providerId, TokenType.ACCESS);
 
 			// Then
 			assertThatCode(() -> provider.validateToken(token))
@@ -98,7 +99,9 @@ class JwtTokenProviderRs256Test {
 		void should_extractClaims_when_rs256Token() {
 			// Given
 			UUID userId = UUID.randomUUID();
-			String token = provider.create(userId, "01012345678", UserRole.ADMIN, TokenType.ACCESS);
+			String providerId = "test_provider_id";
+
+			String token = provider.create(userId, UserRole.ADMIN, providerId, TokenType.ACCESS);
 
 			// When
 			String jti = provider.extractJti(token);
@@ -146,9 +149,10 @@ class JwtTokenProviderRs256Test {
 		void should_createAndValidate_when_hs512Only() {
 			// Given
 			UUID userId = UUID.randomUUID();
+			String providerId = "test_provider_id";
 
 			// When
-			String token = provider.create(userId, "01012345678", UserRole.MEMBER, TokenType.ACCESS);
+			String token = provider.create(userId, UserRole.MEMBER, providerId, TokenType.ACCESS);
 
 			// Then
 			assertThatCode(() -> provider.validateToken(token))
@@ -169,6 +173,8 @@ class JwtTokenProviderRs256Test {
 		@Test
 		@DisplayName("만료된 토큰은 fallback 없이 즉시 실패한다")
 		void should_throwExpired_when_tokenExpired() {
+			String providerId = "test_provider_id";
+
 			// Given: 이미 만료된 토큰을 생성하기 위해 유효시간 0인 provider
 			JwtProperties properties = new JwtProperties(
 				HMAC_SECRET, rsaPrivateKeyPem, rsaPublicKeyPem, "goti-user-service",
@@ -176,7 +182,7 @@ class JwtTokenProviderRs256Test {
 			);
 			ExtendedUserDetailsService mockService = new ExtendedUserDetailsService() {
 				@Override
-				public UserDetails loadUserById(String userId) throws UsernameNotFoundException {
+				public UserDetails loadUserById(String userId, String providerId) throws UsernameNotFoundException {
 					return null;
 				}
 
@@ -189,7 +195,7 @@ class JwtTokenProviderRs256Test {
 			expiredProvider.initKeys();
 
 			UUID userId = UUID.randomUUID();
-			String token = expiredProvider.create(userId, "01012345678", UserRole.MEMBER, TokenType.ACCESS);
+			String token = expiredProvider.create(userId, UserRole.MEMBER, providerId, TokenType.ACCESS);
 
 			// When & Then
 			assertThatThrownBy(() -> expiredProvider.validateToken(token))

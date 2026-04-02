@@ -1,12 +1,13 @@
 package com.goti.infra.cache;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.goti.infra.constants.redis.RedisKey;
 
 import lombok.RequiredArgsConstructor;
@@ -31,8 +32,12 @@ public class RedisCache {
 
 	public <T> T get(String key, Class<T> clazz) {
 		Object value = redisTemplate.opsForValue().get(key);
-		if (value == null) return null;
-		if (clazz.isInstance(value)) return clazz.cast(value);
+		if (value == null) {
+			return null;
+		}
+		if (clazz.isInstance(value)) {
+			return clazz.cast(value);
+		}
 		return objectMapper.convertValue(value, clazz);
 	}
 

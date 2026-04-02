@@ -36,6 +36,17 @@ public class AccountEntity extends ModificationTimestampEntity {
 	@JoinColumn(name = "member_id", unique = true, nullable = false)
 	private MemberEntity member;
 
+	public void updateDetails(
+		final String accountNumber,
+		final String bankName,
+		final String accountHolder
+	) {
+		validate(accountNumber, bankName, accountHolder, member);
+		this.accountNumber = accountNumber;
+		this.bankName = bankName;
+		this.accountHolder = accountHolder;
+	}
+
 	private AccountEntity(
 		String accountNumber,
 		String bankName,

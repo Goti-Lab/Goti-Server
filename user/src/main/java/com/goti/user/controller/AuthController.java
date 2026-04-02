@@ -10,7 +10,7 @@ import com.goti.user.dto.response.TokenResponse;
 import com.goti.global.api.ApiSuccessResponse;
 import com.goti.infra.api.dto.response.common.SocialStateResponse;
 
-import com.goti.user.service.auth.application.SocialAuthService;
+import com.goti.user.service.application.auth.SocialAuthService;
 
 import com.goti.user.util.CookieProvider;
 

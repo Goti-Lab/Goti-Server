@@ -24,7 +24,7 @@ class EscrowAccountEntityTest {
 	private static final UUID VALID_TRANSACTION_ID = UUID.randomUUID();
 	private static final UUID VALID_BUYER_ID = UUID.randomUUID();
 	private static final UUID VALID_SELLER_ID = UUID.randomUUID();
-	private static final Integer VALID_ESCROW_AMOUNT = 52500;
+	private static final Long VALID_ESCROW_AMOUNT = 52500L;
 
 	@Test
 	void 에스크로_계좌_생성_성공() {
@@ -51,7 +51,7 @@ class EscrowAccountEntityTest {
 			VALID_TRANSACTION_ID,
 			VALID_BUYER_ID,
 			VALID_SELLER_ID,
-			0
+			0L
 		);
 
 		assertThat(entity.getEscrowAmount()).isZero();
@@ -134,7 +134,7 @@ class EscrowAccountEntityTest {
 
 	@ParameterizedTest
 	@NullSource
-	void 에스크로_금액이_null_실패(Integer escrowAmount) {
+	void 에스크로_금액이_null_실패(Long escrowAmount) {
 		assertThatThrownBy(() -> EscrowAccountEntity.create(
 			VALID_TRANSACTION_ID,
 			VALID_BUYER_ID,
@@ -146,8 +146,8 @@ class EscrowAccountEntityTest {
 	}
 
 	@ParameterizedTest
-	@ValueSource(ints = {-1, -1000, -52500})
-	void 에스크로_금액이_음수_실패(Integer escrowAmount) {
+	@ValueSource(longs = {-1, -1000, -52500})
+	void 에스크로_금액이_음수_실패(Long escrowAmount) {
 		assertThatThrownBy(() -> EscrowAccountEntity.create(
 			VALID_TRANSACTION_ID,
 			VALID_BUYER_ID,

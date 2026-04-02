@@ -18,6 +18,6 @@ public record ResaleTransactionItemRequest(
 
 	@Schema(description = "판매자 정산 예정액", example = "46000")
 	@Positive(message = "판매자 정산 예정액은 양수여야 합니다.")
-	int settlementAmount
+	long settlementAmount
 ) {
 }

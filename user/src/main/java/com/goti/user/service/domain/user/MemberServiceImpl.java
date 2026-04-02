@@ -35,7 +35,7 @@ public class MemberServiceImpl implements MemberService {
 	}
 
 	@Override
-	public MemberEntity getById(UUID memberId) {
+	public MemberEntity getMember(UUID memberId) {
 		return memberRepository.findByIdOrThrow(memberId);
 	}
 }

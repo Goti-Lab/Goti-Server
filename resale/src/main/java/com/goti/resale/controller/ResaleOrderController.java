@@ -2,6 +2,7 @@ package com.goti.resale.controller;
 
 import static com.goti.global.api.ApiSuccessResponse.*;
 
+import java.util.List;
 import java.util.UUID;
 
 import org.springframework.http.ResponseEntity;
@@ -18,10 +19,12 @@ import org.springframework.web.bind.annotation.RestController;
 import com.goti.global.api.ApiSuccessResponse;
 import com.goti.resale.dto.request.ResaleHoldRequest;
 import com.goti.resale.dto.request.ResaleOrderRequest;
+import com.goti.resale.dto.request.ResaleOrderPeriodFilterRequest;
 import com.goti.resale.dto.response.ResaleHoldResponse;
 import com.goti.resale.dto.response.ResaleOrderCompleteResponse;
 import com.goti.resale.dto.response.ResaleOrderCreateResponse;
 import com.goti.resale.dto.response.ResaleOrderListResponse;
+import com.goti.resale.dto.response.ResalePurchaseListResponse;
 import com.goti.resale.dto.response.ResaleReleaseResponse;
 import com.goti.resale.service.application.ResaleHoldProcessService;
 import com.goti.resale.service.application.ResaleOrderProcessService;
@@ -30,6 +33,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springdoc.core.annotations.ParameterObject;
 
 @Tag(name = "Resale Order", description = "리셀 주문 및 거래 관련 API")
 @RestController
@@ -74,7 +78,7 @@ public class ResaleOrderController {
 		@PathVariable UUID resaleOrderId
 	) {
 		resaleOrderProcessService.completeSettlement(resaleOrderId);
-		return wrap(null);
+		return empty();
 	}
 
 	@Operation(
@@ -86,6 +90,24 @@ public class ResaleOrderController {
 		@PathVariable UUID resaleOrderId
 	) {
 		return wrap(resaleOrderProcessService.getTransactionIds(resaleOrderId));
+	}
+
+	@Operation(
+		summary = "내 리셀 구매 내역 조회 (내부용)",
+		description = "payment 모듈에서 리셀 구매 내역 목록 조회 API"
+	)
+	@GetMapping("/orders/purchases")
+	public ResponseEntity<ApiSuccessResponse<List<ResalePurchaseListResponse>>> getPurchasesByMember(
+		@RequestParam UUID buyerId,
+		@ParameterObject ResaleOrderPeriodFilterRequest request
+	) {
+		return wrap(
+			resaleOrderProcessService.getPurchasesByMember(
+			buyerId,
+			request.months(),
+			request.startDate(),
+			request.endDate()
+		));
 	}
 
 	@Operation(

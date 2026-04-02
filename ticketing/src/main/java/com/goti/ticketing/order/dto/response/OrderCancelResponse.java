@@ -3,6 +3,7 @@ package com.goti.ticketing.order.dto.response;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.goti.constants.OrderStatus;
 import com.goti.ticketing.constants.OrderCancellationRequestType;
 import com.goti.ticketing.domain.entity.order.OrderCancellationEntity;
@@ -32,7 +33,8 @@ public record OrderCancelResponse(
 	String paymentMethod,
 	@Schema(description = "결제 타입", example = "REFUND")
 	String paymentType,
-	@Schema(description = "환불 완료 일시", example = "2026-03-25T14:30:00")
+	@Schema(description = "환불 완료 일시", example = "2026-03-25 14:30")
+	@JsonFormat(pattern = "yyyy-MM-dd HH:mm")
 	LocalDateTime refundAt,
 	@Schema(description = "취소된 주문 상세 개수", example = "2")
 	Integer canceledItemCount

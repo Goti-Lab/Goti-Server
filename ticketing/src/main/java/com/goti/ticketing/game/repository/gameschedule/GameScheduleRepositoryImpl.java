@@ -3,6 +3,8 @@ package com.goti.ticketing.game.repository.gameschedule;
 import com.goti.ticketing.domain.entity.game.QGameScheduleEntity;
 import com.goti.ticketing.domain.entity.game.QGameStatusEntity;
 import com.goti.ticketing.domain.entity.game.QGameTicketingStatusEntity;
+import com.goti.ticketing.domain.entity.seat.QSeatStatusEntity;
+import com.goti.ticketing.constants.SeatStatus;
 import com.goti.ticketing.game.dto.request.GameScheduleSearchCondition;
 import com.goti.ticketing.game.dto.response.GameScheduleSearchResponse;
 import com.goti.ticketing.game.dto.response.QGameScheduleSearchResponse;
@@ -30,6 +32,7 @@ public class GameScheduleRepositoryImpl implements GameScheduleRepositoryCustom 
 	private final QGameScheduleEntity gameSchedule = gameScheduleEntity;
 	private final QGameStatusEntity gameStatus = QGameStatusEntity.gameStatusEntity;
 	private final QGameTicketingStatusEntity ticketingStatus = QGameTicketingStatusEntity.gameTicketingStatusEntity;
+	private final QSeatStatusEntity seatStatus = QSeatStatusEntity.seatStatusEntity;
 
 
 	@Override
@@ -68,15 +71,35 @@ public class GameScheduleRepositoryImpl implements GameScheduleRepositoryCustom 
 					gameStatus.gameResult,
 					ticketingStatus.status,
 					ticketingStatus.ticketingOpenedAt,
-					ticketingStatus.ticketingEndAt
+					ticketingStatus.ticketingEndAt,
+					seatStatus.id.count()
 				)
 			)
 			.from(gameSchedule)
 			.leftJoin(gameStatus).on(gameStatus.gameSchedule.eq(gameSchedule))
 			.leftJoin(ticketingStatus).on(ticketingStatus.gameSchedule.eq(gameSchedule))
+			.leftJoin(seatStatus).on(
+				seatStatus.game.eq(gameSchedule),
+				seatStatus.status.eq(SeatStatus.AVAILABLE)
+			)
 			.where(
 				teamIdEq(gameSchedule, condition.teamId()),
 				dateFilter(gameSchedule, condition)
+			)
+			.groupBy(
+				gameSchedule.id,
+				gameSchedule.startAt,
+				gameSchedule.leagueType,
+				gameSchedule.homeTeamId,
+				gameSchedule.awayTeamId,
+				gameSchedule.stadiumId,
+				gameStatus.gameStatus,
+				gameStatus.homeTeamScore,
+				gameStatus.awayTeamScore,
+				gameStatus.gameResult,
+				ticketingStatus.status,
+				ticketingStatus.ticketingOpenedAt,
+				ticketingStatus.ticketingEndAt
 			)
 			.orderBy(gameSchedule.startAt.asc())
 			.fetch();

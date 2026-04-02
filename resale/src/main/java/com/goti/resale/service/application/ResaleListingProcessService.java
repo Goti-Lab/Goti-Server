@@ -7,19 +7,15 @@ import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.goti.constants.messages.ErrorCode;
-import com.goti.exception.CustomException;
 import com.goti.resale.constants.ResaleListingStatus;
 import com.goti.resale.domain.entity.resale.ResaleListingEntity;
-import com.goti.resale.domain.entity.resale.ResalePriceHistoryEntity;
 import com.goti.resale.domain.entity.resale.ResaleRestrictionEntity;
 import com.goti.resale.dto.request.ResaleListingCancelRequest;
-import com.goti.resale.dto.request.ResaleListingCreateRequest;
+import com.goti.resale.dto.request.ResaleListingOrderCreateRequest;
+import com.goti.resale.dto.response.ResaleListingMyPageCountResponse;
+import com.goti.resale.dto.response.ResaleListingOrderCreateResponse;
 import com.goti.resale.dto.response.ResaleListingResponse;
-import com.goti.resale.dto.response.ResaleTicketResponse;
-import com.goti.resale.infra.TicketClient;
 import com.goti.resale.repository.ResaleRestrictionRepository;
-import com.goti.resale.repository.history.ResalePriceHistoryRepository;
 import com.goti.resale.repository.listing.ResaleListingRepository;
 import com.goti.resale.service.domain.ResaleListingService;
 import com.goti.resale.service.domain.ResaleRestrictionService;
@@ -32,72 +28,23 @@ import lombok.RequiredArgsConstructor;
 public class ResaleListingProcessService {
 	private final ResaleListingRepository listingRepository;
 	private final ResaleRestrictionRepository restrictionRepository;
-	private final ResalePriceHistoryRepository priceHistoryRepository;
 	private final ResaleRestrictionHandler restrictionHandler;
 	private final ResaleRestrictionService restrictionService;
 	private final ResaleListingService resaleListingService;
-	private final TicketClient ticketClient;
 
 	@Transactional
-	public ResaleListingResponse createListing(UUID sellerId, ResaleListingCreateRequest request) {
-		ResaleTicketResponse ticketInfo = ticketClient.getTicketInfo(request.ticketId(), sellerId);
-
-		ResaleRestrictionEntity resaleRestriction = restrictionService.getOrCreateRestriction(sellerId);
-
-		resaleListingService.validateListingCreation(ticketInfo, sellerId, request.listingPrice(), resaleRestriction);
-
-		Integer lastTransactionPrice = priceHistoryRepository
-			.findLatestByGameAndGrade(ticketInfo.gameId(), ticketInfo.gradeId())
-			.map(ResalePriceHistoryEntity::getTransactionPrice)
-			.orElse(null);
-
-		ResaleListingEntity resaleListing = ResaleListingEntity.create(
-			ticketInfo.ticketId(),
-			sellerId,
-			ticketInfo.gameId(),
-			ticketInfo.seatId(),
-			ticketInfo.sectionId(),
-			ticketInfo.gradeId(),
-			ticketInfo.seatInfo(),
-			ticketInfo.ticketPrice(),
-			request.listingPrice()
-		);
-
-		if (lastTransactionPrice != null) {
-			resaleListing.initializeLastTransactionPrice(lastTransactionPrice);
-		}
-
-		listingRepository.save(resaleListing);
-
-		restrictionHandler.handleAfterSell(resaleRestriction, ticketInfo.gameId());
-		restrictionRepository.save(resaleRestriction);
-
-		return ResaleListingResponse.from(resaleListing);
+	public ResaleListingOrderCreateResponse createListingOrder(UUID sellerId, ResaleListingOrderCreateRequest request) {
+		return resaleListingService.createListingOrder(sellerId, request);
 	}
 
 	@Transactional
 	public ResaleListingResponse cancelListing(UUID sellerId, ResaleListingCancelRequest request) {
-		ResaleListingEntity resaleListing = listingRepository.findById(request.listingId())
-			.orElseThrow(
-				() -> new CustomException(ErrorCode.LISTING_NOT_FOUND)
-			);
+		return resaleListingService.cancelListing(sellerId, request);
+	}
 
-		ResaleRestrictionEntity resaleRestriction = restrictionService.getOrCreateRestriction(sellerId);
-
-		resaleListingService.validateListingCancellation(
-			sellerId,
-			resaleListing,
-			resaleRestriction
-		);
-
-		resaleListing.cancel();
-
-		listingRepository.save(resaleListing);
-
-		restrictionHandler.handleAfterCancel(resaleRestriction, resaleListing.getGameId());
-		restrictionRepository.save(resaleRestriction);
-
-		return ResaleListingResponse.from(resaleListing);
+	@Transactional
+	public void cancelListingOrder(UUID sellerId, UUID listingOrderId) {
+		resaleListingService.cancelListingOrder(sellerId, listingOrderId);
 	}
 
 	@Transactional(readOnly = true)
@@ -110,8 +57,16 @@ public class ResaleListingProcessService {
 	}
 
 	@Transactional(readOnly = true)
-	public long getListingCountBySection(UUID gameId, UUID sectionId) {
-		return listingRepository.countByGameIdAndSectionIdAndListingStatus(gameId, sectionId, ResaleListingStatus.LISTING);
+	public ResaleListingMyPageCountResponse getCountListings(UUID sellerId) {
+		long listingCount = resaleListingService.countListings(sellerId);
+		long soldCount = resaleListingService.countSold(sellerId);
+
+		return new ResaleListingMyPageCountResponse(listingCount, soldCount);
+	}
+
+	@Transactional(readOnly = true)
+	public long getListingCountByGrade(UUID gameId, UUID gradeId) {
+		return listingRepository.countByGameIdAndGradeIdAndListingStatus(gameId, gradeId, ResaleListingStatus.LISTING);
 	}
 
 	@Transactional(readOnly = true)

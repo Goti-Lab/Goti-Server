@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.goti.ticketing.session.model.ReservationSessionCache;
 
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -13,7 +14,8 @@ public record SeatGradeSearchResultResponse(
 	@Schema(description = "예매 세션 ID")
 	UUID sessionId,
 
-	@Schema(description = "예매 세션 만료 시각")
+	@Schema(description = "예매 세션 만료 시각", example = "2026-03-25 14:30")
+	@JsonFormat(pattern = "yyyy-MM-dd HH:mm")
 	LocalDateTime sessionExpiresAt,
 
 	@Schema(description = "좌석 등급 목록")

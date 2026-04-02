@@ -64,3 +64,7 @@ seat:
 logging:
   pattern:
     level: "%5p [${spring.application.name:},%X{trace_id:-},%X{span_id:-}]"
+
+internal:
+  ticketing:
+    base-url: ${INTERNAL_TICKETING_BASE_URL:http://localhost:8080}

@@ -14,13 +14,14 @@ import com.goti.constants.messages.ErrorCode;
 import com.goti.ticketing.constants.SeatHoldStatus;
 import com.goti.ticketing.domain.entity.order.OrderEntity;
 import com.goti.ticketing.domain.entity.order.OrderItemEntity;
+import com.goti.ticketing.domain.entity.seat.SeatHoldEntity;
 import com.goti.exception.CustomException;
 import com.goti.global.validation.Preconditions;
 import com.goti.ticketing.order.dto.response.OrderPaymentConfirmResponse;
 import com.goti.ticketing.order.repository.OrderItemRepository;
 import com.goti.ticketing.order.repository.OrderRepository;
-import com.goti.ticketing.seat.repository.SeatHoldRepository;
 import com.goti.ticketing.seat.repository.SeatStatusRepository;
+import com.goti.ticketing.seat.service.domain.SeatHoldService;
 import com.goti.ticketing.ticket.dto.response.TicketResponse;
 import com.goti.ticketing.ticket.service.application.TicketCreateService;
 
@@ -33,8 +34,8 @@ import lombok.extern.slf4j.Slf4j;
 public class OrderPaymentConfirmService {
 	private final OrderRepository orderRepository;
 	private final OrderItemRepository orderItemRepository;
-	private final SeatHoldRepository seatHoldRepository;
 	private final SeatStatusRepository seatStatusRepository;
+	private final SeatHoldService seatHoldService;
 	private final TicketCreateService ticketCreateService;
 
 	@Transactional
@@ -64,7 +65,7 @@ public class OrderPaymentConfirmService {
 
 		List<OrderItemEntity> orderItems = orderItemRepository.findOrderItemsByOrderId(orderId);
 		for (OrderItemEntity orderItem : orderItems) {
-			validateActiveHold(order, orderItem);
+			SeatHoldEntity seatHold = getValidActiveHold(order, orderItem);
 
 			SeatStatusEntity seatStatus = seatStatusRepository.findByGameAndSeat(
 				order.getGameSchedule(), orderItem.getSeat()
@@ -73,6 +74,7 @@ public class OrderPaymentConfirmService {
 				);
 
 			seatStatus.sell();
+			seatHold.release();
 			orderItem.pay();
 		}
 
@@ -93,25 +95,37 @@ public class OrderPaymentConfirmService {
 		);
 	}
 
-	private void validateActiveHold(OrderEntity order, OrderItemEntity orderItem) {
-		boolean activeHoldExists = seatHoldRepository
-			.findLatestActiveHold(
-				order.getGameSchedule(),
-				orderItem.getSeat(),
-				order.getMemberId(),
-				SeatHoldStatus.HOLDING
-			)
-			.filter(seatHold -> seatHold.getExpiredAt().isAfter(LocalDateTime.now()))
-			.isPresent();
+	private SeatHoldEntity getValidActiveHold(OrderEntity order, OrderItemEntity orderItem) {
+		SeatHoldEntity seatHold = seatHoldService.findSeatHold(orderItem.getHoldId());
 
-		if (!activeHoldExists) {
+		Preconditions.validate(
+			seatHold.getGameSchedule().getId().equals(order.getGameSchedule().getId()),
+			ErrorCode.SEAT_HOLD_GAME_MISMATCH
+		);
+		Preconditions.validate(
+			seatHold.getSeat().getId().equals(orderItem.getSeat().getId()),
+			ErrorCode.SEAT_HOLD_NOT_FOUND
+		);
+		Preconditions.validate(
+			seatHold.getUserId().equals(order.getMemberId()),
+			ErrorCode.AUTH_PERMISSION_DENIED
+		);
+		Preconditions.validate(
+			seatHold.getStatus() == SeatHoldStatus.HOLDING,
+			ErrorCode.SEAT_HOLD_STATUS_INVALID
+		);
+
+		if (!seatHold.getExpiredAt().isAfter(LocalDateTime.now())) {
 			throw new CustomException(ErrorCode.SEAT_HOLD_EXPIRED)
 				.withContext("action", "SESSION_BLOCK")
 				.withContext("stage", "PAYMENT_CONFIRM")
 				.withContext("gameId", order.getGameSchedule().getId())
 				.withContext("userId", order.getMemberId())
 				.withContext("orderId", order.getId())
-				.withContext("seatId", orderItem.getSeat().getId());
+				.withContext("seatId", orderItem.getSeat().getId())
+				.withContext("holdId", seatHold.getId());
 		}
+
+		return seatHold;
 	}
 }

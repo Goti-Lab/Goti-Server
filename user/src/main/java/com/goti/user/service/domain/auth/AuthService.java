@@ -12,6 +12,6 @@ public interface AuthService {
 
 	UUID validateTokenAndGetMemberId(String token);
 
-	Pair<String, String> issueTokens(MemberEntity member);
+	Pair<String, String> issueTokens(MemberEntity member, String providerId);
 
 }
