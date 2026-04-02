@@ -193,7 +193,7 @@ public class ResaleListingServiceImpl implements ResaleListingService {
 
 	@Override
 	@Transactional(readOnly = true)
-	public Page<ResaleListingEntity> getMySales(
+	public Page<ResaleListingEntity> getSalesHistory(
 		UUID sellerId,
 		List<ResaleListingStatus> statuses,
 		Integer months,
@@ -207,7 +207,7 @@ public class ResaleListingServiceImpl implements ResaleListingService {
 		);
 		validatePeriodFilter(months, startDate, endDate);
 
-		return listingRepository.findMySales(sellerId, statuses, months, startDate, endDate, pageable);
+		return listingRepository.getSalesHistory(sellerId, statuses, months, startDate, endDate, pageable);
 	}
 
 	@Override

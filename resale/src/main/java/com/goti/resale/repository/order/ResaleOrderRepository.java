@@ -1,4 +1,4 @@
-package com.goti.resale.repository;
+package com.goti.resale.repository.order;
 
 import java.util.UUID;
 

@@ -35,7 +35,7 @@ public interface ResaleListingService {
 		UUID orderId
 	);
 
-	Page<ResaleListingEntity> getMySales(
+	Page<ResaleListingEntity> getSalesHistory(
 		UUID sellerId,
 		List<ResaleListingStatus> statuses,
 		Integer months,

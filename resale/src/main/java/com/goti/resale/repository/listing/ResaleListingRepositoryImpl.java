@@ -25,7 +25,7 @@ public class ResaleListingRepositoryImpl implements ResaleListingRepositoryCusto
 	private final JPAQueryFactory queryFactory;
 
 	@Override
-	public Page<ResaleListingEntity> findMySales(
+	public Page<ResaleListingEntity> getSalesHistory(
 		UUID sellerId,
 		List<ResaleListingStatus> statuses,
 		Integer months,

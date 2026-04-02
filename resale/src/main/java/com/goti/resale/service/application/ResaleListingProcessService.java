@@ -82,7 +82,7 @@ public class ResaleListingProcessService {
 		List<ResaleListingStatus> targetStatuses = mapToStatuses(command.status());
 		Pageable pageable = PageRequest.of(command.page(), command.size());
 
-		return resaleListingService.getMySales(
+		return resaleListingService.getSalesHistory(
 			command.sellerId(),
 			targetStatuses,
 			command.months(),

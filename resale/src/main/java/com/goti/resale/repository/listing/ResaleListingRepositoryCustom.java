@@ -11,7 +11,7 @@ import com.goti.resale.constants.ResaleListingStatus;
 import com.goti.resale.domain.entity.resale.ResaleListingEntity;
 
 public interface ResaleListingRepositoryCustom {
-	Page<ResaleListingEntity> findMySales(
+	Page<ResaleListingEntity> getSalesHistory(
 		UUID sellerId,
 		List<ResaleListingStatus> statuses,
 		Integer months,

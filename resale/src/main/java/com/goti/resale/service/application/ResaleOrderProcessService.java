@@ -25,9 +25,9 @@ import com.goti.resale.dto.response.ResaleOrderListResponse;
 import com.goti.resale.dto.response.ResalePurchaseListResponse;
 import com.goti.resale.infra.dto.ResaleOrderPaymentCompletedEvent;
 import com.goti.resale.infra.dto.SettlementCompletedEvent;
-import com.goti.resale.repository.ResaleOrderRepository;
-import com.goti.resale.repository.ResaleTransactionRepository;
 import com.goti.resale.repository.hold.ResaleHoldRepository;
+import com.goti.resale.repository.order.ResaleOrderRepository;
+import com.goti.resale.repository.trasaction.ResaleTransactionRepository;
 import com.goti.resale.service.domain.ResaleOrderService;
 
 import lombok.RequiredArgsConstructor;
