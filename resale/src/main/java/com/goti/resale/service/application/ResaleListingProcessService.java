@@ -18,6 +18,7 @@ import com.goti.resale.dto.request.ResaleListingCancelRequest;
 import com.goti.resale.dto.request.ResaleListingOrderCreateRequest;
 import com.goti.resale.dto.response.ResaleListingMyPageCountResponse;
 import com.goti.resale.dto.response.ResaleListingOrderCreateResponse;
+import com.goti.resale.dto.response.ResaleListingOrderResponse;
 import com.goti.resale.dto.response.ResaleListingResponse;
 import com.goti.resale.repository.ResaleRestrictionRepository;
 import com.goti.resale.repository.listing.ResaleListingRepository;
@@ -57,6 +58,21 @@ public class ResaleListingProcessService {
 		List<ResaleListingEntity> resaleListings = listingRepository.findAllBySellerId(sellerId);
 
 		return resaleListings.stream()
+			.map(ResaleListingResponse::from)
+			.toList();
+	}
+
+	@Transactional(readOnly = true)
+	public List<ResaleListingOrderResponse> getListingOrders(UUID sellerId) {
+		return resaleListingService.getListingOrdersBySellerId(sellerId).stream()
+			.map(ResaleListingOrderResponse::from)
+			.toList();
+	}
+
+	@Transactional(readOnly = true)
+	public List<ResaleListingResponse> getListingsByOrderId(UUID sellerId, UUID orderId) {
+		return resaleListingService.getListingsByOrderId(orderId).stream()
+			.filter(listing -> listing.getSellerId().equals(sellerId))
 			.map(ResaleListingResponse::from)
 			.toList();
 	}
