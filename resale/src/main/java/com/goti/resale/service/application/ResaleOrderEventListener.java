@@ -5,7 +5,6 @@ import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
@@ -106,7 +105,7 @@ public class ResaleOrderEventListener {
 		restrictionRepository.save(restriction);
 
 		for (ResaleListingEntity listing : resaleListings) {
-			transferOwnershipAsync(listing.getTicketId(), event.buyerId());
+			transferOwnership(listing.getTicketId(), event.buyerId());
 		}
 
 		paymentService.releaseEscrow(event.resaleOrderId());
@@ -120,19 +119,17 @@ public class ResaleOrderEventListener {
 		List<ResaleTransactionEntity> transactions = transactionRepository.findAllByResaleOrderId(event.resaleOrderId());
 
 		List<ResaleListingEntity> listings = transactions.stream()
-			.map(transaction -> {
-				ResaleListingEntity listing = transaction.getListing();
-				listing.settle();
-				return listing;
-			})
-			.collect(Collectors.toList());
+			.map(ResaleTransactionEntity::getListing)
+			.toList();
+
+		listings.forEach(ResaleListingEntity::settle);
 
 		listingRepository.saveAll(listings);
 	}
 
 	// TODO: 티켓이 나오면 구현
 	@Async
-	public void transferOwnershipAsync(UUID ticketId, UUID buyerId) {
+	public void transferOwnership(UUID ticketId, UUID buyerId) {
 		try {
 			log.info("비동기 티켓 소유권 이전 시작 - 티켓ID: {}, 구매자: {}", ticketId, buyerId);
 			ticketClient.transferOwnership(ticketId, buyerId);

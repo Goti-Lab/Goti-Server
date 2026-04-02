@@ -8,7 +8,7 @@ import com.goti.resale.domain.entity.resale.ResaleListingOrderEntity;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
-@Schema(description = "리셀 등록 주문 상세 정보")
+@Schema(description = "리셀 등록 그룹 상세 정보")
 public record ResaleListingOrderResponse(
 	@Schema(description = "리셀 주문 ID")
 	UUID orderId,
