@@ -21,4 +21,11 @@ public interface ResaleListingOrderRepository extends JpaRepository<ResaleListin
 		@Param("gradeId") UUID gradeId,
 		@Param("statuses") List<ResaleListingOrderStatus> statuses
 	);
+
+	@Query("SELECT r FROM ResaleListingOrderEntity r "
+		+ "WHERE r.sellerId = :sellerId "
+		+ "ORDER BY r.createdAt DESC")
+	List<ResaleListingOrderEntity> findAllBySellerDESC(
+		@Param("sellerId") UUID sellerId
+	);
 }
