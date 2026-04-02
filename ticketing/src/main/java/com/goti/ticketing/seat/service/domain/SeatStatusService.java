@@ -21,6 +21,8 @@ public interface SeatStatusService {
 
 	SeatStatusEntity get(GameScheduleEntity game, SeatEntity seat);
 
+	long countAvailableSeats(GameScheduleEntity gameSchedule);
+
 	void cancelSale(SeatStatusEntity seatStatus);
 
 	void release(SeatStatusEntity seatStatus);

@@ -17,6 +17,7 @@ import com.goti.ticketing.domain.entity.order.OrderItemEntity;
 import com.goti.ticketing.domain.entity.seat.SeatHoldEntity;
 import com.goti.exception.CustomException;
 import com.goti.global.validation.Preconditions;
+import com.goti.ticketing.game.service.application.GameTicketManagementService;
 import com.goti.ticketing.order.dto.response.OrderPaymentConfirmResponse;
 import com.goti.ticketing.order.repository.OrderItemRepository;
 import com.goti.ticketing.order.repository.OrderRepository;
@@ -37,6 +38,7 @@ public class OrderPaymentConfirmService {
 	private final SeatStatusRepository seatStatusRepository;
 	private final SeatHoldService seatHoldService;
 	private final TicketCreateService ticketCreateService;
+	private final GameTicketManagementService gameTicketManagementService;
 
 	@Transactional
 	public OrderPaymentConfirmResponse confirm(
@@ -79,6 +81,7 @@ public class OrderPaymentConfirmService {
 		}
 
 		List<TicketResponse> tickets = ticketCreateService.create(order);
+		gameTicketManagementService.processSoldout(order.getGameSchedule());
 
 		log.info(
 			"action=PAYMENT_CONFIRM gameId={} userId={} orderId={} ticketCount={}",

@@ -101,6 +101,12 @@ public class SeatStatusServiceImpl implements SeatStatusService {
 	}
 
 	@Override
+	@Transactional(readOnly = true)
+	public long countAvailableSeats(GameScheduleEntity gameSchedule) {
+		return seatStatusRepository.countByGameAndStatus(gameSchedule, SeatStatus.AVAILABLE);
+	}
+
+	@Override
 	@Transactional
 	public void cancelSale(SeatStatusEntity seatStatus) {
 		Preconditions.domainValidate(
