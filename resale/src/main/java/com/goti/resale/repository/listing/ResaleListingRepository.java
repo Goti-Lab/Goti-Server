@@ -11,9 +11,6 @@ import com.goti.resale.constants.ResaleListingStatus;
 import com.goti.resale.domain.entity.resale.ResaleListingEntity;
 
 public interface ResaleListingRepository extends JpaRepository<ResaleListingEntity, UUID> {
-
-	List<ResaleListingEntity> findAllBySellerId(UUID sellerId);
-
 	Long countByGameIdAndGradeIdAndListingStatus(UUID gameId, UUID gradeId, ResaleListingStatus status);
 
 	Long countByGameIdAndListingStatus(UUID gameId, ResaleListingStatus status);

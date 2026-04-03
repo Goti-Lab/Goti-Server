@@ -116,15 +116,16 @@ public class ResaleListingController {
 	}
 
 	@Operation(
-		summary = "목록 조회",
-		description = "판매자의 리셀 목록 조회 API"
+		summary = "특정 리셀 조회",
+		description = "판매자의 특정 리셀 상세 조회 API"
 	)
-	@GetMapping("/listings")
-	public ResponseEntity<ApiSuccessResponse<List<ResaleListingResponse>>> getListings(
-		@AuthenticationPrincipal(expression = "id") UUID sellerId
+	@GetMapping("/listings/{listingId}")
+	public ResponseEntity<ApiSuccessResponse<ResaleListingResponse>> getListings(
+		@AuthenticationPrincipal(expression = "id") UUID sellerId,
+		@PathVariable UUID listingId
 	) {
-		List<ResaleListingResponse> responses = listingService.getListings(sellerId);
-		return wrap(responses);
+		ResaleListingResponse response = listingService.getListing(sellerId, listingId);
+		return wrap(response);
 	}
 
 	@Operation(

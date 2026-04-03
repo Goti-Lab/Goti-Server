@@ -212,6 +212,18 @@ public class ResaleListingServiceImpl implements ResaleListingService {
 
 	@Override
 	@Transactional(readOnly = true)
+	public ResaleListingEntity getListing(UUID sellerId, UUID listingId) {
+		ResaleListingEntity resaleListing = listingRepository.findById(listingId)
+			.orElseThrow(() -> new CustomException(ErrorCode.LISTING_NOT_FOUND));
+
+		validateListingOwnership(sellerId, resaleListing.getSellerId());
+
+		return resaleListing;
+	}
+
+
+	@Override
+	@Transactional(readOnly = true)
 	public Long countListings(UUID sellerId) {
 		return listingRepository.countBySellerIdAndListingStatusIn(
 			sellerId,

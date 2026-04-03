@@ -44,6 +44,8 @@ public interface ResaleListingService {
 		Pageable pageable
 	);
 
+	ResaleListingEntity getListing(UUID sellerId, UUID listingId);
+
 	Long countListings(UUID sellerId);
 
 	Long countSold(UUID sellerId);

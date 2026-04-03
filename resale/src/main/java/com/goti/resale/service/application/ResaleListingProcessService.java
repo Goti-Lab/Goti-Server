@@ -55,12 +55,9 @@ public class ResaleListingProcessService {
 	}
 
 	@Transactional(readOnly = true)
-	public List<ResaleListingResponse> getListings(UUID sellerId) {
-		List<ResaleListingEntity> resaleListings = listingRepository.findAllBySellerId(sellerId);
-
-		return resaleListings.stream()
-			.map(ResaleListingResponse::from)
-			.toList();
+	public ResaleListingResponse getListing(UUID sellerId, UUID listingId) {
+		ResaleListingEntity resaleListing = resaleListingService.getListing(sellerId, listingId);
+		return ResaleListingResponse.from(resaleListing);
 	}
 
 	@Transactional(readOnly = true)
