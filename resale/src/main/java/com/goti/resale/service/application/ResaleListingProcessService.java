@@ -10,6 +10,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.goti.resale.constants.ResaleListingOrderStatus;
 import com.goti.resale.constants.ResaleListingStatus;
 import com.goti.resale.constants.ResaleOrderSearchStatus;
 import com.goti.resale.domain.entity.resale.ResaleListingEntity;
@@ -63,13 +64,6 @@ public class ResaleListingProcessService {
 	}
 
 	@Transactional(readOnly = true)
-	public List<ResaleListingOrderResponse> getResaleSalesGroups(UUID sellerId) {
-		return resaleListingService.getListingOrdersBySellerId(sellerId).stream()
-			.map(ResaleListingOrderResponse::from)
-			.toList();
-	}
-
-	@Transactional(readOnly = true)
 	public List<ResaleListingResponse> getSalesDetails(UUID sellerId, UUID orderId) {
 		return resaleListingService.getListingsByOrderId(orderId).stream()
 			.filter(listing -> listing.getSellerId().equals(sellerId))
@@ -78,8 +72,8 @@ public class ResaleListingProcessService {
 	}
 
 	@Transactional(readOnly = true)
-	public Page<ResaleListingResponse> getSalesHistory(ResaleSalesSearchCommand command) {
-		List<ResaleListingStatus> targetStatuses = mapToStatuses(command.status());
+	public Page<ResaleListingOrderResponse> getSalesHistory(ResaleSalesSearchCommand command) {
+		List<ResaleListingOrderStatus> targetStatuses = mapToStatuses(command.status());
 		Pageable pageable = PageRequest.of(command.page(), command.size());
 
 		return resaleListingService.getSalesHistory(
@@ -89,16 +83,16 @@ public class ResaleListingProcessService {
 			command.startDate(),
 			command.endDate(),
 			pageable
-		).map(ResaleListingResponse::from);
+		).map(ResaleListingOrderResponse::from);
 	}
 
-	private List<ResaleListingStatus> mapToStatuses(ResaleOrderSearchStatus status) {
+	private List<ResaleListingOrderStatus> mapToStatuses(ResaleOrderSearchStatus status) {
 		return switch (status) {
 			case ALL -> null;
-			case LISTING -> List.of(ResaleListingStatus.LISTING, ResaleListingStatus.HOLD);
-			case PENDING -> List.of(ResaleListingStatus.SOLD);
-			case SETTLED -> List.of(ResaleListingStatus.SETTLED);
-			case CANCELED -> List.of(ResaleListingStatus.CANCELED);
+			case LISTING -> List.of(ResaleListingOrderStatus.LISTING, ResaleListingOrderStatus.PARTIAL);
+			case PENDING -> List.of(ResaleListingOrderStatus.SOLD);
+			case SETTLED -> List.of(ResaleListingOrderStatus.SETTLED);
+			case CANCELED -> List.of(ResaleListingOrderStatus.CANCELED);
 		};
 	}
 

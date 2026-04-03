@@ -90,33 +90,21 @@ public class ResaleListingController {
 	}
 
 	@Operation(
-		summary = "내 판매 내역 조회 (마이페이지)",
-		description = "판매 내역 상태별, 기간별 페이징 조회 API"
+		summary = "내 판매 그룹 조회 (마이페이지)",
+		description = "판매 내역 그룹 상태별, 기간별 페이징 조회 API"
 	)
-	@GetMapping("/listings/sales")
-	public ResponseEntity<ApiSuccessResponse<PageResponse<ResaleListingResponse>>> getSalesHistory(
+	@GetMapping("/listings/orders")
+	public ResponseEntity<ApiSuccessResponse<PageResponse<ResaleListingOrderResponse>>> getSalesHistory(
 		@AuthenticationPrincipal(expression = "id") UUID sellerId,
 		@ParameterObject ResaleSearchSalesRequest request
 	) {
-		Page<ResaleListingResponse> responses = listingService.getSalesHistory(request.toCommand(sellerId));
+		Page<ResaleListingOrderResponse> responses = listingService.getSalesHistory(request.toCommand(sellerId));
 		return page(responses);
 	}
 
 	@Operation(
-		summary = "내 리셀 주문 목록 조회",
-		description = "판매자가 등록한 리셀 주문 목록 조회 API"
-	)
-	@GetMapping("/listings/orders")
-	public ResponseEntity<ApiSuccessResponse<List<ResaleListingOrderResponse>>> getResaleSalesGroups(
-		@AuthenticationPrincipal(expression = "id") UUID sellerId
-	) {
-		List<ResaleListingOrderResponse> responses = listingService.getResaleSalesGroups(sellerId);
-		return wrap(responses);
-	}
-
-	@Operation(
-		summary = "특정 리셀 주문 내 상세 목록 조회",
-		description = "특정 리셀 주문에 속한 티켓 상세 목록 조회 API"
+		summary = "특정 판매 그룹 내 상세 목록 조회",
+		description = "특정 리셀 주문 그룹에 속한 티켓 상세 목록 조회 API"
 	)
 	@GetMapping("/listings/orders/{orderId}")
 	public ResponseEntity<ApiSuccessResponse<List<ResaleListingResponse>>> getSalesDetails(
