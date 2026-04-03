@@ -1,4 +1,4 @@
-package com.goti.resale.repository;
+package com.goti.resale.repository.listingorder;
 
 import java.util.List;
 import java.util.Optional;
@@ -11,7 +11,8 @@ import org.springframework.data.repository.query.Param;
 import com.goti.resale.constants.ResaleListingOrderStatus;
 import com.goti.resale.domain.entity.resale.ResaleListingOrderEntity;
 
-public interface ResaleListingOrderRepository extends JpaRepository<ResaleListingOrderEntity, UUID> {
+public interface ResaleListingOrderRepository
+	extends JpaRepository<ResaleListingOrderEntity, UUID>, ResaleListingOrderRepositoryCustom {
 	@Query("SELECT r FROM ResaleListingOrderEntity r "
 		+ "WHERE r.sellerId = :sellerId "
 		+ "AND r.gradeId = :gradeId "
@@ -22,10 +23,4 @@ public interface ResaleListingOrderRepository extends JpaRepository<ResaleListin
 		@Param("statuses") List<ResaleListingOrderStatus> statuses
 	);
 
-	@Query("SELECT r FROM ResaleListingOrderEntity r "
-		+ "WHERE r.sellerId = :sellerId "
-		+ "ORDER BY r.createdAt DESC")
-	List<ResaleListingOrderEntity> findAllBySellerDESC(
-		@Param("sellerId") UUID sellerId
-	);
 }
