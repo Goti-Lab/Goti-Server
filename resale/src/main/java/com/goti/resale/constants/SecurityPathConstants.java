@@ -8,6 +8,6 @@ public final class SecurityPathConstants {
 
 	public static final String[] PUBLIC_URLS = {
 		"/api/v1/resales/histories/**",
-		"/api/v1/resales/listings/games/**",
+		"/api/v1/resales/games/**",
 	};
 }

@@ -168,7 +168,7 @@ public class ResaleListingController {
 		summary = "경기의 전체 리셀 좌석 개수 조회",
 		description = "경기의 전체 리셀 좌석 개수 조회 API"
 	)
-	@GetMapping("/listings/games/{gameId}/count")
+	@GetMapping("/games/{gameId}/count")
 	public ResponseEntity<ApiSuccessResponse<ResaleListingCountResponse>> getTotalListingCount(
 		@PathVariable UUID gameId
 	) {
@@ -180,7 +180,7 @@ public class ResaleListingController {
 		summary = "경기의 등급별 리셀 좌석 개수 조회",
 		description = "경기의 등급별 리셀 좌석 개수 조회 API"
 	)
-	@GetMapping("/listings/games/{gameId}/grade/{gradeId}/count")
+	@GetMapping("/games/{gameId}/grade/{gradeId}/count")
 	public ResponseEntity<ApiSuccessResponse<ResaleListingCountResponse>> getListingCountByGrade(
 		@PathVariable UUID gameId,
 		@PathVariable UUID gradeId

@@ -1,14 +1,17 @@
 package com.goti.global.dto;
 
+import org.hibernate.validator.constraints.Range;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Min;
 
+@Schema(description = "페이징 정보")
 public record Paging(
 	@Min(value = 1, message = "페이지 번호는 1 이상이어야 합니다.")
 	int page,
-	@Min(value = 1, message = "페이지 사이즈는 1 이상이어야 합니다.")
+	@Range(min = 1, max = 30, message = "페이지 사이즈는 1 ~ 30 사이여야 합니다.")
 	int size
 ) {
 	public Pageable toPageable() {
