@@ -26,7 +26,7 @@ import com.goti.resale.infra.dto.SettlementCompletedEvent;
 import com.goti.resale.repository.ResaleRestrictionRepository;
 import com.goti.resale.repository.history.ResalePriceHistoryRepository;
 import com.goti.resale.repository.listing.ResaleListingRepository;
-import com.goti.resale.repository.trasaction.ResaleTransactionRepository;
+import com.goti.resale.repository.transaction.ResaleTransactionRepository;
 import com.goti.resale.service.domain.ResaleRestrictionService;
 import com.goti.resale.service.infra.PaymentService;
 import com.goti.resale.utils.ResaleRestrictionHandler;

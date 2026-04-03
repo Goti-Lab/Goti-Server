@@ -32,7 +32,7 @@ import com.goti.resale.infra.TicketClient;
 import com.goti.resale.infra.dto.ResaleOrderCreatedEvent;
 import com.goti.resale.infra.dto.ResaleTicketPurchaseInfo;
 import com.goti.resale.repository.order.ResaleOrderRepository;
-import com.goti.resale.repository.trasaction.ResaleTransactionRepository;
+import com.goti.resale.repository.transaction.ResaleTransactionRepository;
 import com.goti.resale.utils.ResalePricePolicy;
 import com.goti.resale.utils.ResaleRestrictionHandler;
 
