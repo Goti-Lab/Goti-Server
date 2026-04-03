@@ -7,7 +7,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
@@ -28,11 +27,11 @@ import com.goti.resale.infra.TicketClient;
 import com.goti.resale.infra.dto.ResaleOrderCreatedEvent;
 import com.goti.resale.infra.dto.ResaleOrderPaymentCompletedEvent;
 import com.goti.resale.infra.dto.SettlementCompletedEvent;
-import com.goti.resale.repository.ResaleListingOrderRepository;
 import com.goti.resale.repository.ResaleRestrictionRepository;
-import com.goti.resale.repository.ResaleTransactionRepository;
 import com.goti.resale.repository.history.ResalePriceHistoryRepository;
 import com.goti.resale.repository.listing.ResaleListingRepository;
+import com.goti.resale.repository.listingorder.ResaleListingOrderRepository;
+import com.goti.resale.repository.transaction.ResaleTransactionRepository;
 import com.goti.resale.service.domain.ResaleRestrictionService;
 import com.goti.resale.service.infra.PaymentService;
 import com.goti.resale.utils.ResaleRestrictionHandler;
@@ -149,7 +148,7 @@ public class ResaleOrderEventListener {
 				listingOrders.add(listing.getListingOrder());
 				return listing;
 			})
-			.collect(Collectors.toList());
+			.toList();
 
 		listingRepository.saveAll(listings);
 
@@ -168,7 +167,6 @@ public class ResaleOrderEventListener {
 		}
 	}
 
-	// TODO: 티켓이 나오면 구현
 	@Async
 	public void transferOwnership(UUID ticketId, UUID buyerId) {
 		try {
