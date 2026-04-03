@@ -31,10 +31,10 @@ import com.goti.resale.dto.response.ResaleListingOrderCreateResponse;
 import com.goti.resale.dto.response.ResaleListingResponse;
 import com.goti.resale.dto.response.ResaleTicketResponse;
 import com.goti.resale.infra.TicketClient;
-import com.goti.resale.repository.ResaleListingOrderRepository;
 import com.goti.resale.repository.ResaleRestrictionRepository;
 import com.goti.resale.repository.history.ResalePriceHistoryRepository;
 import com.goti.resale.repository.listing.ResaleListingRepository;
+import com.goti.resale.repository.listingorder.ResaleListingOrderRepository;
 import com.goti.resale.utils.ResalePricePolicy;
 import com.goti.resale.utils.ResaleRestrictionHandler;
 
@@ -193,9 +193,9 @@ public class ResaleListingServiceImpl implements ResaleListingService {
 
 	@Override
 	@Transactional(readOnly = true)
-	public Page<ResaleListingEntity> getSalesHistory(
+	public Page<ResaleListingOrderEntity> getSalesHistory(
 		UUID sellerId,
-		List<ResaleListingStatus> statuses,
+		List<ResaleListingOrderStatus> statuses,
 		Integer months,
 		LocalDate startDate,
 		LocalDate endDate,
@@ -207,7 +207,7 @@ public class ResaleListingServiceImpl implements ResaleListingService {
 		);
 		validatePeriodFilter(months, startDate, endDate);
 
-		return listingRepository.getSalesHistory(sellerId, statuses, months, startDate, endDate, pageable);
+		return listingOrderRepository.getSalesHistory(sellerId, statuses, months, startDate, endDate, pageable);
 	}
 
 	@Override
@@ -226,12 +226,6 @@ public class ResaleListingServiceImpl implements ResaleListingService {
 			sellerId,
 			List.of(ResaleListingStatus.SOLD, ResaleListingStatus.SETTLED)
 		);
-	}
-
-	@Override
-	@Transactional(readOnly = true)
-	public List<ResaleListingOrderEntity> getListingOrdersBySellerId(UUID sellerId) {
-		return listingOrderRepository.findAllBySellerDESC(sellerId);
 	}
 
 	@Override

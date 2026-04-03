@@ -7,7 +7,7 @@ import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
-import com.goti.resale.constants.ResaleListingStatus;
+import com.goti.resale.constants.ResaleListingOrderStatus;
 import com.goti.resale.domain.entity.resale.ResaleListingEntity;
 import com.goti.resale.domain.entity.resale.ResaleListingOrderEntity;
 import com.goti.resale.domain.entity.resale.ResaleRestrictionEntity;
@@ -35,9 +35,9 @@ public interface ResaleListingService {
 		UUID orderId
 	);
 
-	Page<ResaleListingEntity> getSalesHistory(
+	Page<ResaleListingOrderEntity> getSalesHistory(
 		UUID sellerId,
-		List<ResaleListingStatus> statuses,
+		List<ResaleListingOrderStatus> statuses,
 		Integer months,
 		LocalDate startDate,
 		LocalDate endDate,
@@ -47,8 +47,6 @@ public interface ResaleListingService {
 	Long countListings(UUID sellerId);
 
 	Long countSold(UUID sellerId);
-
-	List<ResaleListingOrderEntity> getListingOrdersBySellerId(UUID sellerId);
 
 	List<ResaleListingEntity> getListingsByOrderId(UUID orderId);
 
