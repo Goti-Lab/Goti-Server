@@ -1,6 +1,8 @@
 package com.goti.global.api;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import com.goti.constants.messages.SuccessCode;
 
@@ -18,7 +20,12 @@ public class ApiSuccessResponse<T> extends ApiResponse {
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private final T data;
 
-	public ApiSuccessResponse(String code, String message, T data) {
+	@JsonCreator
+	public ApiSuccessResponse(
+		@JsonProperty("code") String code,
+		@JsonProperty("message") String message,
+		@JsonProperty("data") T data
+	) {
 		super(code, message);
 		this.data = data;
 	}
