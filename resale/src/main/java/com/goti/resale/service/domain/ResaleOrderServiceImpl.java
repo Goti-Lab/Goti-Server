@@ -1,9 +1,9 @@
 package com.goti.resale.service.domain;
 
 import java.time.LocalDate;
-import java.util.LinkedHashMap;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -27,12 +27,12 @@ import com.goti.resale.domain.entity.resale.ResaleTransactionEntity;
 import com.goti.resale.dto.request.ResaleTransactionItemRequest;
 import com.goti.resale.dto.response.ResaleOrderCreateResponse;
 import com.goti.resale.dto.response.ResalePurchaseListResponse;
-import com.goti.resale.infra.dto.ResaleTicketPurchaseInfo;
 import com.goti.resale.infra.TicketApiClient;
 import com.goti.resale.infra.TicketClient;
 import com.goti.resale.infra.dto.ResaleOrderCreatedEvent;
-import com.goti.resale.repository.ResaleOrderRepository;
-import com.goti.resale.repository.ResaleTransactionRepository;
+import com.goti.resale.infra.dto.ResaleTicketPurchaseInfo;
+import com.goti.resale.repository.order.ResaleOrderRepository;
+import com.goti.resale.repository.transaction.ResaleTransactionRepository;
 import com.goti.resale.utils.ResalePricePolicy;
 import com.goti.resale.utils.ResaleRestrictionHandler;
 

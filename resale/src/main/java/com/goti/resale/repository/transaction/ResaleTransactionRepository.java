@@ -1,4 +1,4 @@
-package com.goti.resale.repository;
+package com.goti.resale.repository.transaction;
 
 import java.util.List;
 import java.util.UUID;
@@ -10,7 +10,8 @@ import org.springframework.data.repository.query.Param;
 import com.goti.resale.constants.ResaleTransactionStatus;
 import com.goti.resale.domain.entity.resale.ResaleTransactionEntity;
 
-public interface ResaleTransactionRepository extends JpaRepository<ResaleTransactionEntity, UUID>, ResaleTransactionRepositoryCustom {
+public interface ResaleTransactionRepository
+	extends JpaRepository<ResaleTransactionEntity, UUID>, ResaleTransactionRepositoryCustom {
 
 	List<ResaleTransactionEntity> findAllByResaleOrderId(UUID resaleOrderId);
 

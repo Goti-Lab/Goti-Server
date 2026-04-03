@@ -5,10 +5,12 @@ import lombok.RequiredArgsConstructor;
 
 @Getter
 @RequiredArgsConstructor
-public enum ResaleSettlementStatus {
-	PENDING("대기상태"),
-	COMPLETED("완료"),
-	FAILED("실패");
+public enum ResaleOrderSearchStatus {
+	ALL("전체"),
+	LISTING("판매중"),
+	PENDING("정산대기"),
+	SETTLED("정산완료"),
+	CANCELED("취소");
 
 	private final String description;
 }

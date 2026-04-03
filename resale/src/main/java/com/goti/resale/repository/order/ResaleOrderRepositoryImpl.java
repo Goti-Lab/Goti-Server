@@ -1,4 +1,4 @@
-package com.goti.resale.repository;
+package com.goti.resale.repository.order;
 
 import java.time.Instant;
 import java.time.LocalDate;
@@ -49,24 +49,24 @@ public class ResaleOrderRepositoryImpl implements ResaleOrderRepositoryCustom {
 	) {
 		if (startDate != null && endDate != null) {
 			return resaleOrder.createdAt.between(
-				toStartInstant(startDate),
-				toEndInstant(endDate)
+				toStartAt(startDate),
+				toEndAt(endDate)
 			);
 		}
 
 		if (months != null) {
-			Instant from = toStartInstant(LocalDate.now().minusMonths(months));
+			Instant from = toStartAt(LocalDate.now().minusMonths(months));
 			return resaleOrder.createdAt.goe(from);
 		}
 
 		return null;
 	}
 
-	private Instant toStartInstant(LocalDate date) {
+	private Instant toStartAt(LocalDate date) {
 		return date.atStartOfDay().toInstant(ZoneOffset.UTC);
 	}
 
-	private Instant toEndInstant(LocalDate date) {
+	private Instant toEndAt(LocalDate date) {
 		return date.plusDays(1).atStartOfDay().minusNanos(1).toInstant(ZoneOffset.UTC);
 	}
 }

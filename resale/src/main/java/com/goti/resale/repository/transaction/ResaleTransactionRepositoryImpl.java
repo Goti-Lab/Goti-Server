@@ -1,4 +1,4 @@
-package com.goti.resale.repository;
+package com.goti.resale.repository.transaction;
 
 import java.util.List;
 import java.util.UUID;
