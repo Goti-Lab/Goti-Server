@@ -6,7 +6,7 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
-import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -24,13 +24,15 @@ import lombok.extern.slf4j.Slf4j;
  *   - queue_waiting_total   현재 대기 인원
  *   - queue_last_sequence   마지막 발급 순번
  *   - queue_max_entry       입장 허용선 (currentAllowedRank)
+ *
+ * QueueRedisRepository와 동일하게 StringRedisTemplate 사용 (직렬화 일관성)
  */
 @Slf4j
 @Component
 public class QueueMetricsScheduler {
 
 	private final QueueRedisRepository queueRedisRepository;
-	private final RedisTemplate<String, Object> redisTemplate;
+	private final StringRedisTemplate stringRedisTemplate;
 	private final MeterRegistry meterRegistry;
 
 	private final Map<String, AtomicLong> waitingGauges = new ConcurrentHashMap<>();
@@ -40,36 +42,36 @@ public class QueueMetricsScheduler {
 
 	public QueueMetricsScheduler(
 		QueueRedisRepository queueRedisRepository,
-		RedisTemplate<String, Object> redisTemplate,
+		StringRedisTemplate stringRedisTemplate,
 		MeterRegistry meterRegistry
 	) {
 		this.queueRedisRepository = queueRedisRepository;
-		this.redisTemplate = redisTemplate;
+		this.stringRedisTemplate = stringRedisTemplate;
 		this.meterRegistry = meterRegistry;
 	}
 
 	@Scheduled(fixedDelay = 5000)
 	public void publishQueueMetrics() {
-		Set<String> metaKeys = redisTemplate.keys("queue:*:meta");
+		Set<String> metaKeys = stringRedisTemplate.keys("queue:*:meta");
 		if (metaKeys == null || metaKeys.isEmpty()) {
 			return;
 		}
 
 		for (String metaKey : metaKeys) {
 			try {
-				Map<Object, Object> meta = redisTemplate.opsForHash().entries(metaKey);
+				Map<Object, Object> meta = stringRedisTemplate.opsForHash().entries(metaKey);
 				if (meta.isEmpty()) continue;
 
 				// queue:{gameId}:meta → gameId 추출
 				String gameId = metaKey.replace("queue:", "").replace(":meta", "");
 
-				long activeCount = longValue(meta.get(QueueMetaField.ACTIVE_COUNT));
-				long currentAllowedRank = longValue(meta.get(QueueMetaField.CURRENT_ALLOWED_RANK));
+				long activeCount = longFromString(meta.get(QueueMetaField.ACTIVE_COUNT));
+				long currentAllowedRank = longFromString(meta.get(QueueMetaField.CURRENT_ALLOWED_RANK));
 				long waitingCount = queueRedisRepository.countWaitingUsers(UUID.fromString(gameId));
 
 				// sequence는 별도 키
-				Object seqVal = redisTemplate.opsForValue().get(RedisKey.QUEUE_SEQUENCE.getKey(UUID.fromString(gameId)));
-				long lastSequence = seqVal instanceof Number n ? n.longValue() : 0L;
+				String seqVal = stringRedisTemplate.opsForValue().get(RedisKey.QUEUE_SEQUENCE.getKey(UUID.fromString(gameId)));
+				long lastSequence = seqVal != null ? Long.parseLong(seqVal) : 0L;
 
 				getOrCreateGauge(waitingGauges, "queue.waiting.total", gameId).set(waitingCount);
 				getOrCreateGauge(sequenceGauges, "queue.last.sequence", gameId).set(lastSequence);
@@ -90,7 +92,7 @@ public class QueueMetricsScheduler {
 		});
 	}
 
-	private long longValue(Object value) {
-		return value instanceof Number n ? n.longValue() : 0L;
+	private long longFromString(Object value) {
+		return Long.parseLong(String.valueOf(value));
 	}
 }
