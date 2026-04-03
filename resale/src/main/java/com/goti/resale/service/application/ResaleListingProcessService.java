@@ -1,15 +1,15 @@
 package com.goti.resale.service.application;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.goti.global.dto.Paging;
 import com.goti.resale.constants.ResaleListingOrderStatus;
 import com.goti.resale.constants.ResaleListingStatus;
 import com.goti.resale.constants.ResaleOrderSearchStatus;
@@ -25,7 +25,6 @@ import com.goti.resale.repository.ResaleRestrictionRepository;
 import com.goti.resale.repository.listing.ResaleListingRepository;
 import com.goti.resale.service.domain.ResaleListingService;
 import com.goti.resale.service.domain.ResaleRestrictionService;
-import com.goti.resale.service.domain.command.ResaleSalesSearchCommand;
 import com.goti.resale.utils.ResaleRestrictionHandler;
 
 import lombok.RequiredArgsConstructor;
@@ -69,17 +68,21 @@ public class ResaleListingProcessService {
 	}
 
 	@Transactional(readOnly = true)
-	public Page<ResaleListingOrderResponse> getSalesHistory(ResaleSalesSearchCommand command) {
-		List<ResaleListingOrderStatus> targetStatuses = mapToStatuses(command.status());
-		Pageable pageable = PageRequest.of(command.page(), command.size());
-
+	public Page<ResaleListingOrderResponse> getSalesHistory(UUID sellerId,
+		Integer months,
+		LocalDate startDate,
+		LocalDate endDate,
+		ResaleOrderSearchStatus status,
+		Paging paging
+	) {
+		List<ResaleListingOrderStatus> targetStatuses = mapToStatuses(status);
 		return resaleListingService.getSalesHistory(
-			command.sellerId(),
+			sellerId,
 			targetStatuses,
-			command.months(),
-			command.startDate(),
-			command.endDate(),
-			pageable
+			months,
+			startDate,
+			endDate,
+			paging.toPageable()
 		).map(ResaleListingOrderResponse::from);
 	}
 

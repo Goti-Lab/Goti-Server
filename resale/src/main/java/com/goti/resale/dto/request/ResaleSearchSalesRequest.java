@@ -1,10 +1,8 @@
 package com.goti.resale.dto.request;
 
 import java.time.LocalDate;
-import java.util.UUID;
 
 import com.goti.resale.constants.ResaleOrderSearchStatus;
-import com.goti.resale.service.domain.command.ResaleSalesSearchCommand;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
@@ -20,32 +18,6 @@ public record ResaleSearchSalesRequest(
 	LocalDate endDate,
 
 	@Schema(description = "판매 상태", example = "ALL")
-	ResaleOrderSearchStatus status,
-
-	@Schema(description = "페이지 번호", example = "0")
-	Integer page,
-
-	@Schema(description = "페이지 크기", example = "5")
-	Integer size
+	ResaleOrderSearchStatus status
 ) {
-	public ResaleSearchSalesRequest {
-		if (page == null)
-			page = 0;
-		if (size == null)
-			size = 5;
-		if (status == null)
-			status = ResaleOrderSearchStatus.ALL;
-	}
-
-	public ResaleSalesSearchCommand toCommand(UUID sellerId) {
-		return new ResaleSalesSearchCommand(
-			sellerId,
-			months,
-			startDate,
-			endDate,
-			status,
-			page,
-			size
-		);
-	}
 }

@@ -10,6 +10,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.goti.global.api.ApiSuccessResponse;
 import com.goti.global.api.PageResponse;
+import com.goti.global.dto.Paging;
 import com.goti.resale.constants.ResaleGraphRange;
 import com.goti.resale.dto.request.ResaleListingCancelRequest;
 import com.goti.resale.dto.request.ResaleListingOrderCreateRequest;
@@ -96,9 +98,17 @@ public class ResaleListingController {
 	@GetMapping("/listings/orders")
 	public ResponseEntity<ApiSuccessResponse<PageResponse<ResaleListingOrderResponse>>> getSalesHistory(
 		@AuthenticationPrincipal(expression = "id") UUID sellerId,
-		@ParameterObject ResaleSearchSalesRequest request
+		@ParameterObject ResaleSearchSalesRequest request,
+		@ParameterObject @Valid @ModelAttribute Paging paging
 	) {
-		Page<ResaleListingOrderResponse> responses = listingService.getSalesHistory(request.toCommand(sellerId));
+		Page<ResaleListingOrderResponse> responses = listingService.getSalesHistory(
+			sellerId,
+			request.months(),
+			request.startDate(),
+			request.endDate(),
+			request.status(),
+			paging
+		);
 		return page(responses);
 	}
 
