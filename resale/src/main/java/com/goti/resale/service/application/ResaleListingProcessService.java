@@ -97,7 +97,7 @@ public class ResaleListingProcessService {
 	}
 
 	@Transactional(readOnly = true)
-	public ResaleDashBoardResponse getCountListings(UUID sellerId) {
+	public ResaleDashBoardResponse getResaleCount(UUID sellerId) {
 		long listingCount = resaleListingService.countListings(sellerId);
 		long soldCount = resaleListingService.countSold(sellerId);
 
