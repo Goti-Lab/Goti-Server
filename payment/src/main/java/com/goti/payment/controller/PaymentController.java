@@ -3,6 +3,7 @@ package com.goti.payment.controller;
 import static com.goti.global.api.ApiSuccessResponse.*;
 
 import java.util.UUID;
+import java.util.List;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -16,14 +17,18 @@ import org.springframework.web.bind.annotation.RestController;
 import com.goti.payment.dto.request.PaymentCancelRequest;
 import com.goti.global.api.ApiSuccessResponse;
 import com.goti.payment.dto.request.PaymentRequest;
+import com.goti.payment.dto.request.PurchaseSearchRequest;
 import com.goti.payment.dto.response.PaymentResponse;
+import com.goti.payment.dto.response.PurchaseSearchResponse;
 import com.goti.payment.service.application.OrderPaymentService;
+import com.goti.payment.service.application.PurchaseSearchService;
 import com.goti.payment.service.domain.PaymentService;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springdoc.core.annotations.ParameterObject;
 
 @Tag(name = "Payment", description = "결제 API")
 @RestController
@@ -31,6 +36,7 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/api/v1/payments")
 public class PaymentController {
 	private final OrderPaymentService orderPaymentService;
+	private final PurchaseSearchService purchaseSearchService;
 	private final PaymentService paymentService;
 
 	@Operation(
@@ -63,6 +69,25 @@ public class PaymentController {
 		@AuthenticationPrincipal(expression = "id") UUID memberId
 	) {
 		return wrap(orderPaymentService.getByOrderId(orderId, memberId));
+	}
+
+	@Operation(
+		summary = "구매 내역 통합 조회",
+		description = "일반 주문 내역 및 리셀 구매 내역 통합 조회 API"
+	)
+	@GetMapping("/purchases")
+	public ResponseEntity<ApiSuccessResponse<List<PurchaseSearchResponse>>> getPurchases(
+		@AuthenticationPrincipal(expression = "id") UUID memberId,
+		@ParameterObject PurchaseSearchRequest request
+	) {
+		return wrap(
+			purchaseSearchService.getAll(
+			memberId,
+			request.type(),
+			request.months(),
+			request.startDate(),
+			request.endDate()
+		));
 	}
 
 
