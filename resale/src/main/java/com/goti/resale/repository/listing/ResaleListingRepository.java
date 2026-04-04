@@ -31,6 +31,11 @@ public interface ResaleListingRepository extends JpaRepository<ResaleListingEnti
 		@Param("listingStatus") ResaleListingStatus listingStatus
 	);
 
-	Long countBySellerIdAndListingStatusIn(UUID sellerId, List<ResaleListingStatus> listingStatus);
+	@Query("SELECT r.listingStatus, COUNT(r) FROM ResaleListingEntity r "
+		+ "WHERE r.sellerId = :sellerId "
+		+ "GROUP BY r.listingStatus")
+	List<Object[]> countResale(
+		@Param("sellerId") UUID sellerId
+	);
 
 }
