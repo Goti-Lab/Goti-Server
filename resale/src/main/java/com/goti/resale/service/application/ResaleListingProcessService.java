@@ -17,7 +17,7 @@ import com.goti.resale.domain.entity.resale.ResaleListingEntity;
 import com.goti.resale.domain.entity.resale.ResaleRestrictionEntity;
 import com.goti.resale.dto.request.ResaleListingCancelRequest;
 import com.goti.resale.dto.request.ResaleListingOrderCreateRequest;
-import com.goti.resale.dto.response.ResaleListingMyPageCountResponse;
+import com.goti.resale.dto.response.ResaleDashBoardResponse;
 import com.goti.resale.dto.response.ResaleListingOrderCreateResponse;
 import com.goti.resale.dto.response.ResaleListingOrderResponse;
 import com.goti.resale.dto.response.ResaleListingResponse;
@@ -97,11 +97,11 @@ public class ResaleListingProcessService {
 	}
 
 	@Transactional(readOnly = true)
-	public ResaleListingMyPageCountResponse getCountListings(UUID sellerId) {
+	public ResaleDashBoardResponse getCountListings(UUID sellerId) {
 		long listingCount = resaleListingService.countListings(sellerId);
 		long soldCount = resaleListingService.countSold(sellerId);
 
-		return new ResaleListingMyPageCountResponse(listingCount, soldCount);
+		return new ResaleDashBoardResponse(listingCount, soldCount);
 	}
 
 	@Transactional(readOnly = true)
