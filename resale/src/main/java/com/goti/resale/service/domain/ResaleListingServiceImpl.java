@@ -225,7 +225,7 @@ public class ResaleListingServiceImpl implements ResaleListingService {
 	@Override
 	@Transactional(readOnly = true)
 	public ResaleListingsCountResponse getResaleCount(UUID sellerId) {
-		List<Object[]> statusCounts = listingRepository.countResale(sellerId);
+		List<Object[]> statusCounts = listingRepository.countResaleListing(sellerId);
 
 		long listingCount = 0L;
 		long soldCount = 0L;
