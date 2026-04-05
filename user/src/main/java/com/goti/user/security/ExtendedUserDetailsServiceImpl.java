@@ -1,5 +1,6 @@
 package com.goti.user.security;
 
+import com.goti.constants.OAuthProvider;
 import com.goti.user.domain.entity.user.UserEntity;
 
 import com.goti.user.service.domain.user.UserService;
@@ -26,23 +27,26 @@ public class ExtendedUserDetailsServiceImpl implements ExtendedUserDetailsServic
 			.orElseThrow(
 				() -> new UsernameNotFoundException("사용자 정보를 찾을 수 없습니다.")
 			);
-		return convert(user, null);
+		return convert(user, null, null);
 	}
 
 	@Override
-	public UserDetails loadUserById(String userId, String providerId) throws UsernameNotFoundException {
+	public UserDetails loadUserById(
+		String userId, String providerId, OAuthProvider provider
+	) throws UsernameNotFoundException {
 		UserEntity user = userService.findUserById(UUID.fromString(userId))
 			.orElseThrow(
 				() -> new UsernameNotFoundException("사용자 정보를 찾을 수 없습니다.")
 			);
-		return convert(user, providerId);
+		return convert(user, providerId, provider);
 	}
 
-	private UserDetails convert(UserEntity user, String providerId) {
+	private UserDetails convert(UserEntity user, String providerId, OAuthProvider provider) {
 		return new ExtendedUserDetails(
 			user.getId(),
 			user.getRole(),
-			providerId
+			providerId,
+			provider
 		);
 	}
 }

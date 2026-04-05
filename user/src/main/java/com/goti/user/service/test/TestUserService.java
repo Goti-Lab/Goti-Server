@@ -42,8 +42,9 @@ public class TestUserService {
 	public TestUserResponse createUser(CreateTestUserRequest request) {
 		MemberEntity member = findOrCreateMember(request);
 		String providerId = "test_provider_id";
+		OAuthProvider provider = OAuthProvider.KAKAO;
 		String accessToken = jwtTokenProvider.create(
-			member.getId(), member.getRole(), providerId, TokenType.ACCESS
+			member.getId(), member.getRole(), providerId, provider, TokenType.ACCESS
 		);
 
 		return new TestUserResponse(
@@ -104,8 +105,9 @@ public class TestUserService {
 		MemberEntity member = memberService.findByMobile(request.mobile())
 			.orElseThrow(() -> new CustomException(ErrorCode.MEMBER_NOT_FOUND));
 		String providerId = "test_provider_id";
+		OAuthProvider provider = OAuthProvider.KAKAO;
 		String accessToken = jwtTokenProvider.create(
-			member.getId(), member.getRole(), providerId, TokenType.ACCESS
+			member.getId(), member.getRole(), providerId, provider, TokenType.ACCESS
 		);
 
 		return new TokenResponse(accessToken);

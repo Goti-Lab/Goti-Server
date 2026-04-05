@@ -3,7 +3,11 @@ package com.goti.user.domain.entity.user;
 import static lombok.AccessLevel.*;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
+import jakarta.persistence.FetchType;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 
 import org.springframework.util.StringUtils;
@@ -23,6 +27,10 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = PROTECTED)
 @DiscriminatorValue("MEMBER")
 public class MemberEntity extends UserEntity {
+
+	@OneToMany(mappedBy = "member", fetch = FetchType.LAZY)
+	private List<SocialProviderEntity> socialProviders = new ArrayList<>();
+
 	private MemberEntity(
 		String mobile,
 		String name,

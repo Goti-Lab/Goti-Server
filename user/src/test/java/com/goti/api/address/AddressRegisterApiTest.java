@@ -3,6 +3,7 @@ package com.goti.api.address;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import com.goti.constants.Gender;
+import com.goti.constants.OAuthProvider;
 import com.goti.user.GotiUserApplication;
 import com.goti.user.domain.entity.user.MemberEntity;
 import com.goti.user.dto.request.AddressRegisterRequest;
@@ -48,9 +49,10 @@ class AddressRegisterApiTest {
 	MemberEntity member;
 	ExtendedUserDetails authenticator;
 	private final static String PROVIDER_ID = "test_provider_id";
-
+	private final static OAuthProvider PROVIDER = OAuthProvider.GOOGLE;
 	@BeforeEach
 	void setup() {
+
 		member = MemberEntity.create(
 			"01012341234",
 			"테스트회원",
@@ -62,7 +64,8 @@ class AddressRegisterApiTest {
 		authenticator = new ExtendedUserDetails(
 			member.getId(),
 			member.getRole(),
-			PROVIDER_ID
+			PROVIDER_ID,
+			PROVIDER
 		);
 	}
 

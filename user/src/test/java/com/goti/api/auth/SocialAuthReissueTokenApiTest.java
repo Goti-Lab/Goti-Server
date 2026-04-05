@@ -57,6 +57,7 @@ public class SocialAuthReissueTokenApiTest {
 	MemberEntity member;
 	SocialProviderEntity socialProvider;
 	private final static String PROVIDER_ID = "test_provider_id";
+	private final static OAuthProvider PROVIDER = OAuthProvider.KAKAO;
 	@BeforeEach
 	void setup() {
 		saveMember();
@@ -69,12 +70,14 @@ public class SocialAuthReissueTokenApiTest {
 			member.getId(),
 			member.getRole(),
 			PROVIDER_ID,
+			PROVIDER,
 			TokenType.ACCESS
 		);
 		String loginRefreshToken = jwtTokenProvider.create(
 			member.getId(),
 			member.getRole(),
 			PROVIDER_ID,
+			PROVIDER,
 			TokenType.REFRESH
 		);
 

@@ -35,7 +35,7 @@ public class SocialProviderServiceImpl implements SocialProviderService {
 	public Optional<SocialProviderEntity> findSocialProvider(
 		String providerId, OAuthProvider provider
 	) {
-		return socialProviderRepository.findSocialProvider(
+		return socialProviderRepository.findByProviderIdAndProvider(
 			providerId, provider
 		);
 	}

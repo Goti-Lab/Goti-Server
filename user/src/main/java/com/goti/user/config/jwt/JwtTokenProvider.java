@@ -29,7 +29,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
-import java.security.Provider;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
 import java.time.Duration;
@@ -45,7 +44,6 @@ public class JwtTokenProvider {
 
 	private static final String TOKEN_PREFIX = "Bearer ";
 	private static final String ROLE_CLAIM_KEY = "role";
-	private static final String MOBILE_CLAIM_KEY = "mobile";
 
 	private static final String PROVIDER_TYPE_KEY = "provider_type";
 	private static final String PROVIDER_ID_KEY = "provider_id";
@@ -80,7 +78,9 @@ public class JwtTokenProvider {
 		}
 	}
 
-	public String create(UUID id, UserRole role, String providerId, TokenType tokenType) {
+	public String create(
+		UUID id, UserRole role, String providerId, OAuthProvider provider, TokenType tokenType
+	) {
 		Date issuedAt = new Date();
 		Duration validTime = tokenType == TokenType.ACCESS ?
 			jwtProperties.accessValidTime() : jwtProperties.refreshValidTime();
@@ -93,6 +93,7 @@ public class JwtTokenProvider {
 			.issuer(jwtProperties.issuer())
 			.claim(ROLE_CLAIM_KEY, role.name())
 			.claim(PROVIDER_ID_KEY, providerId)
+			.claim(PROVIDER_TYPE_KEY, provider)
 			.issuedAt(issuedAt)
 			.expiration(expireAt);
 
@@ -160,7 +161,8 @@ public class JwtTokenProvider {
 		Claims claims = getClaims(token);
 		String userId = claims.getSubject();
 		String providerId = claims.get(PROVIDER_ID_KEY, String.class);
-		UserDetails userDetails = userDetailsService.loadUserById(userId, providerId);
+		OAuthProvider provider = claims.get(PROVIDER_TYPE_KEY, OAuthProvider.class);
+		UserDetails userDetails = userDetailsService.loadUserById(userId, providerId, provider);
 		return UsernamePasswordAuthenticationToken.authenticated(
 			userDetails,
 			null,
@@ -187,7 +189,7 @@ public class JwtTokenProvider {
 		return getClaims(token).getSubject();
 	}
 
-	private Claims getClaims(String token) {
+	public Claims getClaims(String token) {
 		return parseClaimsDualVerify(token).getPayload();
 	}
 

@@ -1,5 +1,6 @@
 package com.goti.user.service.domain.auth;
 
+import com.goti.constants.OAuthProvider;
 import com.goti.global.validation.Preconditions;
 import com.goti.user.config.jwt.JwtTokenProvider;
 import com.goti.constants.messages.ErrorCode;
@@ -60,11 +61,15 @@ public class AuthServiceImpl implements AuthService {
 	}
 
 	@Override
-	public Pair<String, String> issueTokens(MemberEntity member, String providerId) {
+	public Pair<String, String> issueTokens(MemberEntity member, String providerId, OAuthProvider provider) {
 		deleteCachedTokenId(member.getId());
 
-		String accessToken = createToken(member, providerId, TokenType.ACCESS);
-		String refreshToken = createToken(member, providerId, TokenType.REFRESH);
+		String accessToken = createToken(
+			member, providerId, provider, TokenType.ACCESS
+		);
+		String refreshToken = createToken(
+			member, providerId, provider, TokenType.REFRESH
+		);
 
 		saveTokenJti(member.getId(), refreshToken);
 		return Pair.of(accessToken, refreshToken);
@@ -76,12 +81,13 @@ public class AuthServiceImpl implements AuthService {
 	}
 
 	private String createToken(
-		MemberEntity member, String providerId, TokenType tokenType
+		MemberEntity member, String providerId, OAuthProvider provider, TokenType tokenType
 	) {
 		return jwtTokenProvider.create(
 			member.getId(),
 			member.getRole(),
 			providerId,
+			provider,
 			tokenType
 		);
 	}
