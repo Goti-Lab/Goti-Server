@@ -17,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.github.f4b6a3.tsid.TsidCreator;
 import com.goti.constants.messages.ErrorCode;
 import com.goti.domain.vo.TransactionItemVO;
+import com.goti.exception.CustomException;
 import com.goti.global.validation.Preconditions;
 import com.goti.resale.constants.ResaleTransactionStatus;
 import com.goti.resale.domain.entity.resale.ResaleHoldEntity;
@@ -94,7 +95,14 @@ public class ResaleOrderServiceImpl implements ResaleOrderService {
 
 	@Override
 	@Transactional
-	public ResaleOrderCreateResponse initOrder(UUID buyerId, List<ResaleHoldEntity> holds, UUID gameId) {
+	public ResaleOrderCreateResponse initOrder(
+		UUID buyerId,
+		List<ResaleHoldEntity> holds,
+		UUID gameId,
+		String buyerNickname,
+		String buyerEmail,
+		String buyerPhone
+	) {
 		int ownedCount = ticketClient.getOwnedTicketCount(buyerId, gameId);
 		int pendingCount = resaleTransactionRepository.countTransactions(
 			buyerId, gameId, ResaleTransactionStatus.PENDING);
@@ -114,7 +122,13 @@ public class ResaleOrderServiceImpl implements ResaleOrderService {
 			.mapToInt(TransactionItemVO::getSellerFee)
 			.sum();
 
-		ResaleOrderEntity resaleOrder = createOrder(buyerId, totalBuyerAmount);
+		ResaleOrderEntity resaleOrder = createOrder(
+			buyerId,
+			totalBuyerAmount,
+			buyerNickname,
+			buyerEmail,
+			buyerPhone
+		);
 
 		List<ResaleTransactionEntity> transactions = createTransactions(resaleOrder, buyerId, itemVOs);
 
@@ -183,10 +197,30 @@ public class ResaleOrderServiceImpl implements ResaleOrderService {
 			.toList();
 	}
 
-	private ResaleOrderEntity createOrder(UUID buyerId, int totalAmount) {
+	@Override
+	public List<ResaleTransactionEntity> findTransactionByOrder(UUID orderId) {
+		return resaleTransactionRepository.findAllByResaleOrderId(orderId);
+	}
+
+	@Override
+	public ResaleOrderEntity findOrderById(UUID orderId) {
+		return resaleOrderRepository.findById(orderId)
+			.orElseThrow(() -> new CustomException(ErrorCode.ORDER_NOT_FOUND));
+	}
+
+	private ResaleOrderEntity createOrder(
+		UUID buyerId,
+		int totalAmount,
+		String buyerNickname,
+		String buyerEmail,
+		String buyerPhone
+	) {
 		ResaleOrderEntity resaleOrder = ResaleOrderEntity.create(
 			generateOrderNumber(),
 			buyerId,
+			buyerNickname,
+			buyerEmail,
+			buyerPhone,
 			totalAmount
 		);
 		return resaleOrderRepository.save(resaleOrder);
