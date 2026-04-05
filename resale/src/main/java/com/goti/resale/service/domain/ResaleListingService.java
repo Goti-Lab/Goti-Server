@@ -15,6 +15,7 @@ import com.goti.resale.dto.request.ResaleListingCancelRequest;
 import com.goti.resale.dto.request.ResaleListingOrderCreateRequest;
 import com.goti.resale.dto.response.ResaleListingOrderCreateResponse;
 import com.goti.resale.dto.response.ResaleListingResponse;
+import com.goti.resale.dto.response.ResaleListingsCountResponse;
 import com.goti.resale.dto.response.ResaleTicketResponse;
 
 public interface ResaleListingService {
@@ -46,9 +47,7 @@ public interface ResaleListingService {
 
 	ResaleListingEntity getListing(UUID sellerId, UUID listingId);
 
-	Long countListings(UUID sellerId);
-
-	Long countSold(UUID sellerId);
+	ResaleListingsCountResponse getResaleCount(UUID sellerId);
 
 	List<ResaleListingEntity> getListingsByOrderId(UUID orderId);
 

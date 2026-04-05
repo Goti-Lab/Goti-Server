@@ -3,7 +3,9 @@ package com.goti.resale.service.application;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import org.springframework.scheduling.annotation.Async;
@@ -15,7 +17,9 @@ import org.springframework.transaction.event.TransactionalEventListener;
 
 import com.goti.constants.messages.ErrorCode;
 import com.goti.exception.CustomException;
+import com.goti.resale.constants.ResaleListingStatus;
 import com.goti.resale.domain.entity.resale.ResaleListingEntity;
+import com.goti.resale.domain.entity.resale.ResaleListingOrderEntity;
 import com.goti.resale.domain.entity.resale.ResalePriceHistoryEntity;
 import com.goti.resale.domain.entity.resale.ResaleRestrictionEntity;
 import com.goti.resale.domain.entity.resale.ResaleTransactionEntity;
@@ -26,6 +30,7 @@ import com.goti.resale.infra.dto.SettlementCompletedEvent;
 import com.goti.resale.repository.ResaleRestrictionRepository;
 import com.goti.resale.repository.history.ResalePriceHistoryRepository;
 import com.goti.resale.repository.listing.ResaleListingRepository;
+import com.goti.resale.repository.listingorder.ResaleListingOrderRepository;
 import com.goti.resale.repository.transaction.ResaleTransactionRepository;
 import com.goti.resale.service.domain.ResaleRestrictionService;
 import com.goti.resale.service.infra.PaymentService;
@@ -40,6 +45,7 @@ import lombok.extern.slf4j.Slf4j;
 public class ResaleOrderEventListener {
 
 	private final ResaleListingRepository listingRepository;
+	private final ResaleListingOrderRepository listingOrderRepository;
 	private final ResaleTransactionRepository transactionRepository;
 	private final ResalePriceHistoryRepository priceHistoryRepository;
 	private final ResaleRestrictionRepository restrictionRepository;
@@ -71,6 +77,7 @@ public class ResaleOrderEventListener {
 
 		List<ResaleListingEntity> resaleListings = new ArrayList<>();
 		List<ResalePriceHistoryEntity> priceHistories = new ArrayList<>();
+		Set<ResaleListingOrderEntity> listingOrders = new HashSet<>();
 
 		ResaleRestrictionEntity restriction = restrictionService.getOrCreateRestriction(event.buyerId());
 
@@ -79,6 +86,8 @@ public class ResaleOrderEventListener {
 
 			resaleListing.soldOut(transaction.getTransactionPrice());
 			resaleListings.add(resaleListing);
+
+			listingOrders.add(resaleListing.getListingOrder());
 
 			BigDecimal basePrice = BigDecimal.valueOf(resaleListing.getDailyBasePrice());
 			BigDecimal transactionPrice = BigDecimal.valueOf(transaction.getTransactionPrice());
@@ -104,6 +113,19 @@ public class ResaleOrderEventListener {
 		priceHistoryRepository.saveAll(priceHistories);
 		restrictionRepository.save(restriction);
 
+		for (ResaleListingOrderEntity order : listingOrders) {
+			List<ResaleListingEntity> allListings = listingRepository.findAllByListingOrderId(order.getId());
+			boolean allCompleted = allListings.stream()
+				.allMatch(l -> l.getListingStatus() == ResaleListingStatus.SOLD
+					|| l.getListingStatus() == ResaleListingStatus.CANCELED);
+			if (allCompleted) {
+				order.soldOut();
+			} else {
+				order.partial();
+			}
+			listingOrderRepository.save(order);
+		}
+
 		for (ResaleListingEntity listing : resaleListings) {
 			transferOwnership(listing.getTicketId(), event.buyerId());
 		}
@@ -117,17 +139,34 @@ public class ResaleOrderEventListener {
 		log.info("정산 완료 이벤트 수신 및 처리: 주문ID {}", event.resaleOrderId());
 
 		List<ResaleTransactionEntity> transactions = transactionRepository.findAllByResaleOrderId(event.resaleOrderId());
+		Set<ResaleListingOrderEntity> listingOrders = new HashSet<>();
 
 		List<ResaleListingEntity> listings = transactions.stream()
-			.map(ResaleTransactionEntity::getListing)
+			.map(transaction -> {
+				ResaleListingEntity listing = transaction.getListing();
+				listing.settle();
+				listingOrders.add(listing.getListingOrder());
+				return listing;
+			})
 			.toList();
 
-		listings.forEach(ResaleListingEntity::settle);
-
 		listingRepository.saveAll(listings);
+
+		for (ResaleListingOrderEntity order : listingOrders) {
+			List<ResaleListingEntity> allListings = listingRepository.findAllByListingOrderId(order.getId());
+			boolean allSettled = allListings.stream()
+				.allMatch(l -> l.getListingStatus() == ResaleListingStatus.SETTLED
+					|| l.getListingStatus() == ResaleListingStatus.CANCELED);
+
+			if (allSettled) {
+				order.settled();
+			} else {
+				order.partial();
+			}
+			listingOrderRepository.save(order);
+		}
 	}
 
-	// TODO: 티켓이 나오면 구현
 	@Async
 	public void transferOwnership(UUID ticketId, UUID buyerId) {
 		try {

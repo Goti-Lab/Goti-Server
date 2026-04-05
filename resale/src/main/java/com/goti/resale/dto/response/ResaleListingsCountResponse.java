@@ -2,7 +2,7 @@ package com.goti.resale.dto.response;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
-public record ResaleListingMyPageCountResponse(
+public record ResaleListingsCountResponse(
 	@Schema(description = "판매 중인 개수", example = "5")
 	Long listingCount,
 

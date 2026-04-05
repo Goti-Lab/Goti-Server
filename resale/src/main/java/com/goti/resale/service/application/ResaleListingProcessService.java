@@ -17,10 +17,10 @@ import com.goti.resale.domain.entity.resale.ResaleListingEntity;
 import com.goti.resale.domain.entity.resale.ResaleRestrictionEntity;
 import com.goti.resale.dto.request.ResaleListingCancelRequest;
 import com.goti.resale.dto.request.ResaleListingOrderCreateRequest;
-import com.goti.resale.dto.response.ResaleListingMyPageCountResponse;
 import com.goti.resale.dto.response.ResaleListingOrderCreateResponse;
 import com.goti.resale.dto.response.ResaleListingOrderResponse;
 import com.goti.resale.dto.response.ResaleListingResponse;
+import com.goti.resale.dto.response.ResaleListingsCountResponse;
 import com.goti.resale.repository.ResaleRestrictionRepository;
 import com.goti.resale.repository.listing.ResaleListingRepository;
 import com.goti.resale.service.domain.ResaleListingService;
@@ -97,11 +97,8 @@ public class ResaleListingProcessService {
 	}
 
 	@Transactional(readOnly = true)
-	public ResaleListingMyPageCountResponse getCountListings(UUID sellerId) {
-		long listingCount = resaleListingService.countListings(sellerId);
-		long soldCount = resaleListingService.countSold(sellerId);
-
-		return new ResaleListingMyPageCountResponse(listingCount, soldCount);
+	public ResaleListingsCountResponse getResaleCount(UUID sellerId) {
+		return resaleListingService.getResaleCount(sellerId);
 	}
 
 	@Transactional(readOnly = true)

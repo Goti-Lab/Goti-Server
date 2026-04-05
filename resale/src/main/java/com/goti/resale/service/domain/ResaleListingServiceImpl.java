@@ -29,6 +29,7 @@ import com.goti.resale.dto.request.ResaleListingCreateRequest;
 import com.goti.resale.dto.request.ResaleListingOrderCreateRequest;
 import com.goti.resale.dto.response.ResaleListingOrderCreateResponse;
 import com.goti.resale.dto.response.ResaleListingResponse;
+import com.goti.resale.dto.response.ResaleListingsCountResponse;
 import com.goti.resale.dto.response.ResaleTicketResponse;
 import com.goti.resale.infra.TicketClient;
 import com.goti.resale.repository.ResaleRestrictionRepository;
@@ -221,23 +222,24 @@ public class ResaleListingServiceImpl implements ResaleListingService {
 		return resaleListing;
 	}
 
-
 	@Override
 	@Transactional(readOnly = true)
-	public Long countListings(UUID sellerId) {
-		return listingRepository.countBySellerIdAndListingStatusIn(
-			sellerId,
-			List.of(ResaleListingStatus.LISTING, ResaleListingStatus.HOLD)
-		);
-	}
+	public ResaleListingsCountResponse getResaleCount(UUID sellerId) {
+		List<ResaleListingEntity> listings = listingRepository.findBySellerId(sellerId);
 
-	@Override
-	@Transactional(readOnly = true)
-	public Long countSold(UUID sellerId) {
-		return listingRepository.countBySellerIdAndListingStatusIn(
-			sellerId,
-			List.of(ResaleListingStatus.SOLD, ResaleListingStatus.SETTLED)
-		);
+		long listingCount = listings.stream().filter(
+				r ->
+					r.getListingStatus() == ResaleListingStatus.LISTING ||
+						r.getListingStatus() == ResaleListingStatus.HOLD)
+			.count();
+
+		long soldCount = listings.stream()
+			.filter(r ->
+				r.getListingStatus() == ResaleListingStatus.SOLD ||
+					r.getListingStatus() == ResaleListingStatus.SETTLED)
+			.count();
+
+		return new ResaleListingsCountResponse(listingCount, soldCount);
 	}
 
 	@Override

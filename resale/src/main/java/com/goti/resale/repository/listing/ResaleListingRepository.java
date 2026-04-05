@@ -21,6 +21,8 @@ public interface ResaleListingRepository extends JpaRepository<ResaleListingEnti
 
 	List<ResaleListingEntity> findAllByListingOrderId(UUID listingOrderId);
 
+	List<ResaleListingEntity> findBySellerId(UUID sellerId);
+
 	@Query("SELECT r FROM ResaleListingEntity r "
 		+ "WHERE r.gameId = :gameId "
 		+ "AND r.gradeId = :gradeId "
@@ -30,7 +32,4 @@ public interface ResaleListingRepository extends JpaRepository<ResaleListingEnti
 		@Param("gradeId") UUID gradeId,
 		@Param("listingStatus") ResaleListingStatus listingStatus
 	);
-
-	Long countBySellerIdAndListingStatusIn(UUID sellerId, List<ResaleListingStatus> listingStatus);
-
 }
