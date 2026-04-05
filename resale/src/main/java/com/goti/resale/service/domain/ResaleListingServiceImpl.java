@@ -225,21 +225,19 @@ public class ResaleListingServiceImpl implements ResaleListingService {
 	@Override
 	@Transactional(readOnly = true)
 	public ResaleListingsCountResponse getResaleCount(UUID sellerId) {
-		List<Object[]> statusCounts = listingRepository.countResaleListing(sellerId);
+		List<ResaleListingEntity> listings = listingRepository.findBySellerId(sellerId);
 
-		long listingCount = 0L;
-		long soldCount = 0L;
+		long listingCount = listings.stream().filter(
+				r ->
+					r.getListingStatus() == ResaleListingStatus.LISTING ||
+						r.getListingStatus() == ResaleListingStatus.HOLD)
+			.count();
 
-		for (Object[] row : statusCounts) {
-			ResaleListingStatus status = (ResaleListingStatus)row[0];
-			long count = (Long)row[1];
-
-			if (status == ResaleListingStatus.LISTING || status == ResaleListingStatus.HOLD) {
-				listingCount += count;
-			} else if (status == ResaleListingStatus.SOLD || status == ResaleListingStatus.SETTLED) {
-				soldCount += count;
-			}
-		}
+		long soldCount = listings.stream()
+			.filter(r ->
+				r.getListingStatus() == ResaleListingStatus.SOLD ||
+					r.getListingStatus() == ResaleListingStatus.SETTLED)
+			.count();
 
 		return new ResaleListingsCountResponse(listingCount, soldCount);
 	}
