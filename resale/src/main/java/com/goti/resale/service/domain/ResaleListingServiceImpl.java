@@ -32,7 +32,6 @@ import com.goti.resale.dto.response.ResaleListingResponse;
 import com.goti.resale.dto.response.ResaleListingsCountResponse;
 import com.goti.resale.dto.response.ResaleTicketResponse;
 import com.goti.resale.infra.TicketClient;
-import com.goti.resale.repository.ResaleListingOrderRepository;
 import com.goti.resale.repository.ResaleRestrictionRepository;
 import com.goti.resale.repository.history.ResalePriceHistoryRepository;
 import com.goti.resale.repository.listing.ResaleListingRepository;
@@ -48,6 +47,10 @@ public class ResaleListingServiceImpl implements ResaleListingService {
 
 	private static final DateTimeFormatter ORDER_NUMBER_FORMATTER = DateTimeFormatter.ofPattern("yyMMdd");
 	private static final List<Integer> ALLOWED_MONTHS = List.of(1, 3, 6);
+	private static final List<ResaleListingOrderStatus> ALLOWED_STATUSES = List.of(ResaleListingOrderStatus.LISTING,
+		ResaleListingOrderStatus.PARTIAL);
+	private static final List<ResaleListingStatus> DUPLICATE_STATUSES = List.of(ResaleListingStatus.LISTING,
+		ResaleListingStatus.HOLD, ResaleListingStatus.SOLD);
 
 	private final ResaleListingRepository listingRepository;
 	private final ResaleListingOrderRepository listingOrderRepository;
@@ -82,7 +85,7 @@ public class ResaleListingServiceImpl implements ResaleListingService {
 				listingOrderRepository.findBySellerAndGrade(
 					sellerId,
 					gradeId,
-					List.of(ResaleListingOrderStatus.LISTING, ResaleListingOrderStatus.PARTIAL)
+					ALLOWED_STATUSES
 				).orElseGet(() -> {
 					ResaleListingOrderEntity order = ResaleListingOrderEntity.create(
 						generateListingOrderNumber(),
@@ -122,6 +125,10 @@ public class ResaleListingServiceImpl implements ResaleListingService {
 		listingRepository.saveAll(listings);
 		restrictionRepository.save(resaleRestriction);
 
+		for (ResaleListingEntity listing : listings) {
+			ticketClient.markAsResaleListing(listing.getTicketId(), sellerId);
+		}
+
 		List<ResaleListingResponse> listingResponses = listings.stream()
 			.map(ResaleListingResponse::from)
 			.toList();
@@ -147,6 +154,8 @@ public class ResaleListingServiceImpl implements ResaleListingService {
 
 		resaleListing.cancel();
 		listingRepository.save(resaleListing);
+
+		ticketClient.cancelResaleListing(resaleListing.getTicketId(), sellerId);
 
 		ResaleListingOrderEntity order = resaleListing.getListingOrder();
 		order.partial();
@@ -182,6 +191,7 @@ public class ResaleListingServiceImpl implements ResaleListingService {
 			if (listing.isCancelable()) {
 				validateListingCancellation(sellerId, listing, restriction);
 				listing.cancel();
+				ticketClient.cancelResaleListing(listing.getTicketId(), sellerId);
 				restrictionHandler.handleAfterCancel(restriction, listing.getGameId());
 			}
 		}
@@ -287,7 +297,7 @@ public class ResaleListingServiceImpl implements ResaleListingService {
 		Preconditions.validate(
 			!listingRepository.existsByTicketIdAndListingStatusIn(
 				ticketId,
-				List.of(ResaleListingStatus.LISTING, ResaleListingStatus.HOLD, ResaleListingStatus.SOLD)
+				DUPLICATE_STATUSES
 			), ErrorCode.ALREADY_LISTED);
 	}
 
