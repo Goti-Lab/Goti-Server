@@ -92,7 +92,7 @@ public class ResaleListingController {
 	}
 
 	@Operation(
-		summary = "내 판매 그룹 조회 (마이페이지)",
+		summary = "내 판매 그룹 조회",
 		description = "판매 내역 그룹 상태별, 기간별 페이징 조회 API"
 	)
 	@GetMapping("/listings/orders")

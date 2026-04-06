@@ -106,6 +106,7 @@ public enum ErrorCode {
 	TICKET_CANCELLATION_BLOCKED_BY_FREEZE(HttpStatus.FORBIDDEN, "동결된 티켓은 취소할 수 없습니다."),
 	DUPLICATE_HOLD_ID_REQUEST(HttpStatus.BAD_REQUEST, "같은 좌석이 중복 선택되었습니다."),
 	ORDER_SEAT_ALREADY_EXISTS(HttpStatus.CONFLICT, "이미 주문된 좌석이 포함되어 있습니다."),
+	TICKET_OWNERSHIP_TRANSFER_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "티켓 소유권 전환에 실패했습니다."),
 
 	MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 회원입니다."),
 	SOCIAL_PROVIDER_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 소셜 계정은 존재하지 않습니다."),

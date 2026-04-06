@@ -51,6 +51,9 @@ class ResaleTransactionEntityTest {
 		resaleOrder = ResaleOrderEntity.create(
 			"RES-260316-123456",
 			VALID_BUYER_ID,
+			"홍길동",
+			"buyer@goti.com",
+			"01012345678",
 			VALID_BUYER_TOTAL
 		);
 	}
