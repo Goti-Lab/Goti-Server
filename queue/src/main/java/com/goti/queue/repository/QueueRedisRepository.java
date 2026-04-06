@@ -102,7 +102,7 @@ public class QueueRedisRepository {
 
 	public void addExpirationUser(UUID gameId, UUID userId, Instant expiresAt) {
 		redisTemplate.opsForZSet().add(
-			RedisKey.QUEUE_EXPIRATION_USERS.getKey(""),
+			RedisKey.QUEUE_EXPIRATION_USERS.getKey(),
 			expirationMember(gameId, userId),
 			expiresAt.toEpochMilli()
 		);
@@ -110,14 +110,14 @@ public class QueueRedisRepository {
 
 	public void removeExpirationUser(UUID gameId, UUID userId) {
 		redisTemplate.opsForZSet().remove(
-			RedisKey.QUEUE_EXPIRATION_USERS.getKey(""),
+			RedisKey.QUEUE_EXPIRATION_USERS.getKey(),
 			expirationMember(gameId, userId)
 		);
 	}
 
 	public Set<Object> getExpiredUsers(Instant now) {
 		return redisTemplate.opsForZSet().rangeByScore(
-			RedisKey.QUEUE_EXPIRATION_USERS.getKey(""),
+			RedisKey.QUEUE_EXPIRATION_USERS.getKey(),
 			0,
 			now.toEpochMilli()
 		);
@@ -161,24 +161,24 @@ public class QueueRedisRepository {
 	 * Lua Script로 check-and-increment를 단일 Redis 명령으로 실행.
 	 * @return true: 승격 성공, false: 수용량 초과 (increment 안 함)
 	 */
-	public boolean tryIncrementActiveCount(UUID gameId) {
-		String script =
-			"local key = KEYS[1] " +
-			"local active = tonumber(redis.call('HGET', key, ARGV[1]) or '0') " +
-			"local max = tonumber(redis.call('HGET', key, ARGV[2]) or '0') " +
-			"if active < max then " +
-			"  redis.call('HINCRBY', key, ARGV[1], 1) " +
-			"  redis.call('HSET', key, ARGV[3], ARGV[4]) " +
-			"  return 1 " +
-			"else " +
-			"  return 0 " +
-			"end";
+	private static final String TRY_INCREMENT_ACTIVE_SCRIPT_STR =
+		"local key = KEYS[1] " +
+		"local active = tonumber(redis.call('HGET', key, ARGV[1]) or '0') " +
+		"local max = tonumber(redis.call('HGET', key, ARGV[2]) or '0') " +
+		"if active < max then " +
+		"  redis.call('HINCRBY', key, ARGV[1], 1) " +
+		"  redis.call('HSET', key, ARGV[3], ARGV[4]) " +
+		"  return 1 " +
+		"else " +
+		"  return 0 " +
+		"end";
+	private static final RedisScript<Long> TRY_INCREMENT_ACTIVE_SCRIPT =
+		RedisScript.of(TRY_INCREMENT_ACTIVE_SCRIPT_STR, Long.class);
 
-		// WHY: redisTemplate(GenericJackson2Json)은 ARGV를 JSON 직렬화하여
-		// Hash 필드명("maxCapacity")과 불일치. StringRedisTemplate으로 plain string 전달.
+	public boolean tryIncrementActiveCount(UUID gameId) {
 		Long result = stringRedisTemplate.execute(
-			org.springframework.data.redis.core.script.RedisScript.of(script, Long.class),
-			java.util.List.of(RedisKey.QUEUE_META.getKey(gameId)),
+			TRY_INCREMENT_ACTIVE_SCRIPT,
+			List.of(RedisKey.QUEUE_META.getKey(gameId)),
 			QueueMetaField.ACTIVE_COUNT,
 			QueueMetaField.MAX_CAPACITY,
 			QueueMetaField.UPDATED_AT,
@@ -212,24 +212,26 @@ public class QueueRedisRepository {
 	 * 동시 seat-enter 시 race condition 방지 — max(기존값, 새값)으로만 갱신.
 	 * WHY: putAll은 last-write-wins라서 늦게 도착한 낮은 queueNumber가 높은 값을 덮어쓸 수 있음.
 	 */
-	public void updateSeatEnterMeta(UUID gameId, long lastEnteredRank) {
-		String script =
-			"local key = KEYS[1] " +
-			"local newRank = tonumber(ARGV[1]) " +
-			"local curLast = tonumber(redis.call('HGET', key, ARGV[2]) or '0') " +
-			"local curAllowed = tonumber(redis.call('HGET', key, ARGV[3]) or '0') " +
-			"if newRank > curLast then " +
-			"  redis.call('HSET', key, ARGV[2], newRank) " +
-			"end " +
-			"if newRank > curAllowed then " +
-			"  redis.call('HSET', key, ARGV[3], newRank) " +
-			"end " +
-			"redis.call('HSET', key, ARGV[4], ARGV[5]) " +
-			"return 1";
+	private static final String UPDATE_SEAT_ENTER_META_SCRIPT_STR =
+		"local key = KEYS[1] " +
+		"local newRank = tonumber(ARGV[1]) " +
+		"local curLast = tonumber(redis.call('HGET', key, ARGV[2]) or '0') " +
+		"local curAllowed = tonumber(redis.call('HGET', key, ARGV[3]) or '0') " +
+		"if newRank > curLast then " +
+		"  redis.call('HSET', key, ARGV[2], newRank) " +
+		"end " +
+		"if newRank > curAllowed then " +
+		"  redis.call('HSET', key, ARGV[3], newRank) " +
+		"end " +
+		"redis.call('HSET', key, ARGV[4], ARGV[5]) " +
+		"return 1";
+	private static final RedisScript<Long> UPDATE_SEAT_ENTER_META_SCRIPT =
+		RedisScript.of(UPDATE_SEAT_ENTER_META_SCRIPT_STR, Long.class);
 
+	public void updateSeatEnterMeta(UUID gameId, long lastEnteredRank) {
 		stringRedisTemplate.execute(
-			org.springframework.data.redis.core.script.RedisScript.of(script, Long.class),
-			java.util.List.of(RedisKey.QUEUE_META.getKey(gameId)),
+			UPDATE_SEAT_ENTER_META_SCRIPT,
+			List.of(RedisKey.QUEUE_META.getKey(gameId)),
 			String.valueOf(lastEnteredRank),
 			QueueMetaField.LAST_ENTERED_RANK,
 			QueueMetaField.CURRENT_ALLOWED_RANK,
@@ -338,7 +340,7 @@ public class QueueRedisRepository {
 			RedisKey.QUEUE_ACTIVE_USERS.getKey(gameId),
 			RedisKey.QUEUE_META.getKey(gameId),
 			RedisKey.QUEUE_WAITING.getKey(gameId),
-			RedisKey.QUEUE_EXPIRATION_USERS.getKey("")
+			RedisKey.QUEUE_EXPIRATION_USERS.getKey()
 		);
 		@SuppressWarnings("unchecked")
 		List<Long> result = stringRedisTemplate.execute(
@@ -372,7 +374,8 @@ public class QueueRedisRepository {
 		"if isActive == 1 then " +
 		"  redis.call('SREM', KEYS[2], ARGV[1]) " +
 		"  if redis.call('EXISTS', KEYS[3]) == 1 then " +
-		"    redis.call('HINCRBY', KEYS[3], 'activeCount', -1) " +
+		"    local cur = tonumber(redis.call('HGET', KEYS[3], 'activeCount') or '0') " +
+		"    if cur > 0 then redis.call('HINCRBY', KEYS[3], 'activeCount', -1) end " +
 		"    redis.call('HSET', KEYS[3], 'updatedAt', ARGV[2]) " +
 		"  end " +
 		"end " +
@@ -391,7 +394,7 @@ public class QueueRedisRepository {
 			RedisKey.QUEUE_ENTRY.getKey(gameId, userId),
 			RedisKey.QUEUE_ACTIVE_USERS.getKey(gameId),
 			RedisKey.QUEUE_META.getKey(gameId),
-			RedisKey.QUEUE_EXPIRATION_USERS.getKey("")
+			RedisKey.QUEUE_EXPIRATION_USERS.getKey()
 		);
 		@SuppressWarnings("unchecked")
 		List<Long> result = stringRedisTemplate.execute(

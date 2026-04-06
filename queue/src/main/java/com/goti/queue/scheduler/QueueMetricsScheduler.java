@@ -88,6 +88,15 @@ public class QueueMetricsScheduler {
 				log.warn("action=METRICS_PUBLISH_FAIL key={} error={}", metaKey, e.getMessage());
 			}
 		}
+
+		// 종료된 경기의 gauge 정리 — ConcurrentHashMap 메모리 누수 방지
+		Set<String> activeGameIds = metaKeys.stream()
+			.map(k -> k.replace("queue:", "").replace(":meta", ""))
+			.collect(java.util.stream.Collectors.toSet());
+		waitingGauges.keySet().removeIf(id -> !activeGameIds.contains(id));
+		sequenceGauges.keySet().removeIf(id -> !activeGameIds.contains(id));
+		maxEntryGauges.keySet().removeIf(id -> !activeGameIds.contains(id));
+		activeGauges.keySet().removeIf(id -> !activeGameIds.contains(id));
 	}
 
 	private AtomicLong getOrCreateGauge(Map<String, AtomicLong> store, String metricName, String matchId) {

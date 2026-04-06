@@ -25,9 +25,16 @@ public enum RedisKey {
 
 	private final Duration ttl;
 
+	public String getKey() {
+		return prefix;
+	}
+
 	public String getKey(Object... vals) {
 		if (prefix.contains("%s")) {
 			return prefix.formatted(vals);
+		}
+		if (vals == null || vals.length == 0) {
+			return prefix;
 		}
 		return prefix + vals[0];
 	}

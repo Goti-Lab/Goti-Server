@@ -29,7 +29,18 @@ public class QueueStatusService {
 		if (userId == null) {
 			throw new CustomException(ErrorCode.AUTH_INVALID);
 		}
+		return buildStatusResponse(gameId);
+	}
 
+	/**
+	 * CDN 캐싱용 전역 상태 조회 — 인증 불필요.
+	 * Cache-Control: public, max-age=1 로 Cloudflare CDN 1초 캐싱.
+	 */
+	public QueueStatusResponse getGlobalStatus(UUID gameId) {
+		return buildStatusResponse(gameId);
+	}
+
+	private QueueStatusResponse buildStatusResponse(UUID gameId) {
 		QueueMeta queueMeta = queueRedisRepository.getMeta(gameId);
 		if (queueMeta == null) {
 			throw new CustomException(ErrorCode.QUEUE_META_NOT_FOUND);
@@ -43,37 +54,7 @@ public class QueueStatusService {
 
 		log.debug(
 			"action=STATUS gameId={} activeCount={} availableSlots={} publishedRank={}",
-			gameId,
-			queueMeta.activeCount(),
-			availableSlots,
-			publishedRank
-		);
-
-		return new QueueStatusResponse(
-			gameId,
-			queueMeta.maxCapacity(),
-			queueMeta.activeCount(),
-			availableSlots,
-			queueMeta.currentAllowedRank(),
-			publishedRank,
-			queueMeta.updatedAt()
-		);
-	}
-
-	/**
-	 * CDN 캐싱용 전역 상태 조회 — 인증 불필요.
-	 * Cache-Control: public, max-age=1 로 Cloudflare CDN 1초 캐싱.
-	 */
-	public QueueStatusResponse getGlobalStatus(UUID gameId) {
-		QueueMeta queueMeta = queueRedisRepository.getMeta(gameId);
-		if (queueMeta == null) {
-			throw new CustomException(ErrorCode.QUEUE_META_NOT_FOUND);
-		}
-
-		long availableSlots = Math.max(0L, queueMeta.maxCapacity() - queueMeta.activeCount());
-		long publishedRank = Math.max(
-			queueMeta.currentAllowedRank(),
-			queueMeta.lastEnteredRank() + availableSlots
+			gameId, queueMeta.activeCount(), availableSlots, publishedRank
 		);
 
 		return new QueueStatusResponse(

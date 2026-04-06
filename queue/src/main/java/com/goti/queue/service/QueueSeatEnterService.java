@@ -29,6 +29,15 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class QueueSeatEnterService {
 
+	// Lua tryAdmit 반환 코드 — Lua script과 동기화 필수
+	private static final int ADMIT_OK = 1;
+	private static final int ADMIT_ENTRY_NOT_FOUND = -1;
+	private static final int ADMIT_STATUS_MISMATCH = -2;
+	private static final int ADMIT_QUEUENUMBER_MISMATCH = -3;
+	private static final int ADMIT_ALREADY_ADMITTED = -4;
+	private static final int ADMIT_NOT_ALLOWED_YET = -5;
+	private static final int ADMIT_CAPACITY_FULL = -6;
+
 	private final QueueRedisRepository queueRedisRepository;
 	private final QueueTokenProvider queueTokenProvider;
 	private final QueueProperties queueProperties;
@@ -52,14 +61,14 @@ public class QueueSeatEnterService {
 				gameId, userId, payload.queueNumber(), expiresAt
 			);
 
-			long code = result.get(0);
-			if (code < 0) {
-				throw switch ((int) code) {
-					case -1 -> new CustomException(ErrorCode.QUEUE_ENTRY_NOT_FOUND);
-					case -2, -3 -> new CustomException(ErrorCode.QUEUE_ENTRY_MISMATCH);
-					case -4 -> new CustomException(ErrorCode.QUEUE_ALREADY_ADMITTED);
-					case -5 -> new CustomException(ErrorCode.QUEUE_NOT_ALLOWED_YET);
-					case -6 -> new CustomException(ErrorCode.QUEUE_CAPACITY_FULL);
+			int code = result.get(0).intValue();
+			if (code != ADMIT_OK) {
+				throw switch (code) {
+					case ADMIT_ENTRY_NOT_FOUND -> new CustomException(ErrorCode.QUEUE_ENTRY_NOT_FOUND);
+					case ADMIT_STATUS_MISMATCH, ADMIT_QUEUENUMBER_MISMATCH -> new CustomException(ErrorCode.QUEUE_ENTRY_MISMATCH);
+					case ADMIT_ALREADY_ADMITTED -> new CustomException(ErrorCode.QUEUE_ALREADY_ADMITTED);
+					case ADMIT_NOT_ALLOWED_YET -> new CustomException(ErrorCode.QUEUE_NOT_ALLOWED_YET);
+					case ADMIT_CAPACITY_FULL -> new CustomException(ErrorCode.QUEUE_CAPACITY_FULL);
 					default -> new CustomException(ErrorCode.QUEUE_ENTRY_MISMATCH);
 				};
 			}
