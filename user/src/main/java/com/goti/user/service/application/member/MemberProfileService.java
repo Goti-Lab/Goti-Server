@@ -54,7 +54,7 @@ public class MemberProfileService {
 		SocialProviderEntity socialProvider = getSocialProvider(providerId, provider);
 		MemberEntity member = socialProvider.getMember();
 		return MemberSummaryResponse.of(
-			member.getName(), member.getMobile(), socialProvider.getEmail()
+			member.getName(), socialProvider.getEmail(), member.getMobile()
 		);
 	}
 

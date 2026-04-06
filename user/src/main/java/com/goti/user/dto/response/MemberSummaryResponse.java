@@ -7,7 +7,7 @@ public record MemberSummaryResponse(
 	@Schema(description = "이름", example = "홍길동")
 	String name,
 
-	@Schema(description = "이메일", example = "hong@example.com")
+	@Schema(description = "이메일", example = "test@google.com")
 	String email,
 
 	@Schema(description = "휴대폰 번호", example = "010-1234-5678")
