@@ -5,9 +5,11 @@ import static com.goti.global.api.ApiSuccessResponse.*;
 import java.util.UUID;
 import java.util.List;
 
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -16,6 +18,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.goti.payment.dto.request.PaymentCancelRequest;
 import com.goti.global.api.ApiSuccessResponse;
+import com.goti.global.api.PageResponse;
+import com.goti.global.dto.Paging;
 import com.goti.payment.dto.request.PaymentRequest;
 import com.goti.payment.dto.request.PurchaseSearchRequest;
 import com.goti.payment.dto.response.PaymentResponse;
@@ -76,18 +80,22 @@ public class PaymentController {
 		description = "일반 주문 내역 및 리셀 구매 내역 통합 조회 API"
 	)
 	@GetMapping("/purchases")
-	public ResponseEntity<ApiSuccessResponse<List<PurchaseSearchResponse>>> getPurchases(
+	public ResponseEntity<ApiSuccessResponse<PageResponse<PurchaseSearchResponse>>> getPurchases(
 		@AuthenticationPrincipal(expression = "id") UUID memberId,
-		@ParameterObject PurchaseSearchRequest request
+		@ParameterObject PurchaseSearchRequest request,
+		@ParameterObject @Valid @ModelAttribute Paging paging
 	) {
-		return wrap(
+		return page(
 			purchaseSearchService.getAll(
-			memberId,
-			request.type(),
-			request.months(),
-			request.startDate(),
-			request.endDate()
-		));
+				memberId,
+				request.type(),
+				request.keyword(),
+				request.months(),
+				request.startDate(),
+				request.endDate(),
+				paging.toPageable()
+			)
+		);
 	}
 
 

@@ -21,6 +21,7 @@ import com.goti.global.api.ApiSuccessResponse;
 import com.goti.resale.dto.request.ResaleHoldRequest;
 import com.goti.resale.dto.request.ResaleOrderPeriodFilterRequest;
 import com.goti.resale.dto.request.ResaleOrderRequest;
+import com.goti.resale.dto.request.ResaleOrderPeriodFilterRequest;
 import com.goti.resale.dto.response.ResaleHoldResponse;
 import com.goti.resale.dto.response.ResaleOrderCompleteResponse;
 import com.goti.resale.dto.response.ResaleOrderCreateResponse;
@@ -34,6 +35,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springdoc.core.annotations.ParameterObject;
 
 @Tag(name = "Resale Order", description = "리셀 주문 및 거래 관련 API")
 @RestController

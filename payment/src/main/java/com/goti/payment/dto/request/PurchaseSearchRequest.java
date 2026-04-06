@@ -14,6 +14,9 @@ public record PurchaseSearchRequest(
 	@Schema(description = "구매 내역 조회 타입", example = "ALL")
     PurchaseSearchType type,
 
+	@Schema(description = "주문 번호, 경기명, 좌석 정보 검색", example = "두산")
+	String keyword,
+
 	@Schema(description = "기간 조회 (개월)", example = "3")
 	Integer months,
 

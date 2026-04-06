@@ -6,17 +6,23 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Stream;
 
+import com.goti.payment.dto.request.enums.PurchaseSearchType;
+
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.goti.constants.messages.ErrorCode;
 import com.goti.global.validation.Preconditions;
-import com.goti.payment.dto.request.enums.PurchaseSearchType;
 import com.goti.payment.dto.response.PurchaseSearchResponse;
 import com.goti.payment.infra.ResaleOrderClient;
 import com.goti.payment.infra.TicketingOrderClient;
 
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.util.StringUtils;
 
 @Service
 @RequiredArgsConstructor
@@ -28,12 +34,14 @@ public class PurchaseSearchService {
 	private final ResaleOrderClient resaleOrderClient;
 
 	@Transactional(readOnly = true)
-	public List<PurchaseSearchResponse> getAll(
+	public Page<PurchaseSearchResponse> getAll(
 		UUID memberId,
 		PurchaseSearchType type,
+		String keyword,
 		Integer months,
 		LocalDate startDate,
-		LocalDate endDate
+		LocalDate endDate,
+		Pageable pageable
 	) {
 		Preconditions.validate(
 			memberId != null,
@@ -58,9 +66,12 @@ public class PurchaseSearchService {
 			endDate
 		);
 
-		return Stream.concat(normalOrders.stream(), resaleOrders.stream())
+		List<PurchaseSearchResponse> combinedPurchases = Stream.concat(normalOrders.stream(), resaleOrders.stream())
+			.filter(order -> matchesKeyword(order, keyword))
 			.sorted(Comparator.comparing(PurchaseSearchResponse::orderedAt).reversed())
 			.toList();
+
+		return toPage(combinedPurchases, pageable);
 	}
 
 	private List<PurchaseSearchResponse> getNormalOrders(
@@ -85,12 +96,13 @@ public class PurchaseSearchService {
 				order.orderedAt(),
 				order.gameId(),
 				order.stadiumId(),
-				null,
-				null,
-				List.of()
+				order.gameTitle(),
+				order.gameDate(),
+				order.seatInfos()
 			))
 			.toList();
 	}
+
 
 	private List<PurchaseSearchResponse> getResaleOrders(
 		UUID memberId,
@@ -119,5 +131,31 @@ public class PurchaseSearchService {
 				order.seatInfos()
 			))
 			.toList();
+	}
+
+	private Page<PurchaseSearchResponse> toPage(List<PurchaseSearchResponse> combinedPurchases, Pageable pageable) {
+		int start = (int) pageable.getOffset();
+		if (start >= combinedPurchases.size()) {
+			return new PageImpl<>(List.of(), pageable, combinedPurchases.size());
+		}
+
+		int end = Math.min(start + pageable.getPageSize(), combinedPurchases.size());
+		return new PageImpl<>(combinedPurchases.subList(start, end), pageable, combinedPurchases.size());
+	}
+
+	private boolean matchesKeyword(PurchaseSearchResponse order, String keyword) {
+		if (!StringUtils.hasText(keyword)) {
+			return true;
+		}
+
+		String normalizedKeyword = keyword.trim().toLowerCase();
+
+		return contains(order.orderNumber(), normalizedKeyword)
+			|| contains(order.gameTitle(), normalizedKeyword)
+			|| order.seatInfos().stream().anyMatch(seatInfo -> contains(seatInfo, normalizedKeyword));
+	}
+
+	private boolean contains(String value, String keyword) {
+		return value != null && value.toLowerCase().contains(keyword);
 	}
 }

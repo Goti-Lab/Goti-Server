@@ -27,7 +27,6 @@ import com.goti.resale.domain.entity.resale.ResaleTransactionEntity;
 import com.goti.resale.dto.request.ResaleTransactionItemRequest;
 import com.goti.resale.dto.response.ResaleOrderCreateResponse;
 import com.goti.resale.dto.response.ResalePurchaseListResponse;
-import com.goti.resale.infra.TicketApiClient;
 import com.goti.resale.infra.TicketClient;
 import com.goti.resale.infra.dto.ResaleOrderCreatedEvent;
 import com.goti.resale.infra.dto.ResaleTicketPurchaseInfo;
@@ -51,7 +50,6 @@ public class ResaleOrderServiceImpl implements ResaleOrderService {
 	private final ResaleRestrictionHandler resaleRestrictionHandler;
 	private final ResalePricePolicy resalePricePolicy;
 	private final TicketClient ticketClient;
-	private final TicketApiClient ticketApiClient;
 	private final ApplicationEventPublisher eventPublisher;
 
 	@Override
@@ -177,9 +175,22 @@ public class ResaleOrderServiceImpl implements ResaleOrderService {
 				LinkedHashMap::new,
 				Collectors.toList()
 			));
+		List<UUID> ticketIds = transactions.stream()
+			.map(transaction -> transaction.getListing().getTicketId())
+			.distinct()
+			.toList();
+		Map<UUID, ResaleTicketPurchaseInfo> ticketInfoMap = ticketClient.getPurchaseInfos(ticketIds).stream()
+			.collect(Collectors.toMap(
+				ResaleTicketPurchaseInfo::ticketId,
+				ticketInfo -> ticketInfo
+			));
 
 		return orders.stream()
-			.map(order -> toPurchaseListResponse(order, transactionsByOrderId.getOrDefault(order.getId(), List.of())))
+			.map(order -> toPurchaseListResponse(
+				order,
+				transactionsByOrderId.getOrDefault(order.getId(), List.of()),
+				ticketInfoMap
+			))
 			.toList();
 	}
 
@@ -222,19 +233,14 @@ public class ResaleOrderServiceImpl implements ResaleOrderService {
 
 	private ResalePurchaseListResponse toPurchaseListResponse(
 		ResaleOrderEntity order,
-		List<ResaleTransactionEntity> transactions
+		List<ResaleTransactionEntity> transactions,
+		Map<UUID, ResaleTicketPurchaseInfo> ticketInfoMap
 	) {
 		UUID gameId = transactions.getFirst().getListing().getGameId();
 
 		List<UUID> ticketIds = transactions.stream()
 			.map(transaction -> transaction.getListing().getTicketId())
 			.toList();
-
-		Map<UUID, ResaleTicketPurchaseInfo> ticketInfoMap = ticketApiClient.getPurchaseInfos(ticketIds).stream()
-			.collect(Collectors.toMap(
-				ResaleTicketPurchaseInfo::ticketId,
-				ticketInfo -> ticketInfo
-			));
 
 		ResaleTicketPurchaseInfo representativeTicket = ticketInfoMap.get(ticketIds.getFirst());
 
