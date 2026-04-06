@@ -8,6 +8,7 @@ import com.goti.user.domain.entity.user.SocialProviderEntity;
 import com.goti.user.dto.response.AccountRegisterResponse;
 import com.goti.user.dto.response.AddressRegisterResponse;
 import com.goti.user.dto.response.MemberDetailResponse;
+import com.goti.user.dto.response.MemberSummaryResponse;
 import com.goti.user.service.domain.account.AccountService;
 import com.goti.user.service.domain.address.AddressService;
 import com.goti.user.service.domain.user.MemberService;
@@ -31,7 +32,7 @@ public class MemberProfileService {
 
 	@Transactional(readOnly = true)
 	public MemberDetailResponse getProfileDetail(String providerId, OAuthProvider provider) {
-		SocialProviderEntity socialProvider = socialProviderService.getSocialProvider(providerId, provider);
+		SocialProviderEntity socialProvider = getSocialProvider(providerId, provider);
 		MemberEntity member = socialProvider.getMember();
 		AccountEntity account = accountService.findAccount(member).orElse(null);
 		AddressEntity address = addressService.findAddress(member).orElse(null);
@@ -46,6 +47,19 @@ public class MemberProfileService {
 			address,
 			socialConnection
 		);
+	}
+
+	@Transactional(readOnly = true)
+	public MemberSummaryResponse getProfileSummary(String providerId, OAuthProvider provider) {
+		SocialProviderEntity socialProvider = getSocialProvider(providerId, provider);
+		MemberEntity member = socialProvider.getMember();
+		return MemberSummaryResponse.of(
+			member.getName(), member.getMobile(), socialProvider.getEmail()
+		);
+	}
+
+	private SocialProviderEntity getSocialProvider(String providerId, OAuthProvider provider) {
+		return socialProviderService.getSocialProvider(providerId, provider);
 	}
 
 	@Transactional

@@ -9,6 +9,7 @@ import com.goti.user.dto.request.MemberUpdateRequest;
 import com.goti.user.dto.response.AccountRegisterResponse;
 import com.goti.user.dto.response.AddressRegisterResponse;
 import com.goti.user.dto.response.MemberDetailResponse;
+import com.goti.user.dto.response.MemberSummaryResponse;
 import com.goti.user.dto.response.MemberUpdateResponse;
 import com.goti.user.service.application.member.MemberProfileService;
 
@@ -57,6 +58,21 @@ public class MemberController {
 			memberProfileService.getProfileDetail(providerId, provider)
 		);
 	}
+
+	@Operation(
+		summary = "회원 정보 요약 조회(본인)",
+		description = "회원 정보 요약 조회(본인) API"
+	)
+	@GetMapping("/me/summary")
+	public ResponseEntity<ApiSuccessResponse<MemberSummaryResponse>> getSummary(
+		@AuthenticationPrincipal(expression = "providerId") String providerId,
+		@AuthenticationPrincipal(expression = "provider") OAuthProvider provider
+	) {
+		return wrap(
+			memberProfileService.getProfileSummary(providerId, provider)
+		);
+	}
+
 
 	@Operation(
 		summary = "계좌 등록",
