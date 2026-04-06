@@ -6,6 +6,7 @@ import java.util.UUID;
 
 import com.goti.resale.dto.response.ResaleTicketResponse;
 import com.goti.resale.infra.dto.ResaleTicketPurchaseInfo;
+import com.goti.resale.infra.dto.GameScheduleResponse;
 import com.goti.resale.infra.dto.TicketGameInfo;
 
 public interface TicketClient {
@@ -16,6 +17,8 @@ public interface TicketClient {
 	List<UUID> getExpiredGameIds(LocalDateTime thresholdTime);
 
 	List<TicketGameInfo> getUpcomingGames();
+
+	GameScheduleResponse getGameSchedule(UUID gameId);
 
 	void markAsResaleListing(UUID ticketId, UUID userId);
 

@@ -1,28 +1,30 @@
 package com.goti.ticketing.game.controller;
 
+import static com.goti.global.api.ApiSuccessResponse.*;
+
+import java.util.List;
+import java.util.UUID;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.goti.global.api.ApiSuccessResponse;
 import com.goti.ticketing.game.dto.request.GameCreateRequest;
 import com.goti.ticketing.game.dto.request.GameScheduleSearchCondition;
 import com.goti.ticketing.game.dto.response.GameCreateResponse;
 import com.goti.ticketing.game.dto.response.GameScheduleSearchResponse;
 import com.goti.ticketing.game.service.application.GameManagementService;
 import com.goti.ticketing.game.service.application.GameScheduleSearchService;
-import com.goti.global.api.ApiSuccessResponse;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
-import java.util.List;
-
-import static com.goti.global.api.ApiSuccessResponse.wrap;
 
 @Tag(name = "Baseball Game", description = "야구 경기 관련 API")
 @RestController
@@ -62,6 +64,19 @@ public class GameController {
 	) {
 		return wrap(
 			scheduleSearchService.searchSchedules(condition)
+		);
+	}
+
+	@Operation(
+		summary = "특정 경기 상세 조회",
+		description = "특정 경기의 상세 일정 및 상태 조회 API"
+	)
+	@GetMapping("/{gameId}/schedule")
+	public ResponseEntity<ApiSuccessResponse<GameScheduleSearchResponse>> getSchedule(
+		@PathVariable UUID gameId
+	) {
+		return wrap(
+			scheduleSearchService.getGameSchedule(gameId)
 		);
 	}
 

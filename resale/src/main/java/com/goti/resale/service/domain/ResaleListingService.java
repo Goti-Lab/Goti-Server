@@ -9,6 +9,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import com.goti.resale.constants.ResaleListingOrderStatus;
+import com.goti.resale.constants.ResaleListingStatus;
+import com.goti.resale.constants.ResaleStatus;
 import com.goti.resale.domain.entity.resale.ResaleListingEntity;
 import com.goti.resale.domain.entity.resale.ResaleListingOrderEntity;
 import com.goti.resale.domain.entity.resale.ResaleRestrictionEntity;
@@ -51,6 +53,8 @@ public interface ResaleListingService {
 	ResaleListingsCountResponse getResaleCount(UUID sellerId);
 
 	List<ResaleListingEntity> getListingsByOrderId(UUID orderId);
+
+	ResaleStatus getResaleStatus(UUID gameId);
 
 	void validateListingCreation(
 		ResaleTicketResponse ticketInfo,

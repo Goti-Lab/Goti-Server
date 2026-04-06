@@ -22,6 +22,7 @@ import com.goti.exception.CustomException;
 import com.goti.global.validation.Preconditions;
 import com.goti.resale.constants.ResaleListingOrderStatus;
 import com.goti.resale.constants.ResaleListingStatus;
+import com.goti.resale.constants.ResaleStatus;
 import com.goti.resale.domain.entity.resale.ResaleListingEntity;
 import com.goti.resale.domain.entity.resale.ResaleListingOrderEntity;
 import com.goti.resale.domain.entity.resale.ResalePriceHistoryEntity;
@@ -34,6 +35,7 @@ import com.goti.resale.dto.response.ResaleListingResponse;
 import com.goti.resale.dto.response.ResaleListingsCountResponse;
 import com.goti.resale.dto.response.ResaleTicketResponse;
 import com.goti.resale.infra.TicketClient;
+import com.goti.resale.infra.dto.GameScheduleResponse;
 import com.goti.resale.repository.ResaleRestrictionRepository;
 import com.goti.resale.repository.history.ResalePriceHistoryRepository;
 import com.goti.resale.repository.listing.ResaleListingRepository;
@@ -264,6 +266,29 @@ public class ResaleListingServiceImpl implements ResaleListingService {
 	}
 
 	@Override
+	@Transactional(readOnly = true)
+	public ResaleStatus getResaleStatus(UUID gameId) {
+		GameScheduleResponse schedule = ticketClient.getGameSchedule(gameId);
+		LocalDateTime ticketingOpenedAt = schedule.ticketingOpenedAt();
+		LocalDateTime now = LocalDateTime.now();
+
+		if (now.isBefore(ticketingOpenedAt.plusHours(1))) {
+			return ResaleStatus.SCHEDULED;
+		}
+
+		long listingCount = listingRepository.countByGameIdAndListingStatusIn(
+			gameId,
+			List.of(ResaleListingStatus.LISTING, ResaleListingStatus.HOLD)
+		);
+
+		if (listingCount > 0) {
+			return ResaleStatus.AVAILABLE;
+		}
+
+		return ResaleStatus.UNAVAILABLE;
+	}
+
+	@Override
 	public void validateListingCreation(
 		ResaleTicketResponse ticketInfo,
 		UUID sellerId,
@@ -371,6 +396,5 @@ public class ResaleListingServiceImpl implements ResaleListingService {
 		}
 
 		listingOrderRepository.saveAll(listingOrders);
-		log.info("✅ ListingOrder 저장 완료 - {} 건", listingOrders.size());
 	}
 }
