@@ -8,37 +8,40 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
-import com.goti.constants.messages.ErrorCode;
-import com.goti.exception.CustomException;
 import com.goti.resale.constants.ResaleListingStatus;
 import com.goti.resale.domain.entity.resale.ResaleListingEntity;
 import com.goti.resale.domain.entity.resale.ResaleListingOrderEntity;
-import com.goti.resale.domain.entity.resale.ResaleOrderEntity;
 import com.goti.resale.domain.entity.resale.ResalePriceHistoryEntity;
 import com.goti.resale.domain.entity.resale.ResaleRestrictionEntity;
 import com.goti.resale.domain.entity.resale.ResaleTransactionEntity;
-import com.goti.resale.infra.TicketClient;
 import com.goti.resale.infra.dto.ResaleOrderCreatedEvent;
 import com.goti.resale.infra.dto.ResaleOrderPaymentCompletedEvent;
 import com.goti.resale.infra.dto.SettlementCompletedEvent;
+import com.goti.resale.infra.dto.TicketOwnershipTransferEvent;
 import com.goti.resale.repository.ResaleRestrictionRepository;
 import com.goti.resale.repository.history.ResalePriceHistoryRepository;
 import com.goti.resale.repository.listing.ResaleListingRepository;
 import com.goti.resale.repository.listingorder.ResaleListingOrderRepository;
+import com.goti.resale.service.domain.ResaleListingService;
 import com.goti.resale.service.domain.ResaleOrderService;
 import com.goti.resale.service.domain.ResaleRestrictionService;
 import com.goti.resale.service.infra.PaymentService;
 import com.goti.resale.utils.ResaleRestrictionHandler;
 
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -53,9 +56,10 @@ public class ResaleOrderEventListener {
 	private final ResaleRestrictionRepository restrictionRepository;
 	private final ResaleRestrictionHandler restrictionHandler;
 	private final ResaleRestrictionService restrictionService;
+	private final ResaleListingService listingService;
 	private final ResaleOrderService orderService;
 	private final PaymentService paymentService;
-	private final TicketClient ticketClient;
+	private final ApplicationEventPublisher eventPublisher;
 
 	@Async
 	@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
@@ -74,86 +78,73 @@ public class ResaleOrderEventListener {
 	@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
 	@Transactional(propagation = Propagation.REQUIRES_NEW)
 	public void handlePaymentCompleted(ResaleOrderPaymentCompletedEvent event) {
-		log.info("결제 완료 이벤트 수신: 주문ID {}", event.resaleOrderId());
+		log.info("=== 결제 완료 이벤트 수신: 주문ID {} ===", event.resaleOrderId());
 
-		List<ResaleTransactionEntity> transactions = orderService.findTransactionByOrder(
-			event.resaleOrderId());
+		try {
+			List<ResaleTransactionEntity> transactions = orderService.findTransactionByOrder(
+				event.resaleOrderId());
 
-		List<ResaleListingEntity> resaleListings = new ArrayList<>();
-		List<ResalePriceHistoryEntity> priceHistories = new ArrayList<>();
-		Set<ResaleListingOrderEntity> listingOrders = new HashSet<>();
+			List<UUID> listingIds = transactions.stream()
+				.map(t -> t.getListing().getId())
+				.toList();
 
-		ResaleRestrictionEntity restriction = restrictionService.getOrCreateRestriction(event.buyerId());
+			List<ResaleListingEntity> resaleListings = listingRepository.findAllById(listingIds);
 
-		for (ResaleTransactionEntity transaction : transactions) {
-			ResaleListingEntity resaleListing = transaction.getListing();
+			Map<UUID, ResaleListingEntity> listingMap = resaleListings.stream()
+				.collect(Collectors.toMap(ResaleListingEntity::getId, Function.identity()));
 
-			resaleListing.soldOut(transaction.getTransactionPrice());
-			resaleListings.add(resaleListing);
+			List<ResalePriceHistoryEntity> priceHistories = new ArrayList<>();
+			Set<ResaleListingOrderEntity> listingOrders = new HashSet<>();
 
-			listingOrders.add(resaleListing.getListingOrder());
+			ResaleRestrictionEntity restriction = restrictionService.getOrCreateRestriction(event.buyerId());
 
-			BigDecimal basePrice = BigDecimal.valueOf(resaleListing.getDailyBasePrice());
-			BigDecimal transactionPrice = BigDecimal.valueOf(transaction.getTransactionPrice());
+			for (ResaleTransactionEntity transaction : transactions) {
+				ResaleListingEntity resaleListing = listingMap.get(transaction.getListing().getId());
 
-			BigDecimal changePercent = transactionPrice.subtract(basePrice)
-				.divide(basePrice, 2, RoundingMode.HALF_UP)
-				.multiply(BigDecimal.valueOf(100));
+				if (resaleListing == null) {
+					log.error("❌ Listing을 찾을 수 없음: {}", transaction.getListing().getId());
+					continue;
+				}
 
-			priceHistories.add(
-				ResalePriceHistoryEntity.create(
-					resaleListing.getGameId(),
-					resaleListing.getSeatId(),
-					resaleListing.getSectionId(),
-					resaleListing.getGradeId(),
-					transaction.getTransactionPrice(),
-					changePercent
-				));
+				resaleListing.soldOut(transaction.getTransactionPrice());
 
-			restrictionHandler.handleAfterBuy(restriction, resaleListing.getGameId());
-		}
+				listingOrders.add(resaleListing.getListingOrder());
 
-		listingRepository.saveAll(resaleListings);
-		priceHistoryRepository.saveAll(priceHistories);
-		restrictionRepository.save(restriction);
+				BigDecimal basePrice = BigDecimal.valueOf(resaleListing.getDailyBasePrice());
+				BigDecimal transactionPrice = BigDecimal.valueOf(transaction.getTransactionPrice());
+				BigDecimal changePercent = transactionPrice.subtract(basePrice)
+					.divide(basePrice, 2, RoundingMode.HALF_UP)
+					.multiply(BigDecimal.valueOf(100));
 
-		ResaleOrderEntity orderEntity = orderService.findOrderById(event.resaleOrderId());
+				priceHistories.add(
+					ResalePriceHistoryEntity.create(
+						resaleListing.getGameId(),
+						resaleListing.getSeatId(),
+						resaleListing.getSectionId(),
+						resaleListing.getGradeId(),
+						transaction.getTransactionPrice(),
+						changePercent
+					));
 
-		List<UUID> listingOrderIds = listingOrders.stream()
-			.map(ResaleListingOrderEntity::getId)
-			.toList();
-
-		Map<UUID, List<ResaleListingEntity>> listingsByOrderId = listingRepository.findAllByListingOrderIdIn(
-				listingOrderIds)
-			.stream()
-			.collect(Collectors.groupingBy(l -> l.getListingOrder().getId()));
-
-		for (ResaleListingOrderEntity order : listingOrders) {
-			List<ResaleListingEntity> allListings = listingsByOrderId.getOrDefault(order.getId(), List.of());
-			boolean allCompleted = allListings.stream()
-				.allMatch(l -> l.getListingStatus() == ResaleListingStatus.SOLD
-					|| l.getListingStatus() == ResaleListingStatus.CANCELED);
-			if (allCompleted) {
-				order.soldOut();
-			} else {
-				order.partial();
+				restrictionHandler.handleAfterBuy(restriction, resaleListing.getGameId());
 			}
-		}
-		listingOrderRepository.saveAll(listingOrders);
 
-		for (ResaleTransactionEntity transaction : transactions) {
-			transferOwnership(
-				transaction.getListing().getTicketId(),
-				event.buyerId(),
-				orderEntity.getBuyerNickname(),
-				orderEntity.getBuyerEmail(),
-				orderEntity.getBuyerPhone(),
-				transaction.getId(),
-				transaction.getTransactionPrice()
-			);
-		}
+			listingRepository.saveAll(resaleListings);
+			priceHistoryRepository.saveAll(priceHistories);
+			restrictionRepository.save(restriction);
 
-		paymentService.releaseEscrow(event.resaleOrderId());
+			listingService.updateListingOrders(listingOrders);
+
+			paymentService.releaseEscrow(event.resaleOrderId());
+
+			String authToken = extractCurrentToken();
+			TicketOwnershipTransferEvent transferEvent = TicketOwnershipTransferEvent.from(event, authToken);
+			eventPublisher.publishEvent(transferEvent);
+
+		} catch (Exception e) {
+			log.error("❌ 결제 완료 이벤트 처리 실패 - 주문ID: {}", event.resaleOrderId(), e);
+			throw e;
+		}
 	}
 
 	@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
@@ -200,32 +191,17 @@ public class ResaleOrderEventListener {
 		listingOrderRepository.saveAll(listingOrders);
 	}
 
-	@Async
-	public void transferOwnership(
-		UUID ticketId,
-		UUID buyerId,
-		String buyerNickname,
-		String buyerEmail,
-		String buyerPhone,
-		UUID transactionId,
-		Integer transactionPrice
-	) {
-		try {
-			log.info("비동기 티켓 소유권 이전 시작 - 티켓ID: {}, 구매자: {}", ticketId, buyerId);
-			ticketClient.transferOwnership(
-				ticketId,
-				buyerId,
-				buyerNickname,
-				buyerEmail,
-				buyerPhone,
-				transactionId,
-				transactionPrice
-			);
-		} catch (Exception e) {
-			log.error("티켓 소유권 이전 실패 - 티켓ID: {}, 구매자: {}, 에러: {}",
-				ticketId, buyerId, e.getMessage(), e);
-			throw new CustomException(ErrorCode.TRANSFER_OWNERSHIP_FAILED);
-			// TODO : 보상로직 필요
+	private String extractCurrentToken() {
+		ServletRequestAttributes attrs =
+			(ServletRequestAttributes)RequestContextHolder.getRequestAttributes();
+		if (attrs != null) {
+			HttpServletRequest request = attrs.getRequest();
+			String bearer = request.getHeader("Authorization");
+			if (bearer != null && bearer.startsWith("Bearer ")) {
+				return bearer.substring(7);
+			}
 		}
+		log.warn("⚠️ 현재 요청에서 인증 토큰을 찾을 수 없습니다.");
+		return null;
 	}
 }
