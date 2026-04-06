@@ -42,6 +42,20 @@ public class MemberEntity extends UserEntity {
 		);
 	}
 
+	public boolean verifyIdentity(Gender gender, LocalDate birthDate) {
+		if (gender == null || birthDate == null) return false;
+		return this.getGender() == gender && this.getBirthDate().equals(birthDate);
+	}
+
+	public void updateIdentity(
+		final String mobile,
+		final String name
+	) {
+		validateIdentityInput(mobile, name);
+		updateName(name);
+		updateMobile(mobile);
+	}
+
 	public static MemberEntity create(
 		final String mobile,
 		final String name,
@@ -77,6 +91,16 @@ public class MemberEntity extends UserEntity {
 
 		Preconditions.domainValidate(
 			birthDate.isBefore(LocalDate.now()), "회원 생년월일은 과거 날짜여야 합니다."
+		);
+	}
+
+	private static void validateIdentityInput(String mobile, String name) {
+		Preconditions.domainValidate(
+			StringUtils.hasText(mobile), "회원 휴대전화 번호는 비어 있을 수 없습니다."
+		);
+
+		Preconditions.domainValidate(
+			StringUtils.hasText(name), "회원 이름은 비어 있을 수 없습니다."
 		);
 	}
 }

@@ -58,6 +58,8 @@ public enum ErrorCode {
 	AUTH_REFRESH_EXPIRED(HttpStatus.UNAUTHORIZED, "토큰이 만료되었습니다. 재로그인이 필요합니다."),
 	AUTH_CODE_NOT_FOUND(HttpStatus.UNAUTHORIZED, "인증 시간이 만료되었거나 해당 휴대전화번호로 인증번호 전송 이력이 없습니다."),
 	AUTH_CODE_INVALID(HttpStatus.UNAUTHORIZED, "인증 코드가 일치하지 않습니다."),
+	AUTH_IDENTITY_VERIFY_FAILED(HttpStatus.BAD_REQUEST, "본인인증에 실패했습니다."),
+	AUTH_MOBILE_ALREADY_REGISTERED(HttpStatus.CONFLICT, "이미 가입된 휴대폰 번호입니다. 관리자에게 문의 바랍니다."),
 
 	RESERVATION_SESSION_EXPIRED(HttpStatus.BAD_REQUEST, "예매 가능 시간이 만료되었습니다."),
 

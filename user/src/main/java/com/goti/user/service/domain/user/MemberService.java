@@ -14,4 +14,8 @@ public interface MemberService {
   Optional<MemberEntity> findByMobile(String mobile);
 
 	MemberEntity getMember(UUID memberId);
+
+	MemberEntity update(
+		UUID memberId, String mobile, String name, Gender gender, LocalDate birthDate, String authCode
+	);
 }
