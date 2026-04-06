@@ -20,13 +20,14 @@ import com.goti.ticketing.constants.GameStatus;
 import com.goti.ticketing.constants.OrderCancellationRequestType;
 import com.goti.ticketing.constants.OrderItemStatus;
 import com.goti.ticketing.constants.TicketStatus;
-import com.goti.ticketing.infra.api.dto.PaymentCancelResponse;
+import com.goti.ticketing.infra.api.dto.response.PaymentCancelResponse;
 import com.goti.ticketing.domain.entity.order.OrderCancellationEntity;
 import com.goti.ticketing.domain.entity.order.OrderEntity;
 import com.goti.ticketing.domain.entity.order.OrderItemEntity;
 import com.goti.ticketing.domain.entity.ticket.TicketEntity;
 import com.goti.ticketing.game.repository.GameStatusRepository;
-import com.goti.ticketing.infra.api.PaymentApiClient;
+import com.goti.ticketing.game.service.application.GameTicketManagementService;
+import com.goti.ticketing.infra.api.TicketPaymentApiClient;
 import com.goti.ticketing.order.dto.request.OrderCancelRequest;
 import com.goti.ticketing.order.dto.response.OrderCancelResponse;
 import com.goti.ticketing.order.service.domain.OrderCancellationItemService;
@@ -55,8 +56,9 @@ public class OrderCancelService {
 	private final TicketService ticketService;
 	private final TicketFreezeService ticketFreezeService;
 	private final SeatStatusService seatStatusService;
-	private final PaymentApiClient paymentApiClient;
+	private final TicketPaymentApiClient ticketPaymentApiClient;
 	private final GameStatusRepository gameStatusRepository;
+	private final GameTicketManagementService gameTicketManagementService;
 
 	@Transactional
 	public OrderCancelResponse cancel(
@@ -131,8 +133,9 @@ public class OrderCancelService {
 			orderItemService.cancel(targetItem);
 		}
 
+		gameTicketManagementService.processRestoreAvailable(order.getGameSchedule());
 		updateOrderStatus(order, orderItems);
-		PaymentCancelResponse paymentData = paymentApiClient.cancelPayment(orderId, cancellation.getId());
+		PaymentCancelResponse paymentData = ticketPaymentApiClient.cancelPayment(orderId, cancellation.getId());
 		orderCancellationService.complete(cancellation);
 
 		log.info(

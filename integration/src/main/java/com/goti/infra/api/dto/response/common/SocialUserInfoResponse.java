@@ -31,7 +31,7 @@ public record SocialUserInfoResponse(
 		var account = (Map<String, Object>) response.get("kakao_account");
 		var profile = (Map<String, Object>) account.get("profile");
 		return new SocialUserInfoResponse(
-			getString(response, "id"), // 카카오는 최상위 id가 숫자임
+			getString(response, "id"),
 			getString(profile, "nickname"),
 			getString(account, "email"),
 			getString(account, "phone_number"),

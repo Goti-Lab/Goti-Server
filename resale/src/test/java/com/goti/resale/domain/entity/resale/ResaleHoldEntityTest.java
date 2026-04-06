@@ -10,8 +10,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.context.ActiveProfiles;
 
-import com.goti.resale.constants.ResaleHoldStatus;
 import com.goti.exception.FieldValidationException;
+import com.goti.resale.constants.ResaleHoldStatus;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -25,10 +25,12 @@ class ResaleHoldEntityTest {
 	UUID validBuyerId;
 	String queueTokenJti;
 	LocalDateTime expiredAt;
+	ResaleListingOrderEntity listingOrder;
 
 	@BeforeEach
 	void setUp() {
 		validListing = ResaleListingEntity.create(
+			listingOrder,
 			UUID.randomUUID(),
 			VALID_SELLER_ID,
 			UUID.randomUUID(),

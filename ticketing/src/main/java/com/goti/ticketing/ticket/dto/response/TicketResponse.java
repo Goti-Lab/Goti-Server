@@ -4,6 +4,7 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.goti.ticketing.constants.ResaleEnabledStatus;
 import com.goti.ticketing.constants.TicketStatus;
 import com.goti.ticketing.domain.entity.ticket.TicketEntity;
@@ -31,8 +32,12 @@ public record TicketResponse(
 	@Schema(description = "경기 제목", example = "두산 베어스 vs LG 트윈스")
 	String gameTitle,
 
-	@Schema(description = "경기 일시", example = "2026-03-15T18:30:00")
+	@Schema(description = "경기 일시", example = "2026-03-15 18:30")
+	@JsonFormat(pattern = "yyyy-MM-dd HH:mm")
 	LocalDateTime gameDate,
+
+	@Schema(description = "좌석 등급명", example = "1루 K8석")
+	String seatGradeName,
 
 	@Schema(description = "좌석 정보", example = "VIP A구역 3열 15번")
 	String seatInfo,
@@ -52,16 +57,19 @@ public record TicketResponse(
 	@Schema(description = "티켓 동결 여부", example = "false")
 	boolean frozen,
 
-	@Schema(description = "티켓 동결 종료 시각", example = "2026-03-15T22:30:00")
+	@Schema(description = "티켓 동결 종료 시각", example = "2026-03-15 22:30")
+	@JsonFormat(pattern = "yyyy-MM-dd HH:mm")
 	LocalDateTime frozenUntil,
 
-	@Schema(description = "티켓 발급 일시", example = "2026-03-13T10:15:30Z")
+	@Schema(description = "티켓 발급 일시", example = "2026-03-13 10:15")
+	@JsonFormat(pattern = "yyyy-MM-dd HH:mm", timezone = "Asia/Seoul")
 	Instant issuedAt,
 
-	@Schema(description = "티켓 사용 일시", example = "2026-03-15T18:55:00")
+	@Schema(description = "티켓 사용 일시", example = "2026-03-15 18:55")
+	@JsonFormat(pattern = "yyyy-MM-dd HH:mm")
 	LocalDateTime usedAt
 ) {
-	public static TicketResponse from(TicketEntity ticket) {
+	public static TicketResponse from(TicketEntity ticket, String seatGradeName) {
 		TicketFreezeEntity activeFreeze = ticket.getFreeze();
 		boolean frozen = activeFreeze != null && activeFreeze.isActive();
 
@@ -73,6 +81,7 @@ public record TicketResponse(
 			ticket.getGameId(),
 			ticket.getGameTitle(),
 			ticket.getGameDate(),
+			seatGradeName,
 			ticket.getSeatInfo(),
 			ticket.getTicketPrice(),
 			ticket.getResalePrice(),

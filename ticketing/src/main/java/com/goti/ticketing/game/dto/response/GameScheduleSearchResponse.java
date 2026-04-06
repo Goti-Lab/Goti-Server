@@ -72,7 +72,10 @@ public record GameScheduleSearchResponse(
 
 	@Schema(description = "예매(티켓팅) 마감 일시 (yyyy-MM-dd HH:mm)", example = "2026-03-27 19:00")
 	@JsonFormat(pattern = "yyyy-MM-dd HH:mm")
-	LocalDateTime ticketingEndAt
+	LocalDateTime ticketingEndAt,
+
+	@Schema(description = "잔여 좌석 수", example = "12543")
+	Long remainingSeatCount
 ) {
 
 	@QueryProjection
@@ -84,7 +87,8 @@ public record GameScheduleSearchResponse(
 		final String awayTeamDisplayName,
 		final String stadiumLocation,
 		final GameStatusEntity status,
-		final GameTicketingStatusEntity ticketing
+		final GameTicketingStatusEntity ticketing,
+		final Long remainingSeatCount
 	) {
 		return new GameScheduleSearchResponse(
 			game.getId(),
@@ -102,7 +106,8 @@ public record GameScheduleSearchResponse(
 			status.getGameResult(),
 			ticketing.getStatus(),
 			ticketing.getTicketingOpenedAt(),
-			ticketing.getTicketingEndAt()
+			ticketing.getTicketingEndAt(),
+			remainingSeatCount
 		);
 	}
 
@@ -116,7 +121,7 @@ public record GameScheduleSearchResponse(
 			homeTeamId, awayTeamId, stadiumId,
 			homeTeamName, awayTeamName, stadiumLocation,
 			gameStatus, homeTeamScore, awayTeamScore, gameResult,
-			ticketingStatus, ticketingOpenedAt, ticketingEndAt
+			ticketingStatus, ticketingOpenedAt, ticketingEndAt, remainingSeatCount
 		);
 	}
 }

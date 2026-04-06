@@ -12,6 +12,7 @@ public enum RedisKey {
 	OAUTH_STATE("oauth:state:", Duration.ofMinutes(5)),
 	TICKET_QR("ticket:qr-token:", Duration.ofMinutes(3)),
 	REFRESH_TOKEN("auth:refresh-token:", Duration.ofDays(7)),
+	MEMBER_IDENTITY_VERIFY("member:identity:verify:", Duration.ofMinutes(3)),
 	QUEUE_SEQUENCE("queue:%s:sequence", null),
 	QUEUE_WAITING("queue:%s:waiting", null),
 	QUEUE_META("queue:%s:meta", null),

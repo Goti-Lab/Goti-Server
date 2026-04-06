@@ -1,0 +1,56 @@
+package com.goti.ticketing.seat.service.application;
+
+import java.util.UUID;
+
+import org.springframework.stereotype.Service;
+
+import com.goti.constants.messages.ErrorCode;
+import com.goti.ticketing.domain.entity.seat.SeatHoldEntity;
+import com.goti.infra.lock.DistributedLockManager;
+import com.goti.global.validation.Preconditions;
+import com.goti.ticketing.seat.service.domain.SeatHoldService;
+import com.goti.ticketing.session.service.application.ReservationSessionService;
+
+import lombok.RequiredArgsConstructor;
+
+@Service
+@RequiredArgsConstructor
+public class SeatHoldManageService {
+	private final SeatHoldService seatHoldService;
+	private final DistributedLockManager distributedLockManager;
+	private final SeatHoldTransactionalService seatHoldTransactionalService;
+	private final ReservationSessionService reservationSessionService;
+
+	public UUID hold(UUID gameId, UUID seatId, UUID userId, String queueTokenJti) {
+		reservationSessionService.validateActiveSession(userId, gameId);
+
+		String lockKey = buildLockKey(gameId, seatId);
+		return distributedLockManager.withLock(
+			lockKey,
+			() -> seatHoldTransactionalService.hold(gameId, seatId, userId, queueTokenJti)
+		);
+	}
+
+	public UUID release(UUID holdId, UUID userId) {
+		SeatHoldEntity seatHold = seatHoldService.findSeatHold(holdId);
+
+		String lockKey = buildLockKey(seatHold.getGameSchedule().getId(), seatHold.getSeat().getId());
+		return distributedLockManager.withLock(lockKey, () -> seatHoldTransactionalService.release(holdId, userId));
+	}
+
+	public UUID release(UUID gameId, UUID holdId, UUID userId) {
+		SeatHoldEntity seatHold = seatHoldService.findSeatHold(holdId);
+
+		Preconditions.validate(
+			seatHold.getGameSchedule().getId().equals(gameId),
+			ErrorCode.SEAT_HOLD_GAME_MISMATCH
+		);
+
+		String lockKey = buildLockKey(gameId, seatHold.getSeat().getId());
+		return distributedLockManager.withLock(lockKey, () -> seatHoldTransactionalService.release(holdId, userId));
+	}
+
+	private static String buildLockKey(UUID gameId, UUID seatId) {
+		return "lock:seat:" + gameId + ":" + seatId;
+	}
+}

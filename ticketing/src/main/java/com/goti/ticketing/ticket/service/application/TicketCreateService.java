@@ -1,6 +1,13 @@
 package com.goti.ticketing.ticket.service.application;
 
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,6 +27,11 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 public class TicketCreateService {
+	private static final String TICKET_NUMBER_PREFIX = "TKT-";
+	private static final DateTimeFormatter TICKET_NUMBER_DATE_FORMATTER = DateTimeFormatter.ofPattern("MMdd")
+		.withZone(ZoneId.of("Asia/Seoul"));
+	private static final int ORDER_SUFFIX_START_INDEX = 12;
+
 	private final OrderHistoryRepository orderHistoryRepository;
 	private final OrderItemRepository orderItemRepository;
 	private final TicketService ticketService;
@@ -29,9 +41,24 @@ public class TicketCreateService {
 		OrderHistoryEntity orderHistory = orderHistoryRepository.findByOrder_Id(order.getId())
 			.orElseThrow(() -> new CustomException(ErrorCode.ORDER_HISTORY_NOT_FOUND));
 
-		//TODO: 경기 제목 추가
-		return orderItemRepository.findOrderItemsByOrderId(order.getId()).stream()
-			.map(orderItem -> ticketService.create(
+		List<OrderItemEntity> orderItems = orderItemRepository.findOrderItemsByOrderId(order.getId());
+		String ticketNumberPrefix = createPrefix(order.getCreatedAt(), order.getOrderNumber());
+
+		return IntStream.range(0, orderItems.size())
+			.mapToObj(index -> createTicket(order, orderHistory, orderItems.get(index), ticketNumberPrefix, index + 1))
+			.toList();
+	}
+
+	private TicketResponse createTicket(
+		OrderEntity order,
+		OrderHistoryEntity orderHistory,
+		OrderItemEntity orderItem,
+		String ticketNumberPrefix,
+		int ticketSequence
+	) {
+		return TicketResponse.from(
+			ticketService.create(
+				generateTicketNumber(ticketNumberPrefix, ticketSequence),
 				orderItem,
 				order.getGameSchedule().getId(),
 				order.getMemberId(),
@@ -42,9 +69,28 @@ public class TicketCreateService {
 				order.getGameSchedule().getStartAt(),
 				buildSeatInfo(orderItem),
 				orderItem.getTicketPrice()
-			))
-			.map(TicketResponse::from)
-			.toList();
+			),
+			orderItem.getSeat().getSeatSection().getSeatGrade().getName()
+		);
+	}
+
+	public String createPrefix(Instant createdAt, String orderNumber) {
+		return String.join("",
+			TICKET_NUMBER_PREFIX,
+			TICKET_NUMBER_DATE_FORMATTER.format(createdAt.atZone(ZoneId.of("Asia/Seoul"))),
+			extractSuffix(orderNumber)
+		);
+	}
+
+	private String extractSuffix(String orderNumber) {
+		return Optional.ofNullable(orderNumber)
+			.filter(s -> s.length() >= ORDER_SUFFIX_START_INDEX)
+			.map(s -> s.substring(ORDER_SUFFIX_START_INDEX))
+			.orElse("");
+	}
+
+	private String generateTicketNumber(String ticketNumberPrefix, int ticketSequence) {
+		return ticketNumberPrefix + "-" + String.format("%03d", ticketSequence);
 	}
 
 	private String buildSeatInfo(OrderItemEntity orderItem) {

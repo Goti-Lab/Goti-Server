@@ -16,7 +16,7 @@ import com.goti.global.api.ApiSuccessResponse;
 import com.goti.ticketing.seat.dto.request.HoldSeatRequest;
 import com.goti.ticketing.seat.dto.response.HoldSeatResponse;
 import com.goti.ticketing.seat.dto.response.ReleaseSeatResponse;
-import com.goti.ticketing.seat.service.application.SeatHoldService;
+import com.goti.ticketing.seat.service.application.SeatHoldManageService;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -28,7 +28,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/seat-reservations")
 public class SeatReservationController {
-	private final SeatHoldService seatHoldService;
+	private final SeatHoldManageService seatHoldManageService;
 
 	@Operation(
 		summary = "좌석 점유",
@@ -41,14 +41,13 @@ public class SeatReservationController {
 		@Valid @RequestBody HoldSeatRequest request
 	) {
 		// TODO: 대기열 구현 완료 후 queueTokenJti를 요청값이 아닌 queue token claim(jti)에서 추출하도록 변경
-		HoldSeatResponse response = HoldSeatResponse.from(
-			seatHoldService.hold(
-				request.gameId(),
-				seatId,
-				memberId,
-				request.queueTokenJti()
-			)
+		UUID holdId = seatHoldManageService.hold(
+			request.gameId(),
+			seatId,
+			memberId,
+			request.queueTokenJti()
 		);
+		HoldSeatResponse response = HoldSeatResponse.from(holdId);
 		return wrap(response);
 	}
 
@@ -61,9 +60,8 @@ public class SeatReservationController {
 		@PathVariable UUID holdId,
 		@AuthenticationPrincipal(expression = "id") UUID memberId
 	) {
-		ReleaseSeatResponse response = ReleaseSeatResponse.from(
-			seatHoldService.release(holdId, memberId)
-		);
+		UUID releasedHoldId = seatHoldManageService.release(holdId, memberId);
+		ReleaseSeatResponse response = ReleaseSeatResponse.from(releasedHoldId);
 		return wrap(response);
 	}
 }

@@ -11,6 +11,7 @@ import com.goti.resale.domain.entity.resale.ResaleListingEntity;
 
 public record ResaleListingResponse(
 	UUID listingId,
+	UUID orderId,
 	UUID ticketId,
 	UUID sellerId,
 	UUID gameId,
@@ -43,6 +44,7 @@ public record ResaleListingResponse(
 
 		return new ResaleListingResponse(
 			entity.getId(),
+			entity.getListingOrder().getId(),
 			entity.getTicketId(),
 			entity.getSellerId(),
 			entity.getGameId(),

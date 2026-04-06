@@ -16,7 +16,7 @@ import com.goti.ticketing.domain.entity.seat.SeatHoldEntity;
 import com.goti.ticketing.domain.entity.seat.SeatStatusEntity;
 import com.goti.ticketing.order.service.domain.OrderItemService;
 import com.goti.ticketing.order.service.domain.OrderService;
-import com.goti.ticketing.seat.service.domain.SeatHoldExpiryService;
+import com.goti.ticketing.seat.service.domain.SeatHoldService;
 import com.goti.ticketing.seat.service.domain.SeatStatusService;
 
 import lombok.RequiredArgsConstructor;
@@ -26,7 +26,7 @@ import lombok.RequiredArgsConstructor;
 public class OrderExpiryService {
 	private final OrderService orderService;
 	private final OrderItemService orderItemService;
-	private final SeatHoldExpiryService seatHoldExpiryService;
+	private final SeatHoldService seatHoldService;
 	private final SeatStatusService seatStatusService;
 
 	@Transactional
@@ -42,7 +42,7 @@ public class OrderExpiryService {
 			.map(orderItem -> orderItem.getSeat().getId())
 			.toList();
 
-		Map<UUID, SeatHoldEntity> seatHoldMap = seatHoldExpiryService.getByIds(holdIds);
+		Map<UUID, SeatHoldEntity> seatHoldMap = seatHoldService.getByIds(holdIds);
 		Map<UUID, SeatStatusEntity> seatStatusMap = seatStatusService.getByGameIdAndSeatIds(
 			order.getGameSchedule().getId(),
 			seatIds
@@ -61,7 +61,7 @@ public class OrderExpiryService {
 				ErrorCode.SEAT_STATUS_NOT_FOUND
 			);
 
-			seatHoldExpiryService.expire(seatStatus, seatHold, LocalDateTime.now());
+			seatHoldService.expire(seatStatus, seatHold, LocalDateTime.now());
 			orderItemService.expire(orderItem);
 		}
 	}

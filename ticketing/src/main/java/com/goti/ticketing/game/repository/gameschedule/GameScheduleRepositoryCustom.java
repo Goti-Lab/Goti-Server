@@ -1,11 +1,12 @@
 package com.goti.ticketing.game.repository.gameschedule;
 
-import com.goti.ticketing.game.dto.request.GameScheduleSearchCondition;
-import com.goti.ticketing.game.dto.response.GameScheduleSearchResponse;
-
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
+
+import com.goti.ticketing.game.dto.request.GameScheduleSearchCondition;
+import com.goti.ticketing.game.dto.response.GameScheduleSearchResponse;
 
 public interface GameScheduleRepositoryCustom {
 
@@ -17,5 +18,6 @@ public interface GameScheduleRepositoryCustom {
 
 	List<GameScheduleSearchResponse> searchSchedules(GameScheduleSearchCondition request);
 
+	Optional<GameScheduleSearchResponse> findScheduleByGameId(UUID gameId);
 
 }

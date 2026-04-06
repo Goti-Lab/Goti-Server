@@ -48,15 +48,19 @@ public enum ErrorCode {
 	RESALE_ESCROW_FAILED(HttpStatus.BAD_REQUEST, "리셀 정산에 실패했습니다."),
 	ESCROW_NOT_FOUND(HttpStatus.BAD_REQUEST, "에스크로 정보를 찾을 수 없습니다."),
 	TRANSFER_OWNERSHIP_FAILED(HttpStatus.BAD_REQUEST, "티켓 소유권 전환에 실패했습니다."),
+	LEDGER_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 장부입니다."),
 
 	AUTH_INVALID_ACCESS_PATH(HttpStatus.UNAUTHORIZED, "올바르지 않은 접근 경로입니다."),
 	AUTH_PERMISSION_DENIED(HttpStatus.FORBIDDEN, "접근 권한이 없습니다."),
 	AUTH_INVALID(HttpStatus.UNAUTHORIZED, "올바르지 않은 인증 정보입니다."),
+	TURNSTILE_VERIFICATION_FAILED(HttpStatus.FORBIDDEN, "봇 감지: 요청이 거부되었습니다."),
 	AUTH_ACCESS_EXPIRED(HttpStatus.UNAUTHORIZED, "엑세스 토큰이 만료되었습니다."),
 	AUTH_SIGNUP_EXPIRED(HttpStatus.GONE, "회원가입 유효 시간이 만료되었습니다. 다시 소셜 로그인을 진행해주세요."),
 	AUTH_REFRESH_EXPIRED(HttpStatus.UNAUTHORIZED, "토큰이 만료되었습니다. 재로그인이 필요합니다."),
 	AUTH_CODE_NOT_FOUND(HttpStatus.UNAUTHORIZED, "인증 시간이 만료되었거나 해당 휴대전화번호로 인증번호 전송 이력이 없습니다."),
 	AUTH_CODE_INVALID(HttpStatus.UNAUTHORIZED, "인증 코드가 일치하지 않습니다."),
+	AUTH_IDENTITY_VERIFY_FAILED(HttpStatus.BAD_REQUEST, "본인인증에 실패했습니다."),
+	AUTH_MOBILE_ALREADY_REGISTERED(HttpStatus.CONFLICT, "이미 가입된 휴대폰 번호입니다. 관리자에게 문의 바랍니다."),
 
 	RESERVATION_SESSION_EXPIRED(HttpStatus.BAD_REQUEST, "예매 가능 시간이 만료되었습니다."),
 
@@ -76,6 +80,10 @@ public enum ErrorCode {
 
 	ORDER_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 주문입니다."),
 	ORDER_HISTORY_NOT_FOUND(HttpStatus.NOT_FOUND, "주문자 정보를 찾을 수 없습니다."),
+	ORDER_HISTORY_PERIOD_DATE_REQUIRED(HttpStatus.BAD_REQUEST, "시작 날짜와 종료 날짜는 함께 요청되어야 합니다."),
+	ORDER_HISTORY_PERIOD_FILTER_CONFLICT(HttpStatus.BAD_REQUEST, "개월 조회와 직접 기간 조회는 함께 사용할 수 없습니다."),
+	ORDER_HISTORY_PERIOD_MONTHS_INVALID(HttpStatus.BAD_REQUEST, "조회 기간은 1개월, 3개월, 6개월만 허용됩니다."),
+	ORDER_HISTORY_PERIOD_INVALID_RANGE(HttpStatus.BAD_REQUEST, "시작 날짜는 종료 날짜보다 이후일 수 없습니다."),
 	ORDER_PAYMENT_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "결제 가능한 주문 상태가 아닙니다."),
 	ORDER_CANCELLATION_NOT_ALLOWED(HttpStatus.BAD_REQUEST, "취소 가능한 주문 상태가 아닙니다."),
 	ORDER_CANCELLATION_ITEMS_REQUIRED(HttpStatus.BAD_REQUEST, "부분 취소할 주문 상세를 선택해주세요."),
@@ -103,17 +111,22 @@ public enum ErrorCode {
 	TICKET_PRICING_POLICY_NOT_FOUND(HttpStatus.NOT_FOUND, "적용 가능한 가격 정책을 찾을 수 없습니다."),
 	TICKET_PRICE_NOT_FOUND(HttpStatus.NOT_FOUND, "적용 가능한 티켓 가격을 찾을 수 없습니다."),
 	TICKET_NOT_FOUND(HttpStatus.NOT_FOUND, "티켓을 찾을 수 없습니다."),
+	TICKET_IDS_REQUIRED(HttpStatus.BAD_REQUEST, "조회할 티켓 ID가 필요합니다."),
+	ORDER_ITEM_NOT_FOUND(HttpStatus.NOT_FOUND, "주문 상품을 찾을 수 없습니다."),
 	TICKET_ALREADY_USED(HttpStatus.BAD_REQUEST, "이미 사용 완료된 티켓은 환불할 수 없습니다."),
 	TICKET_FROZEN(HttpStatus.FORBIDDEN, "동결된 티켓은 QR을 발급할 수 없습니다."),
 	TICKET_CANCELLATION_BLOCKED_BY_FREEZE(HttpStatus.FORBIDDEN, "동결된 티켓은 취소할 수 없습니다."),
 	DUPLICATE_HOLD_ID_REQUEST(HttpStatus.BAD_REQUEST, "같은 좌석이 중복 선택되었습니다."),
 	ORDER_SEAT_ALREADY_EXISTS(HttpStatus.CONFLICT, "이미 주문된 좌석이 포함되어 있습니다."),
+	TICKET_OWNERSHIP_TRANSFER_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "티켓 소유권 전환에 실패했습니다."),
 
 	MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 회원입니다."),
+	SOCIAL_PROVIDER_NOT_FOUND(HttpStatus.NOT_FOUND, "해당 소셜 계정은 존재하지 않습니다."),
 	SOCIAL_PROVIDER_ALREADY_LINKED(HttpStatus.BAD_REQUEST, "해당 소셜 계정은 이미 다른 회원과 연동되어 있습니다."),
 	BASEBALL_TEAM_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 야구 구단(팀)입니다."),
 	STADIUM_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 구장입니다."),
 
+	INTERNAL_API_INVALID_RESPONSE(HttpStatus.INTERNAL_SERVER_ERROR, "내부 API 응답이 올바르지 않습니다."),
 	INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "서버 내부 오류가 발생하였습니다. 잠시 후 다시 시도해주세요.");
 
 	private final HttpStatus status;

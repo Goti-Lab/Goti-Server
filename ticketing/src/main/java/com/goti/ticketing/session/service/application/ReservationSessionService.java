@@ -16,9 +16,9 @@ import com.goti.infra.cache.RedisCache;
 import com.goti.infra.constants.redis.RedisKey;
 import com.goti.ticketing.domain.entity.seat.SeatHoldEntity;
 import com.goti.ticketing.domain.entity.seat.SeatStatusEntity;
+import com.goti.ticketing.seat.service.domain.SeatHoldService;
 import com.goti.ticketing.seat.service.domain.SeatStatusService;
 import com.goti.ticketing.session.model.ReservationSessionCache;
-import com.goti.ticketing.seat.repository.SeatHoldRepository;
 
 import lombok.RequiredArgsConstructor;
 
@@ -28,12 +28,13 @@ public class ReservationSessionService {
 	private static final String KEY_DELIMITER = ":";
 
 	private final RedisCache redisCache;
-	private final SeatHoldRepository seatHoldRepository;
+	private final SeatHoldService seatHoldService;
 	private final SeatStatusService seatStatusService;
 
 	public ReservationSessionCache getOrCreate(
 		UUID memberId,
-		UUID gameId
+		UUID gameId,
+		boolean forceNewSession
 	) {
 		Preconditions.validate(
 			memberId != null,
@@ -44,8 +45,20 @@ public class ReservationSessionService {
 			ErrorCode.BAD_REQUEST
 		);
 
+		if (forceNewSession) {
+			releaseHeldSeats(memberId, gameId);
+			delete(memberId, gameId);
+			return create(memberId, gameId);
+		}
+
 		ReservationSessionCache reservationSession = findReservationSession(memberId, gameId)
-			.orElseGet(() -> create(memberId, gameId));
+			.orElseThrow(() -> new CustomException(ErrorCode.RESERVATION_SESSION_EXPIRED));
+
+		if (reservationSession.expiresAt().isBefore(LocalDateTime.now())) {
+			releaseHeldSeats(memberId, gameId);
+			delete(memberId, gameId);
+			throw new CustomException(ErrorCode.RESERVATION_SESSION_EXPIRED);
+		}
 
 		return reservationSession;
 	}
@@ -103,7 +116,7 @@ public class ReservationSessionService {
 	}
 
 	private void releaseHeldSeats(UUID memberId, UUID gameId) {
-		List<SeatHoldEntity> seatHolds = seatHoldRepository.findAllHoldingSeats(gameId, memberId);
+		List<SeatHoldEntity> seatHolds = seatHoldService.getHoldingSeats(gameId, memberId);
 		if (seatHolds.isEmpty()) {
 			return;
 		}

@@ -6,4 +6,6 @@ import com.goti.ticketing.domain.entity.game.GameTicketingStatusEntity;
 public interface GameTicketingStatusService {
 
 	GameTicketingStatusEntity create(GameScheduleEntity gameSchedule);
+
+	GameTicketingStatusEntity getLocked(GameScheduleEntity gameSchedule);
 }

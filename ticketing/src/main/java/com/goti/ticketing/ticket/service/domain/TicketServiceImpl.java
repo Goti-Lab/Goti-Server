@@ -1,5 +1,7 @@
 package com.goti.ticketing.ticket.service.domain;
 
+import static java.util.stream.Collectors.*;
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -12,15 +14,18 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.github.f4b6a3.tsid.TsidCreator;
 import com.goti.constants.messages.ErrorCode;
-import com.goti.ticketing.domain.entity.order.OrderItemEntity;
-import com.goti.ticketing.domain.entity.ticket.TicketEntity;
 import com.goti.exception.CustomException;
 import com.goti.global.validation.Preconditions;
+import com.goti.ticketing.constants.TicketStatus;
+import com.goti.ticketing.domain.entity.order.OrderItemEntity;
+import com.goti.ticketing.domain.entity.ticket.TicketEntity;
+import com.goti.ticketing.order.repository.OrderItemRepository;
+import com.goti.ticketing.ticket.dto.response.ResaleTicketResponse;
+import com.goti.ticketing.ticket.dto.response.TicketPurchaseInfoResponse;
 import com.goti.ticketing.ticket.dto.response.TicketResponse;
 import com.goti.ticketing.ticket.repository.TicketRepository;
 
 import lombok.RequiredArgsConstructor;
-import static java.util.stream.Collectors.toMap;
 
 @Service
 @RequiredArgsConstructor
@@ -28,10 +33,12 @@ public class TicketServiceImpl implements TicketService {
 	private static final DateTimeFormatter TICKET_NUMBER_FORMATTER = DateTimeFormatter.ofPattern("yyMMdd");
 
 	private final TicketRepository ticketRepository;
+	private final OrderItemRepository orderItemRepository;
 
 	@Override
 	@Transactional
 	public TicketEntity create(
+		String ticketNumber,
 		OrderItemEntity orderItem,
 		UUID gameId,
 		UUID memberId,
@@ -44,7 +51,7 @@ public class TicketServiceImpl implements TicketService {
 		Integer ticketPrice
 	) {
 		TicketEntity ticket = TicketEntity.create(
-			generateTicketNumber(),
+			ticketNumber,
 			orderItem.getId(),
 			null,
 			gameId,
@@ -89,7 +96,24 @@ public class TicketServiceImpl implements TicketService {
 		TicketEntity ticket = ticketRepository.findByIdAndUserId(ticketId, userId)
 			.orElseThrow(() -> new CustomException(ErrorCode.TICKET_NOT_FOUND));
 
-		return TicketResponse.from(ticket);
+		String seatGradeName = orderItemRepository.findById(ticket.getOrderItemId())
+			.map(orderItem -> orderItem.getSeat().getSeatSection().getSeatGrade().getName())
+			.orElse(null);
+
+		return TicketResponse.from(ticket, seatGradeName);
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public List<TicketPurchaseInfoResponse> getPurchaseInfos(List<UUID> ticketIds) {
+		Preconditions.validate(
+			ticketIds != null && !ticketIds.isEmpty(),
+			ErrorCode.TICKET_IDS_REQUIRED
+		);
+
+		return ticketRepository.findAllByIdIn(ticketIds).stream()
+			.map(TicketPurchaseInfoResponse::from)
+			.toList();
 	}
 
 	@Override
@@ -97,6 +121,70 @@ public class TicketServiceImpl implements TicketService {
 	public TicketEntity get(UUID ticketId) {
 		return ticketRepository.findById(ticketId)
 			.orElseThrow(() -> new CustomException(ErrorCode.TICKET_NOT_FOUND));
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public ResaleTicketResponse getResaleTicketInfo(UUID ticketId, UUID userId) {
+		TicketEntity ticket = ticketRepository.findByIdAndUserId(ticketId, userId)
+			.orElseThrow(() -> new CustomException(ErrorCode.TICKET_NOT_FOUND));
+
+		OrderItemEntity orderItem = orderItemRepository.findById(ticket.getOrderItemId())
+			.orElseThrow(() -> new CustomException(ErrorCode.ORDER_ITEM_NOT_FOUND));
+
+		return ResaleTicketResponse.from(
+			ticket,
+			orderItem.getSeat().getId(),
+			orderItem.getSeat().getSeatSection().getId(),
+			orderItem.getSeat().getSeatSection().getSeatGrade().getId()
+		);
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public int getOwnedTicketCountWithGame(UUID userId, UUID gameId) {
+		return ticketRepository.countByUserIdAndGameId(userId, gameId);
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public int getOwnedTicketCount(UUID userId) {
+		return ticketRepository.countByUserIdAndTicketStatusIn(
+			userId,
+			List.of(TicketStatus.ISSUED, TicketStatus.RESALE_ISSUED)
+		);
+	}
+
+	@Override
+	@Transactional
+	public TicketEntity createByResale(
+		TicketEntity oldTicket,
+		UUID buyerId,
+		String buyerNickname,
+		String buyerEmail,
+		String buyerPhone,
+		UUID transactionId,
+		Integer transactionPrice
+	) {
+		oldTicket.invalidate();
+
+		TicketEntity newTicket = TicketEntity.create(
+			generateTicketNumber(),
+			oldTicket.getOrderItemId(),
+			transactionId,
+			oldTicket.getGameId(),
+			buyerId,
+			buyerNickname,
+			buyerEmail,
+			buyerPhone,
+			oldTicket.getGameTitle(),
+			oldTicket.getGameDate(),
+			oldTicket.getSeatInfo(),
+			oldTicket.getTicketPrice(),
+			transactionPrice
+		);
+
+		return ticketRepository.save(newTicket);
 	}
 
 	private String generateTicketNumber() {

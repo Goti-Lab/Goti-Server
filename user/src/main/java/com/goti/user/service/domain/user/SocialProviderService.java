@@ -12,7 +12,11 @@ public interface SocialProviderService {
 		MemberEntity member, OAuthProvider provider, String providerId, String email
 	);
 
-	Optional<MemberEntity> findMemberBySocialInfo(String providerId, OAuthProvider provider);
+	Optional<SocialProviderEntity> findSocialProvider(
+		String providerId, OAuthProvider provider
+	);
 
-	Optional<SocialProviderEntity> findByProviderIdAndProvider(String providerId, OAuthProvider provider);
+	SocialProviderEntity getSocialProvider(
+		String providerId, OAuthProvider provider
+	);
 }

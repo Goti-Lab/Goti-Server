@@ -5,7 +5,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.BDDMockito.given;
@@ -13,7 +12,6 @@ import static org.mockito.BDDMockito.given;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.UUID;
-import java.util.function.Supplier;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -25,7 +23,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.goti.constants.messages.ErrorCode;
 import com.goti.exception.CustomException;
-import com.goti.infra.lock.DistributedLockManager;
 import com.goti.queue.config.properties.QueueProperties;
 import com.goti.queue.constants.QueueStatus;
 import com.goti.queue.domain.model.QueueEntry;
@@ -39,9 +36,6 @@ class QueueLeaveServiceTest {
 
 	@Mock
 	private QueueRedisRepository queueRedisRepository;
-
-	@Mock
-	private DistributedLockManager distributedLockManager;
 
 	private QueueProperties queueProperties;
 
@@ -60,15 +54,8 @@ class QueueLeaveServiceTest {
 		queueLeaveService = new QueueLeaveService(
 			queueRedisRepository,
 			queueProperties,
-			distributedLockManager,
 			new SimpleMeterRegistry()
 		);
-
-			lenient().when(distributedLockManager.withLock(any(), any(ErrorCode.class), any()))
-				.thenAnswer(invocation -> {
-					Supplier<?> action = invocation.getArgument(2);
-					return action.get();
-				});
 	}
 
 	@Test
@@ -156,26 +143,5 @@ class QueueLeaveServiceTest {
 			.isInstanceOf(CustomException.class)
 			.extracting("error")
 			.isEqualTo(ErrorCode.AUTH_INVALID);
-
-		verify(distributedLockManager, never()).withLock(any(), any(ErrorCode.class), any());
-	}
-
-	@Test
-	void 게임과_유저별_leave_락을_사용한다() {
-		UUID gameId = UUID.randomUUID();
-		UUID userId = UUID.randomUUID();
-		QueueEntry currentEntry = new QueueEntry(3L, Instant.parse("2026-03-25T10:15:30Z"), QueueStatus.ADMITTED);
-
-		given(queueRedisRepository.getEntry(gameId, userId)).willReturn(currentEntry);
-		given(queueRedisRepository.getMeta(gameId)).willReturn(null);
-		given(queueRedisRepository.isActiveUser(gameId, userId)).willReturn(true);
-
-		queueLeaveService.leave(gameId, userId);
-
-		verify(distributedLockManager).withLock(
-			eq("lock:queue:leave:" + gameId + ":" + userId),
-			eq(ErrorCode.QUEUE_LOCK_ACQUIRE_FAILED),
-			any()
-		);
 	}
 }

@@ -17,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -49,6 +50,9 @@ class QueueLeaveApiTest extends PostgreSqlContainerSupport {
 
 	@Autowired
 	private RedisTemplate<String, Object> redisTemplate;
+
+	@Autowired
+	private StringRedisTemplate stringRedisTemplate;
 
 	private UUID gameId;
 	private UUID userId;
@@ -85,12 +89,12 @@ class QueueLeaveApiTest extends PostgreSqlContainerSupport {
 
 		String queueToken = readData(enterResult).get("queueToken").asText();
 
-		redisTemplate.opsForHash().putAll(RedisKey.QUEUE_META.getKey(gameId), Map.of(
-			QueueMetaField.MAX_CAPACITY, 5000L,
-			QueueMetaField.ACTIVE_COUNT, 0L,
-			QueueMetaField.PUBLISHED_RANK, 10L,
-			QueueMetaField.CURRENT_ALLOWED_RANK, 10L,
-			QueueMetaField.LAST_ENTERED_RANK, 0L,
+		stringRedisTemplate.opsForHash().putAll(RedisKey.QUEUE_META.getKey(gameId), Map.of(
+			QueueMetaField.MAX_CAPACITY, "5000",
+			QueueMetaField.ACTIVE_COUNT, "0",
+			QueueMetaField.PUBLISHED_RANK, "10",
+			QueueMetaField.CURRENT_ALLOWED_RANK, "10",
+			QueueMetaField.LAST_ENTERED_RANK, "0",
 			QueueMetaField.UPDATED_AT, Instant.parse("2026-03-25T10:15:30Z").toString()
 		));
 
@@ -119,8 +123,8 @@ class QueueLeaveApiTest extends PostgreSqlContainerSupport {
 		assertThat(entry.status()).isEqualTo(QueueStatus.LEFT);
 		assertThat(redisTemplate.opsForSet().isMember(RedisKey.QUEUE_ACTIVE_USERS.getKey(gameId), userId.toString()))
 			.isFalse();
-		assertThat(((Number)redisTemplate.opsForHash()
-			.get(RedisKey.QUEUE_META.getKey(gameId), QueueMetaField.ACTIVE_COUNT)).longValue()).isZero();
+		assertThat(Long.parseLong((String)stringRedisTemplate.opsForHash()
+			.get(RedisKey.QUEUE_META.getKey(gameId), QueueMetaField.ACTIVE_COUNT))).isZero();
 	}
 
 	@Test
@@ -141,12 +145,12 @@ class QueueLeaveApiTest extends PostgreSqlContainerSupport {
 
 		String queueToken = readData(enterResult).get("queueToken").asText();
 
-		redisTemplate.opsForHash().putAll(RedisKey.QUEUE_META.getKey(gameId), Map.of(
-			QueueMetaField.MAX_CAPACITY, 5000L,
-			QueueMetaField.ACTIVE_COUNT, 0L,
-			QueueMetaField.PUBLISHED_RANK, 10L,
-			QueueMetaField.CURRENT_ALLOWED_RANK, 10L,
-			QueueMetaField.LAST_ENTERED_RANK, 0L,
+		stringRedisTemplate.opsForHash().putAll(RedisKey.QUEUE_META.getKey(gameId), Map.of(
+			QueueMetaField.MAX_CAPACITY, "5000",
+			QueueMetaField.ACTIVE_COUNT, "0",
+			QueueMetaField.PUBLISHED_RANK, "10",
+			QueueMetaField.CURRENT_ALLOWED_RANK, "10",
+			QueueMetaField.LAST_ENTERED_RANK, "0",
 			QueueMetaField.UPDATED_AT, Instant.parse("2026-03-25T10:15:30Z").toString()
 		));
 
@@ -175,8 +179,8 @@ class QueueLeaveApiTest extends PostgreSqlContainerSupport {
 			.andExpect(jsonPath("$.data.released").value(false))
 			.andExpect(jsonPath("$.data.status").value("LEFT"));
 
-		assertThat(((Number)redisTemplate.opsForHash()
-			.get(RedisKey.QUEUE_META.getKey(gameId), QueueMetaField.ACTIVE_COUNT)).longValue()).isZero();
+		assertThat(Long.parseLong((String)stringRedisTemplate.opsForHash()
+			.get(RedisKey.QUEUE_META.getKey(gameId), QueueMetaField.ACTIVE_COUNT))).isZero();
 	}
 
 	private Authentication auth(UUID userId) {

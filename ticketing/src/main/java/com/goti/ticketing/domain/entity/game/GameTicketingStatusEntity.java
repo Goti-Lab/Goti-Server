@@ -40,6 +40,10 @@ public class GameTicketingStatusEntity extends ModificationTimestampEntity {
 	@Column(nullable = false)
 	private TicketingStatus status;
 
+	public void updateStatus(TicketingStatus status) {
+		this.status = status;
+	}
+
 	private GameTicketingStatusEntity(
 		GameScheduleEntity gameSchedule,
 		LocalDateTime ticketingOpenedAt,
@@ -63,6 +67,11 @@ public class GameTicketingStatusEntity extends ModificationTimestampEntity {
 		return new GameTicketingStatusEntity(
 			gameSchedule, ticketingOpenedAt, ticketingEndAt, status
 		);
+	}
+
+	public boolean isExhausted() {
+		return this.status != null &&
+			this.status == TicketingStatus.EXHAUSTED;
 	}
 
 	private static void validate(

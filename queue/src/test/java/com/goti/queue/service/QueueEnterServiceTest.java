@@ -5,14 +5,11 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.lenient;
 
 import java.time.Duration;
 import java.time.Instant;
 import java.util.UUID;
-import java.util.function.Supplier;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -24,7 +21,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.goti.constants.messages.ErrorCode;
 import com.goti.exception.CustomException;
-import com.goti.infra.lock.DistributedLockManager;
 import com.goti.queue.config.properties.QueueProperties;
 import com.goti.queue.constants.QueueStatus;
 import com.goti.queue.domain.model.QueueEntry;
@@ -42,9 +38,6 @@ class QueueEnterServiceTest {
 
 	@Mock
 	private QueueTokenProvider queueTokenProvider;
-
-	@Mock
-	private DistributedLockManager distributedLockManager;
 
 	private QueueProperties queueProperties;
 
@@ -64,14 +57,8 @@ class QueueEnterServiceTest {
 			queueRedisRepository,
 			queueTokenProvider,
 			queueProperties,
-			distributedLockManager,
 			new SimpleMeterRegistry()
 		);
-			lenient().when(distributedLockManager.withLock(any(), any(ErrorCode.class), any()))
-				.thenAnswer(invocation -> {
-					Supplier<?> action = invocation.getArgument(2);
-					return action.get();
-				});
 	}
 
 	@Test
@@ -149,27 +136,5 @@ class QueueEnterServiceTest {
 			.isInstanceOf(CustomException.class)
 			.extracting("error")
 			.isEqualTo(ErrorCode.AUTH_INVALID);
-
-		verify(distributedLockManager, never()).withLock(any(), any(ErrorCode.class), any());
-	}
-
-	@Test
-	void useLockPerGameAndUser() {
-		UUID gameId = UUID.randomUUID();
-		UUID userId = UUID.randomUUID();
-		QueueEnterRequest request = new QueueEnterRequest(gameId);
-
-		given(queueRedisRepository.getEntry(gameId, userId)).willReturn(null);
-		given(queueRedisRepository.nextSequence(gameId)).willReturn(1L);
-		given(queueTokenProvider.createToken(eq(gameId), eq(userId), eq(1L), any(Instant.class)))
-			.willReturn("queue-token");
-
-		queueEnterService.enter(request, userId);
-
-		verify(distributedLockManager).withLock(
-			eq("lock:queue:enter:" + gameId + ":" + userId),
-			eq(ErrorCode.QUEUE_LOCK_ACQUIRE_FAILED),
-			any()
-		);
 	}
 }

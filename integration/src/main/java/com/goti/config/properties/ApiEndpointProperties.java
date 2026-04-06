@@ -4,7 +4,9 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 
 @ConfigurationProperties(prefix = "infra.api.endpoints")
 public record ApiEndpointProperties(
+	String ticketing,
 	String stadium,
-	String payment
+	String payment,
+	String resale
 ) {
 }

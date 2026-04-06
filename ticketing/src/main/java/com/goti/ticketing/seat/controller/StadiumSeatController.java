@@ -5,7 +5,9 @@ import static com.goti.global.api.ApiSuccessResponse.*;
 import java.util.List;
 import java.util.UUID;
 
-import com.goti.ticketing.seat.dto.response.SeatGradeRegisterResponse;
+import com.goti.constants.messages.ErrorCode;
+import com.goti.exception.CustomException;
+import com.goti.infra.cloudflare.TurnstileService;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -14,13 +16,14 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.goti.global.api.ApiSuccessResponse;
 import com.goti.ticketing.seat.dto.request.CreateSeatGradeRequest;
 import com.goti.ticketing.seat.dto.request.CreateSeatSectionRequest;
-import com.goti.ticketing.seat.dto.response.SeatGradeSearchResponse;
+import com.goti.ticketing.seat.dto.response.SeatGradeRegisterResponse;
 import com.goti.ticketing.seat.dto.response.SeatGradeSearchResultResponse;
 import com.goti.ticketing.seat.dto.response.SeatSectionResponse;
 import com.goti.ticketing.seat.service.domain.SeatGradeService;
@@ -36,8 +39,11 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/stadium-seats")
 public class StadiumSeatController {
+	private static final String TURNSTILE_TOKEN_HEADER = "X-Turnstile-Token";
+
 	private final SeatGradeService seatGradeService;
 	private final SeatSectionService seatSectionService;
+	private final TurnstileService turnstileService;
 
 	@Operation(
 		summary = "좌석 등급 생성",
@@ -60,13 +66,18 @@ public class StadiumSeatController {
 		summary = "좌석 등급 조회",
 		description = "구장별 좌석 등급 조회 API"
 	)
-	@GetMapping("/stadiums/{stadiumId}/games/{gameId}/seat-grades")
+	@GetMapping("/games/{gameId}/seat-grades")
 	public ResponseEntity<ApiSuccessResponse<SeatGradeSearchResultResponse>> getSeatGrades(
 		@AuthenticationPrincipal(expression = "id") UUID userId,
-		@PathVariable UUID stadiumId,
-		@PathVariable UUID gameId
+		@PathVariable UUID gameId,
+		@RequestHeader(name = TURNSTILE_TOKEN_HEADER, required = false) String turnstileToken,
+		@RequestParam(defaultValue = "false") boolean forceNewSession
 	) {
-		return wrap(seatGradeService.get(stadiumId, gameId, userId));
+		if (!turnstileService.verify(turnstileToken)) {
+			throw new CustomException(ErrorCode.TURNSTILE_VERIFICATION_FAILED);
+		}
+
+		return wrap(seatGradeService.findSeatGrades(gameId, userId, forceNewSession));
 	}
 
 	@Operation(

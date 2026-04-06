@@ -4,20 +4,27 @@ import static com.goti.global.api.ApiSuccessResponse.*;
 
 import java.util.UUID;
 
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.goti.payment.dto.request.PaymentCancelRequest;
 import com.goti.global.api.ApiSuccessResponse;
+import com.goti.global.api.PageResponse;
+import com.goti.global.dto.Paging;
+import com.goti.payment.dto.request.PaymentCancelRequest;
 import com.goti.payment.dto.request.PaymentRequest;
+import com.goti.payment.dto.request.PurchaseSearchRequest;
 import com.goti.payment.dto.response.PaymentResponse;
+import com.goti.payment.dto.response.PurchaseSearchResponse;
 import com.goti.payment.service.application.OrderPaymentService;
+import com.goti.payment.service.application.PurchaseSearchService;
 import com.goti.payment.service.domain.PaymentService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -31,6 +38,7 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/api/v1/payments")
 public class PaymentController {
 	private final OrderPaymentService orderPaymentService;
+	private final PurchaseSearchService purchaseSearchService;
 	private final PaymentService paymentService;
 
 	@Operation(
@@ -65,6 +73,28 @@ public class PaymentController {
 		return wrap(orderPaymentService.getByOrderId(orderId, memberId));
 	}
 
+	@Operation(
+		summary = "구매 내역 통합 조회",
+		description = "일반 주문 내역 및 리셀 구매 내역 통합 조회 API"
+	)
+	@GetMapping("/purchases")
+	public ResponseEntity<ApiSuccessResponse<PageResponse<PurchaseSearchResponse>>> getPurchases(
+		@AuthenticationPrincipal(expression = "id") UUID memberId,
+		@ParameterObject PurchaseSearchRequest request,
+		@ParameterObject @Valid @ModelAttribute Paging paging
+	) {
+		return page(
+			purchaseSearchService.getAll(
+				memberId,
+				request.type(),
+				request.keyword(),
+				request.months(),
+				request.startDate(),
+				request.endDate(),
+				paging.toPageable()
+			)
+		);
+	}
 
 	@Operation(
 		summary = "결제 취소 (내부용)",

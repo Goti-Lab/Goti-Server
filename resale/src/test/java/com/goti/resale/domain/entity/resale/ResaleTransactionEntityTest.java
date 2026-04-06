@@ -32,10 +32,12 @@ class ResaleTransactionEntityTest {
 
 	private ResaleListingEntity validListing;
 	private ResaleOrderEntity resaleOrder;
+	ResaleListingOrderEntity listingOrder;
 
 	@BeforeEach
 	void setUp() {
 		validListing = ResaleListingEntity.create(
+			listingOrder,
 			UUID.randomUUID(),
 			VALID_SELLER_ID,
 			UUID.randomUUID(),
@@ -49,6 +51,9 @@ class ResaleTransactionEntityTest {
 		resaleOrder = ResaleOrderEntity.create(
 			"RES-260316-123456",
 			VALID_BUYER_ID,
+			"홍길동",
+			"buyer@goti.com",
+			"01012345678",
 			VALID_BUYER_TOTAL
 		);
 	}

@@ -25,8 +25,7 @@ import lombok.NoArgsConstructor;
 @Entity
 @Table(name = "users",
 	uniqueConstraints = {
-		@UniqueConstraint(name = "uk_users_mobile", columnNames = "mobile"),
-		@UniqueConstraint(name = "uk_users_email", columnNames = "email")
+		@UniqueConstraint(name = "uk_users_mobile", columnNames = "mobile")
 	})
 @Inheritance(strategy = InheritanceType.JOINED)
 @NoArgsConstructor(access = PROTECTED)
@@ -67,5 +66,13 @@ public class UserEntity extends ModificationTimestampEntity {
 		this.birthDate = birthDate;
 		this.status = UserStatus.ACTIVATED;
 		this.role = role;
+	}
+
+	protected void updateName(String name) {
+		this.name = name;
+	}
+
+	protected void updateMobile(String mobile) {
+		this.mobile = mobile;
 	}
 }

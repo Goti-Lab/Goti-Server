@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -48,6 +49,9 @@ class QueueEnterApiTest extends PostgreSqlContainerSupport {
 
 	@Autowired
 	private RedisTemplate<String, Object> redisTemplate;
+
+	@Autowired
+	private StringRedisTemplate stringRedisTemplate;
 
 	private UUID lastGameId;
 	private UUID lastUserId;
@@ -199,13 +203,13 @@ class QueueEnterApiTest extends PostgreSqlContainerSupport {
 			)
 			.andExpect(status().isOk());
 
-		Map<Object, Object> meta = redisTemplate.opsForHash().entries(RedisKey.QUEUE_META.getKey(lastGameId));
+		Map<Object, Object> meta = stringRedisTemplate.opsForHash().entries(RedisKey.QUEUE_META.getKey(lastGameId));
 
-		assertThat(((Number)meta.get(QueueMetaField.MAX_CAPACITY)).longValue()).isEqualTo(5000L);
-		assertThat(((Number)meta.get(QueueMetaField.ACTIVE_COUNT)).longValue()).isEqualTo(0L);
-		assertThat(((Number)meta.get(QueueMetaField.PUBLISHED_RANK)).longValue()).isEqualTo(0L);
-		assertThat(((Number)meta.get(QueueMetaField.CURRENT_ALLOWED_RANK)).longValue()).isEqualTo(0L);
-		assertThat(((Number)meta.get(QueueMetaField.LAST_ENTERED_RANK)).longValue()).isEqualTo(0L);
+		assertThat(Long.parseLong((String)meta.get(QueueMetaField.MAX_CAPACITY))).isEqualTo(5000L);
+		assertThat(Long.parseLong((String)meta.get(QueueMetaField.ACTIVE_COUNT))).isEqualTo(0L);
+		assertThat(Long.parseLong((String)meta.get(QueueMetaField.PUBLISHED_RANK))).isEqualTo(0L);
+		assertThat(Long.parseLong((String)meta.get(QueueMetaField.CURRENT_ALLOWED_RANK))).isEqualTo(0L);
+		assertThat(Long.parseLong((String)meta.get(QueueMetaField.LAST_ENTERED_RANK))).isEqualTo(0L);
 		assertThat(meta.get(QueueMetaField.UPDATED_AT)).isNotNull();
 	}
 

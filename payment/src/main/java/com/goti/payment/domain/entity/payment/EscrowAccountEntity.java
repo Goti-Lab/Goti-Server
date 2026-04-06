@@ -34,7 +34,7 @@ public class EscrowAccountEntity extends ModificationTimestampEntity {
 	private UUID sellerId;
 
 	@Column(nullable = false)
-	private Integer escrowAmount;
+	private Long escrowAmount;
 
 	@Column(nullable = false)
 	@Enumerated(EnumType.STRING)
@@ -49,7 +49,7 @@ public class EscrowAccountEntity extends ModificationTimestampEntity {
 		UUID transactionId,
 		UUID buyerId,
 		UUID sellerId,
-		Integer escrowAmount
+		Long escrowAmount
 	) {
 		this.transactionId = transactionId;
 		this.buyerId = buyerId;
@@ -64,7 +64,7 @@ public class EscrowAccountEntity extends ModificationTimestampEntity {
 		UUID transactionId,
 		UUID buyerId,
 		UUID sellerId,
-		Integer escrowAmount
+		Long escrowAmount
 	) {
 		validate(transactionId, buyerId, sellerId, escrowAmount);
 
@@ -80,7 +80,7 @@ public class EscrowAccountEntity extends ModificationTimestampEntity {
 		UUID transactionId,
 		UUID buyerId,
 		UUID sellerId,
-		Integer escrowAmount
+		Long escrowAmount
 	) {
 		Preconditions.domainValidate(transactionId != null, "거래 ID는 비어 있을 수 없습니다.");
 		Preconditions.domainValidate(buyerId != null, "구매자 ID는 비어 있을 수 없습니다.");

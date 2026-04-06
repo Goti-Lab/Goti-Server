@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.test.context.ActiveProfiles;
@@ -41,6 +42,9 @@ class QueueStatusApiTest extends PostgreSqlContainerSupport {
 	@Autowired
 	private RedisTemplate<String, Object> redisTemplate;
 
+	@Autowired
+	private StringRedisTemplate stringRedisTemplate;
+
 	private UUID gameId;
 
 	@AfterEach
@@ -54,12 +58,12 @@ class QueueStatusApiTest extends PostgreSqlContainerSupport {
 	void 대기열_상태_조회_성공() throws Exception {
 		gameId = UUID.randomUUID();
 		UUID userId = UUID.randomUUID();
-		redisTemplate.opsForHash().putAll(RedisKey.QUEUE_META.getKey(gameId), Map.of(
-			QueueMetaField.MAX_CAPACITY, 5000L,
-			QueueMetaField.ACTIVE_COUNT, 1900L,
-			QueueMetaField.PUBLISHED_RANK, 0L,
-			QueueMetaField.CURRENT_ALLOWED_RANK, 2000L,
-			QueueMetaField.LAST_ENTERED_RANK, 1900L,
+		stringRedisTemplate.opsForHash().putAll(RedisKey.QUEUE_META.getKey(gameId), Map.of(
+			QueueMetaField.MAX_CAPACITY, "5000",
+			QueueMetaField.ACTIVE_COUNT, "1900",
+			QueueMetaField.PUBLISHED_RANK, "0",
+			QueueMetaField.CURRENT_ALLOWED_RANK, "2000",
+			QueueMetaField.LAST_ENTERED_RANK, "1900",
 			QueueMetaField.UPDATED_AT, Instant.parse("2026-03-25T10:15:30Z").toString()
 		));
 
