@@ -14,4 +14,7 @@ import com.goti.ticketing.domain.entity.ticket.TicketEntity;
 public interface TicketRepository extends JpaRepository<TicketEntity, UUID> {
 	Optional<TicketEntity> findByIdAndUserId(UUID ticketId, UUID userId);
 	List<TicketEntity> findAllByOrderItemIdIn(Collection<UUID> orderItemIds);
+
+	int countByUserIdAndGameId(UUID userId, UUID gameId);
+	List<TicketEntity> findAllByIdIn(Collection<UUID> ticketIds);
 }

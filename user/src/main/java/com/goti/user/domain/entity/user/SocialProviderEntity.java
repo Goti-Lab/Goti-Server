@@ -4,6 +4,8 @@ import com.goti.global.validation.Preconditions;
 import com.goti.constants.OAuthProvider;
 import com.goti.domain.base.ModificationTimestampEntity;
 
+import com.goti.user.constants.SocialStatus;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -39,6 +41,10 @@ public class SocialProviderEntity extends ModificationTimestampEntity {
 	@Column(nullable = false)
 	private String email;
 
+	@Column(nullable = false)
+	@Enumerated(EnumType.STRING)
+	private SocialStatus status;
+
 	private SocialProviderEntity(
 		MemberEntity member,
 		OAuthProvider provider,
@@ -49,6 +55,7 @@ public class SocialProviderEntity extends ModificationTimestampEntity {
 		this.provider = provider;
 		this.providerId = providerId;
 		this.email = email;
+		this.status = SocialStatus.ACTIVE;
 	}
 
 	public static SocialProviderEntity create(

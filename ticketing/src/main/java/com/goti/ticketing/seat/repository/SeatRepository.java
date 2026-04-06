@@ -4,6 +4,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
+import com.goti.ticketing.domain.entity.seat.SeatSectionEntity;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -27,6 +29,5 @@ public interface SeatRepository extends JpaRepository<SeatEntity, UUID>, SeatRep
 		@Param("seatNums") Collection<Integer> seatNums
 	);
 
-	List<SeatEntity> findAllBySection(UUID sectionId);
-	long countBySeatSection_Id(UUID sectionId);
+	long countBySeatSection(SeatSectionEntity seatSection);
 }

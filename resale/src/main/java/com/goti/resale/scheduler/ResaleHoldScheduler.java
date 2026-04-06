@@ -1,4 +1,4 @@
-package com.goti.resale.utils;
+package com.goti.resale.scheduler;
 
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.scheduling.annotation.Scheduled;

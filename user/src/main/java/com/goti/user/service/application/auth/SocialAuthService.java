@@ -1,11 +1,11 @@
-package com.goti.user.service.auth.application;
+package com.goti.user.service.application.auth;
 
 import com.goti.user.config.jwt.JwtTokenProvider;
 import com.goti.constants.Gender;
 import com.goti.constants.OAuthProvider;
 import com.goti.constants.messages.ErrorCode;
-import com.goti.user.constants.TokenType;
 import com.goti.user.domain.entity.user.MemberEntity;
+import com.goti.user.domain.entity.user.SocialProviderEntity;
 import com.goti.user.dto.response.SocialVerifyResponse;
 import com.goti.exception.CustomException;
 import com.goti.infra.api.client.SocialApiClient;
@@ -68,9 +68,8 @@ public class SocialAuthService {
 		SocialUserInfoResponse socialUserInfo = apiClient.getSocialUserInfo(socialAccessToken);
 		String email = socialUserInfo.email();
 		String providerId = socialUserInfo.providerId();
-		boolean isRegistered = socialProviderService.findByProviderIdAndProvider(
-			providerId, provider
-		).isPresent();
+		boolean isRegistered =
+			socialProviderService.findSocialProvider(providerId, provider).isPresent();
 
 		String socialVerifyToken = jwtTokenProvider.createSocialVerifyToken(
 			provider, providerId, email
@@ -80,20 +79,17 @@ public class SocialAuthService {
 
 	@Transactional
 	public Pair<String, String> login(String socialVerifyToken) {
-		SocialInfo verifiedSocialInfo = getSocialInfoByToken(socialVerifyToken);
-		MemberEntity member = socialProviderService.findMemberBySocialInfo(
-			verifiedSocialInfo.providerId,
-			verifiedSocialInfo.provider
-		).orElseThrow(
-			() ->{
-				log.error(
-					"Member not found after social verify - providerId: {}, provider: {}",
-					verifiedSocialInfo.providerId, verifiedSocialInfo.provider
-				);
-				return new CustomException(ErrorCode.MEMBER_NOT_FOUND);
-			}
+		SocialInfo socialInfo = getSocialInfo(socialVerifyToken);
+
+		SocialProviderEntity socialProvider =
+			socialProviderService.getSocialProvider(
+				socialInfo.providerId(), socialInfo.provider()
+			);
+
+		MemberEntity member = socialProvider.getMember();
+		return authService.issueTokens(
+			member, socialProvider.getProviderId(), socialProvider.getProvider()
 		);
-		return authService.issueTokens(member);
 	}
 
 	@Transactional
@@ -105,12 +101,15 @@ public class SocialAuthService {
 		LocalDate birthDate,
 		String authCode
 	) {
-		SocialInfo verifiedSocialInfo = getSocialInfoByToken(socialVerifyToken);
+		SocialInfo socialInfo = getSocialInfo(socialVerifyToken);
+
 		authService.verifySmsCode(mobile, authCode);
 		MemberEntity member = getOrCreateMember(name, mobile, gender, birthDate);
 
-		createSocialProvider(member, verifiedSocialInfo);
-		return authService.issueTokens(member);
+		createSocialProvider(member, socialInfo);
+		return authService.issueTokens(
+			member, socialInfo.providerId(), socialInfo.provider()
+		);
 	}
 
 	public void sendSignupSmsCode(String socialVerifyToken, String mobile) {
@@ -120,8 +119,13 @@ public class SocialAuthService {
 	@Transactional
 	public Pair<String, String> reissueToken(String refreshToken) {
 		UUID memberId = authService.validateTokenAndGetMemberId(refreshToken);
-		MemberEntity member = memberService.getById(memberId);
-		return authService.issueTokens(member);
+		MemberEntity member = memberService.getMember(memberId);
+		Claims claims = jwtTokenProvider.getClaims(refreshToken);
+		String providerId = claims.get(PROVIDER_ID_KEY, String.class);
+		OAuthProvider provider = OAuthProvider.valueOf(claims.get(PROVIDER_TYPE_KEY, String.class));
+		return authService.issueTokens(
+			member, providerId, provider
+		);
 	}
 
 	private void validateState(OAuthProvider provider, String state) {
@@ -139,14 +143,17 @@ public class SocialAuthService {
 
 	private record SocialInfo(String providerId, OAuthProvider provider, String email) {}
 
-	private SocialInfo getSocialInfoByToken(String socialVerifyToken) {
+	private SocialInfo getSocialInfo(String socialVerifyToken) {
 		Claims claims = jwtTokenProvider.getSocialVerifyClaims(socialVerifyToken);
 
-		return new SocialInfo(
-			claims.get(PROVIDER_ID_KEY, String.class),
-			OAuthProvider.valueOf(claims.get(PROVIDER_TYPE_KEY, String.class)),
-			claims.get(PROVIDER_EMAIL_KEY, String.class)
+		String providerId = claims.get(PROVIDER_ID_KEY, String.class);
+
+		OAuthProvider provider = OAuthProvider.valueOf(
+			claims.get(PROVIDER_TYPE_KEY, String.class)
 		);
+		String email = claims.get(PROVIDER_EMAIL_KEY, String.class);
+
+		return new SocialInfo(providerId, provider, email);
 	}
 
 	private MemberEntity getOrCreateMember(
@@ -167,9 +174,8 @@ public class SocialAuthService {
 	private void createSocialProvider(
 		MemberEntity member, SocialInfo socialInfo
 	) {
-		socialProviderService.findByProviderIdAndProvider(
-			socialInfo.providerId(),
-			socialInfo.provider
+		socialProviderService.findSocialProvider(
+			socialInfo.providerId(), socialInfo.provider
 		).ifPresentOrElse(
 			existingProvider -> {
 				if (!existingProvider.getMember().getId().equals(member.getId())) {

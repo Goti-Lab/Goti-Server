@@ -11,16 +11,17 @@ import com.goti.resale.constants.ResaleListingStatus;
 import com.goti.resale.domain.entity.resale.ResaleListingEntity;
 
 public interface ResaleListingRepository extends JpaRepository<ResaleListingEntity, UUID> {
-
-	List<ResaleListingEntity> findAllBySellerId(UUID sellerId);
-
-	Long countByGameIdAndSectionIdAndListingStatus(UUID gameId, UUID sectionId, ResaleListingStatus status);
+	Long countByGameIdAndGradeIdAndListingStatus(UUID gameId, UUID gradeId, ResaleListingStatus status);
 
 	Long countByGameIdAndListingStatus(UUID gameId, ResaleListingStatus status);
 
 	boolean existsByTicketIdAndListingStatusIn(UUID ticketId, List<ResaleListingStatus> statuses);
 
 	List<ResaleListingEntity> findByGameIdInAndListingStatusIn(List<UUID> gameId, List<ResaleListingStatus> statuses);
+
+	List<ResaleListingEntity> findAllByListingOrderId(UUID listingOrderId);
+
+	List<ResaleListingEntity> findBySellerId(UUID sellerId);
 
 	@Query("SELECT r FROM ResaleListingEntity r "
 		+ "WHERE r.gameId = :gameId "

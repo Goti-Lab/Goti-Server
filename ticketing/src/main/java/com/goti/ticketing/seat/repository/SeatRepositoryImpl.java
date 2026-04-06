@@ -8,6 +8,7 @@ import org.springframework.stereotype.Repository;
 import com.goti.ticketing.domain.entity.seat.QSeatEntity;
 import com.goti.ticketing.domain.entity.seat.QSeatSectionEntity;
 import com.goti.ticketing.domain.entity.seat.SeatEntity;
+import com.goti.ticketing.domain.entity.seat.SeatSectionEntity;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 
 import lombok.RequiredArgsConstructor;
@@ -18,13 +19,13 @@ public class SeatRepositoryImpl implements SeatRepositoryCustom {
 	private final JPAQueryFactory queryFactory;
 
 	@Override
-	public List<SeatEntity> findAllBySection(UUID sectionId) {
+	public List<SeatEntity> findAllBySection(SeatSectionEntity section) {
 		QSeatEntity seat = QSeatEntity.seatEntity;
 
 		return queryFactory
 			.selectFrom(seat)
 			.join(seat.seatSection).fetchJoin()
-			.where(seat.seatSection.id.eq(sectionId))
+			.where(seat.seatSection.eq(section))
 			.orderBy(seat.rowName.asc(), seat.seatNum.asc())
 			.fetch();
 	}

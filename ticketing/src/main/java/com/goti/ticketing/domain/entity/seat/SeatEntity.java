@@ -5,6 +5,7 @@ import com.goti.global.validation.Preconditions;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
+import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
@@ -19,6 +20,9 @@ import static lombok.AccessLevel.*;
 @Entity
 @Table(
 	name = "seats",
+	indexes = {
+		@Index(name = "idx_section", columnList = "section_id")
+	},
 	uniqueConstraints = {
 		@UniqueConstraint(
 			name = "uk_section_row_seat_num",

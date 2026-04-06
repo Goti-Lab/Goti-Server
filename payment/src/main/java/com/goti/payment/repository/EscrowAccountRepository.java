@@ -17,7 +17,7 @@ public interface EscrowAccountRepository extends JpaRepository<EscrowAccountEnti
 		+ "FROM EscrowAccountEntity e "
 		+ "WHERE e.sellerId = :sellerId "
 		+ "AND e.escrowStatus = :status")
-	Long sumTotalAmountByStatus(
+	Long sumUnsettledAmount(
 		@Param("sellerId") UUID sellerId,
 		@Param("status") EscrowStatus status
 	);

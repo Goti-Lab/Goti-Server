@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
+import com.goti.resale.infra.dto.ResaleTicketPurchaseInfo;
 import com.goti.resale.dto.response.ResaleTicketResponse;
 import com.goti.resale.infra.dto.TicketGameInfo;
 
@@ -20,4 +21,6 @@ public interface TicketClient {
 	List<TicketGameInfo> getUpcomingGames();
 
 	void transferOwnership(UUID ticketId, UUID buyerId);
+
+	List<ResaleTicketPurchaseInfo> getPurchaseInfos(List<UUID> ticketIds);
 }

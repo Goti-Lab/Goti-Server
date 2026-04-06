@@ -1,25 +1,27 @@
 package com.goti.resale.service.application;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.goti.constants.messages.ErrorCode;
-import com.goti.exception.CustomException;
+import com.goti.global.dto.Paging;
+import com.goti.resale.constants.ResaleListingOrderStatus;
 import com.goti.resale.constants.ResaleListingStatus;
+import com.goti.resale.constants.ResaleOrderSearchStatus;
 import com.goti.resale.domain.entity.resale.ResaleListingEntity;
-import com.goti.resale.domain.entity.resale.ResalePriceHistoryEntity;
 import com.goti.resale.domain.entity.resale.ResaleRestrictionEntity;
 import com.goti.resale.dto.request.ResaleListingCancelRequest;
-import com.goti.resale.dto.request.ResaleListingCreateRequest;
+import com.goti.resale.dto.request.ResaleListingOrderCreateRequest;
+import com.goti.resale.dto.response.ResaleListingOrderCreateResponse;
+import com.goti.resale.dto.response.ResaleListingOrderResponse;
 import com.goti.resale.dto.response.ResaleListingResponse;
-import com.goti.resale.dto.response.ResaleTicketResponse;
-import com.goti.resale.infra.TicketClient;
+import com.goti.resale.dto.response.ResaleListingsCountResponse;
 import com.goti.resale.repository.ResaleRestrictionRepository;
-import com.goti.resale.repository.history.ResalePriceHistoryRepository;
 import com.goti.resale.repository.listing.ResaleListingRepository;
 import com.goti.resale.service.domain.ResaleListingService;
 import com.goti.resale.service.domain.ResaleRestrictionService;
@@ -32,86 +34,76 @@ import lombok.RequiredArgsConstructor;
 public class ResaleListingProcessService {
 	private final ResaleListingRepository listingRepository;
 	private final ResaleRestrictionRepository restrictionRepository;
-	private final ResalePriceHistoryRepository priceHistoryRepository;
 	private final ResaleRestrictionHandler restrictionHandler;
 	private final ResaleRestrictionService restrictionService;
 	private final ResaleListingService resaleListingService;
-	private final TicketClient ticketClient;
 
 	@Transactional
-	public ResaleListingResponse createListing(UUID sellerId, ResaleListingCreateRequest request) {
-		ResaleTicketResponse ticketInfo = ticketClient.getTicketInfo(request.ticketId(), sellerId);
-
-		ResaleRestrictionEntity resaleRestriction = restrictionService.getOrCreateRestriction(sellerId);
-
-		resaleListingService.validateListingCreation(ticketInfo, sellerId, request.listingPrice(), resaleRestriction);
-
-		Integer lastTransactionPrice = priceHistoryRepository
-			.findLatestByGameAndGrade(ticketInfo.gameId(), ticketInfo.gradeId())
-			.map(ResalePriceHistoryEntity::getTransactionPrice)
-			.orElse(null);
-
-		ResaleListingEntity resaleListing = ResaleListingEntity.create(
-			ticketInfo.ticketId(),
-			sellerId,
-			ticketInfo.gameId(),
-			ticketInfo.seatId(),
-			ticketInfo.sectionId(),
-			ticketInfo.gradeId(),
-			ticketInfo.seatInfo(),
-			ticketInfo.ticketPrice(),
-			request.listingPrice()
-		);
-
-		if (lastTransactionPrice != null) {
-			resaleListing.initializeLastTransactionPrice(lastTransactionPrice);
-		}
-
-		listingRepository.save(resaleListing);
-
-		restrictionHandler.handleAfterSell(resaleRestriction, ticketInfo.gameId());
-		restrictionRepository.save(resaleRestriction);
-
-		return ResaleListingResponse.from(resaleListing);
+	public ResaleListingOrderCreateResponse createListingOrder(UUID sellerId, ResaleListingOrderCreateRequest request) {
+		return resaleListingService.createListingOrder(sellerId, request);
 	}
 
 	@Transactional
 	public ResaleListingResponse cancelListing(UUID sellerId, ResaleListingCancelRequest request) {
-		ResaleListingEntity resaleListing = listingRepository.findById(request.listingId())
-			.orElseThrow(
-				() -> new CustomException(ErrorCode.LISTING_NOT_FOUND)
-			);
+		return resaleListingService.cancelListing(sellerId, request);
+	}
 
-		ResaleRestrictionEntity resaleRestriction = restrictionService.getOrCreateRestriction(sellerId);
+	@Transactional
+	public void cancelListingOrder(UUID sellerId, UUID listingOrderId) {
+		resaleListingService.cancelListingOrder(sellerId, listingOrderId);
+	}
 
-		resaleListingService.validateListingCancellation(
-			sellerId,
-			resaleListing,
-			resaleRestriction
-		);
-
-		resaleListing.cancel();
-
-		listingRepository.save(resaleListing);
-
-		restrictionHandler.handleAfterCancel(resaleRestriction, resaleListing.getGameId());
-		restrictionRepository.save(resaleRestriction);
-
+	@Transactional(readOnly = true)
+	public ResaleListingResponse getListing(UUID sellerId, UUID listingId) {
+		ResaleListingEntity resaleListing = resaleListingService.getListing(sellerId, listingId);
 		return ResaleListingResponse.from(resaleListing);
 	}
 
 	@Transactional(readOnly = true)
-	public List<ResaleListingResponse> getListingsBySellerId(UUID sellerId) {
-		List<ResaleListingEntity> resaleListings = listingRepository.findAllBySellerId(sellerId);
-
-		return resaleListings.stream()
+	public List<ResaleListingResponse> getSalesDetails(UUID sellerId, UUID orderId) {
+		return resaleListingService.getListingsByOrderId(orderId).stream()
+			.filter(listing -> listing.getSellerId().equals(sellerId))
 			.map(ResaleListingResponse::from)
 			.toList();
 	}
 
 	@Transactional(readOnly = true)
-	public long getListingCountBySection(UUID gameId, UUID sectionId) {
-		return listingRepository.countByGameIdAndSectionIdAndListingStatus(gameId, sectionId, ResaleListingStatus.LISTING);
+	public Page<ResaleListingOrderResponse> getSalesHistory(UUID sellerId,
+		Integer months,
+		LocalDate startDate,
+		LocalDate endDate,
+		ResaleOrderSearchStatus status,
+		Paging paging
+	) {
+		List<ResaleListingOrderStatus> targetStatuses = mapToStatuses(status);
+		return resaleListingService.getSalesHistory(
+			sellerId,
+			targetStatuses,
+			months,
+			startDate,
+			endDate,
+			paging.toPageable()
+		).map(ResaleListingOrderResponse::from);
+	}
+
+	private List<ResaleListingOrderStatus> mapToStatuses(ResaleOrderSearchStatus status) {
+		return switch (status) {
+			case ALL -> null;
+			case LISTING -> List.of(ResaleListingOrderStatus.LISTING, ResaleListingOrderStatus.PARTIAL);
+			case PENDING -> List.of(ResaleListingOrderStatus.SOLD);
+			case SETTLED -> List.of(ResaleListingOrderStatus.SETTLED);
+			case CANCELED -> List.of(ResaleListingOrderStatus.CANCELED);
+		};
+	}
+
+	@Transactional(readOnly = true)
+	public ResaleListingsCountResponse getResaleCount(UUID sellerId) {
+		return resaleListingService.getResaleCount(sellerId);
+	}
+
+	@Transactional(readOnly = true)
+	public long getListingCountByGrade(UUID gameId, UUID gradeId) {
+		return listingRepository.countByGameIdAndGradeIdAndListingStatus(gameId, gradeId, ResaleListingStatus.LISTING);
 	}
 
 	@Transactional(readOnly = true)

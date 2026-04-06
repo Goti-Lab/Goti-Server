@@ -1,5 +1,6 @@
 package com.goti.user.service.domain.auth;
 
+import com.goti.constants.OAuthProvider;
 import com.goti.user.domain.entity.user.MemberEntity;
 import org.springframework.data.util.Pair;
 
@@ -12,6 +13,8 @@ public interface AuthService {
 
 	UUID validateTokenAndGetMemberId(String token);
 
-	Pair<String, String> issueTokens(MemberEntity member);
+	Pair<String, String> issueTokens(
+		MemberEntity member, String providerId, OAuthProvider provider
+	);
 
 }

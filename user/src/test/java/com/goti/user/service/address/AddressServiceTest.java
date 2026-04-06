@@ -5,7 +5,7 @@ import com.goti.user.GotiUserApplication;
 
 import com.goti.user.domain.entity.user.AddressEntity;
 import com.goti.user.domain.entity.user.MemberEntity;
-import com.goti.user.dto.response.AddressCreateResponse;
+import com.goti.user.dto.response.AddressRegisterResponse;
 import com.goti.user.repository.AddressRepository;
 import com.goti.user.repository.MemberRepository;
 import com.goti.user.service.domain.address.AddressService;
@@ -48,11 +48,11 @@ public class AddressServiceTest {
 
 	@Test
 	void 주소_생성_성공() {
-		AddressCreateResponse response = addressService.register(
+		AddressRegisterResponse response = addressService.register(
+			member,
 			"06111",
 			"서울특별시 강남구 학동로 343",
-			"(논현동, 포바강남타워) 4층, 15층",
-			member
+			"(논현동, 포바강남타워) 4층, 15층"
 		);
 		assertNotNull(response);
 		assertNotNull(response.addressId());
@@ -73,11 +73,11 @@ public class AddressServiceTest {
 		);
 		addressRepository.save(address);
 
-		AddressCreateResponse response = addressService.register(
+		AddressRegisterResponse response = addressService.register(
+			member,
 			"123123",
 			"서울특별시 관악구 낙성대역 8길 50-4",
-			"104호",
-			member
+			"104호"
 		);
 		assertNotNull(response);
 		assertEquals(address.getId(), response.addressId());

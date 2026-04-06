@@ -1,4 +1,4 @@
-package com.goti.payment.config.properties;
+package com.goti.resale.config.properties;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 

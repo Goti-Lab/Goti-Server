@@ -199,10 +199,26 @@ public class TicketEntity extends ModificationTimestampEntity {
 
 	public void invalidate() {
 		Preconditions.domainValidate(
-			this.ticketStatus == TicketStatus.ISSUED,
-			"발행 완료 상태의 티켓만 취소할 수 있습니다."
+			this.ticketStatus == TicketStatus.ISSUED || this.ticketStatus == TicketStatus.RESALE_ISSUED,
+			"발행 완료 또는 리셀 발행 상태의 티켓만 무효화할 수 있습니다."
 		);
 		this.ticketStatus = TicketStatus.INVALID;
+	}
+
+	public void markAsResaleListing() {
+		Preconditions.domainValidate(
+			this.ticketStatus == TicketStatus.ISSUED,
+			"발행 완료 상태의 티켓만 리셀 등록이 가능합니다."
+		);
+		this.ticketStatus = TicketStatus.RESALE_ISSUED;
+	}
+
+	public void restoreFromResale() {
+		Preconditions.domainValidate(
+			this.ticketStatus == TicketStatus.RESALE_ISSUED,
+			"리셀 발행 상태의 티켓만 일반 상태로 복구할 수 있습니다."
+		);
+		this.ticketStatus = TicketStatus.ISSUED;
 	}
 
 	public boolean isFrozen() {

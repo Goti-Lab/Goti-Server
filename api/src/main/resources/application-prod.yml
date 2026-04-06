@@ -1,4 +1,10 @@
 # EKS 환경 전용 — SPRING_PROFILES_ACTIVE=prod 로 활성화
+springdoc:
+  swagger-ui:
+    enabled: false
+  api-docs:
+    enabled: false
+
 spring:
   jpa:
     hibernate:

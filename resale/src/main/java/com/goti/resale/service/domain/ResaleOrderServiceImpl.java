@@ -3,15 +3,21 @@ package com.goti.resale.service.domain;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.github.f4b6a3.tsid.TsidCreator;
+import com.goti.constants.messages.ErrorCode;
 import com.goti.domain.vo.TransactionItemVO;
+import com.goti.global.validation.Preconditions;
 import com.goti.resale.constants.ResaleTransactionStatus;
 import com.goti.resale.domain.entity.resale.ResaleHoldEntity;
 import com.goti.resale.domain.entity.resale.ResaleListingEntity;
@@ -20,10 +26,12 @@ import com.goti.resale.domain.entity.resale.ResaleRestrictionEntity;
 import com.goti.resale.domain.entity.resale.ResaleTransactionEntity;
 import com.goti.resale.dto.request.ResaleTransactionItemRequest;
 import com.goti.resale.dto.response.ResaleOrderCreateResponse;
+import com.goti.resale.dto.response.ResalePurchaseListResponse;
 import com.goti.resale.infra.TicketClient;
 import com.goti.resale.infra.dto.ResaleOrderCreatedEvent;
-import com.goti.resale.repository.ResaleOrderRepository;
-import com.goti.resale.repository.ResaleTransactionRepository;
+import com.goti.resale.infra.dto.ResaleTicketPurchaseInfo;
+import com.goti.resale.repository.order.ResaleOrderRepository;
+import com.goti.resale.repository.transaction.ResaleTransactionRepository;
 import com.goti.resale.utils.ResalePricePolicy;
 import com.goti.resale.utils.ResaleRestrictionHandler;
 
@@ -34,10 +42,11 @@ import lombok.RequiredArgsConstructor;
 public class ResaleOrderServiceImpl implements ResaleOrderService {
 	private static final DateTimeFormatter ORDER_NUMBER_FORMATTER = DateTimeFormatter.ofPattern("yyMMdd");
 	private static final DateTimeFormatter TICKET_NUMBER_FORMATTER = DateTimeFormatter.ofPattern("MMdd");
+	private static final List<Integer> ALLOWED_MONTHS = List.of(1, 3, 6);
 
 	private final ResaleOrderRepository resaleOrderRepository;
 	private final ResaleTransactionRepository resaleTransactionRepository;
-	private final ResaleRestrictionService restrictionDomainService;
+	private final ResaleRestrictionService restrictionService;
 	private final ResaleRestrictionHandler resaleRestrictionHandler;
 	private final ResalePricePolicy resalePricePolicy;
 	private final TicketClient ticketClient;
@@ -85,12 +94,12 @@ public class ResaleOrderServiceImpl implements ResaleOrderService {
 	@Transactional
 	public ResaleOrderCreateResponse initOrder(UUID buyerId, List<ResaleHoldEntity> holds, UUID gameId) {
 		int ownedCount = ticketClient.getOwnedTicketCount(buyerId, gameId);
-		int pendingCount = resaleTransactionRepository.countByBuyerIdAndListing_GameIdAndTransactionStatus(
+		int pendingCount = resaleTransactionRepository.countTransactions(
 			buyerId, gameId, ResaleTransactionStatus.PENDING);
 
 		validatePossessionLimit(ownedCount, pendingCount, holds.size());
 
-		ResaleRestrictionEntity restriction = restrictionDomainService.getOrCreateRestriction(buyerId);
+		ResaleRestrictionEntity restriction = restrictionService.getOrCreateRestriction(buyerId);
 		List<TransactionItemVO> itemVOs = calculateOrderItems(buyerId, holds, restriction);
 
 		int totalBuyerAmount = itemVOs.stream()
@@ -130,6 +139,61 @@ public class ResaleOrderServiceImpl implements ResaleOrderService {
 		);
 	}
 
+	@Override
+	@Transactional(readOnly = true)
+	public List<ResalePurchaseListResponse> getPurchasesByMember(
+		UUID buyerId,
+		Integer months,
+		LocalDate startDate,
+		LocalDate endDate
+	) {
+		Preconditions.validate(
+			buyerId != null,
+			ErrorCode.AUTH_INVALID
+		);
+		validatePeriodFilter(months, startDate, endDate);
+
+		List<ResaleOrderEntity> orders = resaleOrderRepository.findCompletedPurchaseOrders(
+			buyerId,
+			months,
+			startDate,
+			endDate
+		);
+
+		if (orders.isEmpty()) {
+			return List.of();
+		}
+
+		List<UUID> orderIds = orders.stream()
+			.map(ResaleOrderEntity::getId)
+			.toList();
+
+		List<ResaleTransactionEntity> transactions = resaleTransactionRepository.findListings(orderIds);
+		Map<UUID, List<ResaleTransactionEntity>> transactionsByOrderId = transactions.stream()
+			.collect(Collectors.groupingBy(
+				transaction -> transaction.getResaleOrder().getId(),
+				LinkedHashMap::new,
+				Collectors.toList()
+			));
+		List<UUID> ticketIds = transactions.stream()
+			.map(transaction -> transaction.getListing().getTicketId())
+			.distinct()
+			.toList();
+		Map<UUID, ResaleTicketPurchaseInfo> ticketInfoMap = ticketClient.getPurchaseInfos(ticketIds).stream()
+			.collect(Collectors.toMap(
+				ResaleTicketPurchaseInfo::ticketId,
+				ticketInfo -> ticketInfo
+			));
+
+		return orders.stream()
+			.map(order -> toPurchaseListResponse(
+				order,
+				transactionsByOrderId.getOrDefault(order.getId(), List.of()),
+				ticketInfoMap
+			))
+			.toList();
+	}
+
 	private ResaleOrderEntity createOrder(UUID buyerId, int totalAmount) {
 		ResaleOrderEntity resaleOrder = ResaleOrderEntity.create(
 			generateOrderNumber(),
@@ -165,5 +229,63 @@ public class ResaleOrderServiceImpl implements ResaleOrderService {
 			transactions.add(transaction);
 		}
 		return resaleTransactionRepository.saveAll(transactions);
+	}
+
+	private ResalePurchaseListResponse toPurchaseListResponse(
+		ResaleOrderEntity order,
+		List<ResaleTransactionEntity> transactions,
+		Map<UUID, ResaleTicketPurchaseInfo> ticketInfoMap
+	) {
+		UUID gameId = transactions.getFirst().getListing().getGameId();
+
+		List<UUID> ticketIds = transactions.stream()
+			.map(transaction -> transaction.getListing().getTicketId())
+			.toList();
+
+		ResaleTicketPurchaseInfo representativeTicket = ticketInfoMap.get(ticketIds.getFirst());
+
+		List<String> seatInfos = ticketIds.stream()
+			.map(ticketInfoMap::get)
+			.filter(Objects::nonNull)
+			.map(ResaleTicketPurchaseInfo::seatInfo)
+			.toList();
+
+		return ResalePurchaseListResponse.of(
+			order,
+			gameId,
+			representativeTicket.gameTitle(),
+			representativeTicket.gameDate(),
+			seatInfos
+		);
+	}
+
+	private void validatePeriodFilter(
+		Integer months,
+		LocalDate startDate,
+		LocalDate endDate
+	) {
+		Preconditions.validate(
+			months == null || (startDate == null && endDate == null),
+			ErrorCode.ORDER_HISTORY_PERIOD_FILTER_CONFLICT
+		);
+
+		Preconditions.validate(
+			(startDate == null) == (endDate == null),
+			ErrorCode.ORDER_HISTORY_PERIOD_DATE_REQUIRED
+		);
+
+		if (months != null) {
+			Preconditions.validate(
+				ALLOWED_MONTHS.contains(months),
+				ErrorCode.ORDER_HISTORY_PERIOD_MONTHS_INVALID
+			);
+		}
+
+		if (startDate != null && endDate != null) {
+			Preconditions.validate(
+				!startDate.isAfter(endDate),
+				ErrorCode.ORDER_HISTORY_PERIOD_INVALID_RANGE
+			);
+		}
 	}
 }

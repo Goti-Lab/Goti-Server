@@ -3,7 +3,7 @@ package com.goti.user.service.domain.address;
 import com.goti.user.domain.entity.user.AddressEntity;
 import com.goti.user.domain.entity.user.MemberEntity;
 
-import com.goti.user.dto.response.AddressCreateResponse;
+import com.goti.user.dto.response.AddressRegisterResponse;
 import com.goti.user.repository.AddressRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -21,8 +21,8 @@ public class AddressServiceImpl implements AddressService {
 
 	@Override
 	@Transactional
-	public AddressCreateResponse register(
-		String zipCode, String baseAddress, String detailAddress, MemberEntity member
+	public AddressRegisterResponse register(
+		MemberEntity member, String zipCode, String baseAddress, String detailAddress
 	) {
 		AddressEntity address = findAddress(member).map(
 			entity -> {
@@ -37,7 +37,7 @@ public class AddressServiceImpl implements AddressService {
 			)
 		);
 		addressRepository.save(address);
-		return AddressCreateResponse.from(address);
+		return AddressRegisterResponse.from(address);
 	}
 
 	@Override
