@@ -22,7 +22,7 @@ public class OrderRepositoryImpl implements OrderRepositoryCustom {
 	private final JPAQueryFactory queryFactory;
 
 	@Override
-	public List<OrderEntity> findMyOrders(
+	public List<OrderEntity> findOrders(
 		UUID memberId,
 		Integer months,
 		LocalDate startDate,

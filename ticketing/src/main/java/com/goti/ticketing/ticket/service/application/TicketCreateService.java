@@ -69,7 +69,8 @@ public class TicketCreateService {
 				order.getGameSchedule().getStartAt(),
 				buildSeatInfo(orderItem),
 				orderItem.getTicketPrice()
-			)
+			),
+			orderItem.getSeat().getSeatSection().getSeatGrade().getName()
 		);
 	}
 

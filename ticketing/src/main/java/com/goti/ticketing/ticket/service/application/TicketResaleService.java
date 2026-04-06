@@ -17,6 +17,7 @@ import com.goti.ticketing.domain.entity.game.GameScheduleEntity;
 import com.goti.ticketing.domain.entity.seat.SeatGradeEntity;
 import com.goti.ticketing.domain.entity.ticket.TicketEntity;
 import com.goti.ticketing.game.repository.gameschedule.GameScheduleRepository;
+import com.goti.ticketing.order.repository.OrderItemRepository;
 import com.goti.ticketing.seat.repository.SeatGradeRepository;
 import com.goti.ticketing.ticket.dto.response.ResaleTicketGameInfoResponse;
 import com.goti.ticketing.ticket.dto.response.ResaleTicketResponse;
@@ -35,6 +36,7 @@ public class TicketResaleService {
 	private final TicketFreezeManagementService ticketFreezeManagementService;
 	private final GameScheduleRepository gameScheduleRepository;
 	private final SeatGradeRepository seatGradeRepository;
+	private final OrderItemRepository orderItemRepository;
 
 	@Transactional(readOnly = true)
 	public ResaleTicketResponse getResaleTicketInfo(UUID ticketId, UUID userId) {
@@ -108,7 +110,11 @@ public class TicketResaleService {
 			transactionPrice
 		);
 
-		return TicketResponse.from(newTicket);
+		String seatGradeName = orderItemRepository.findById(newTicket.getOrderItemId())
+			.map(orderItem -> orderItem.getSeat().getSeatSection().getSeatGrade().getName())
+			.orElse(null);
+
+		return TicketResponse.from(newTicket, seatGradeName);
 	}
 
 	private void validateOwnership(TicketEntity ticket, UUID userId) {

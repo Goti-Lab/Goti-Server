@@ -36,6 +36,9 @@ public record TicketResponse(
 	@JsonFormat(pattern = "yyyy-MM-dd HH:mm")
 	LocalDateTime gameDate,
 
+	@Schema(description = "좌석 등급명", example = "1루 K8석")
+	String seatGradeName,
+
 	@Schema(description = "좌석 정보", example = "VIP A구역 3열 15번")
 	String seatInfo,
 
@@ -66,7 +69,7 @@ public record TicketResponse(
 	@JsonFormat(pattern = "yyyy-MM-dd HH:mm")
 	LocalDateTime usedAt
 ) {
-	public static TicketResponse from(TicketEntity ticket) {
+	public static TicketResponse from(TicketEntity ticket, String seatGradeName) {
 		TicketFreezeEntity activeFreeze = ticket.getFreeze();
 		boolean frozen = activeFreeze != null && activeFreeze.isActive();
 
@@ -78,6 +81,7 @@ public record TicketResponse(
 			ticket.getGameId(),
 			ticket.getGameTitle(),
 			ticket.getGameDate(),
+			seatGradeName,
 			ticket.getSeatInfo(),
 			ticket.getTicketPrice(),
 			ticket.getResalePrice(),

@@ -69,7 +69,7 @@ public class OrderController {
 		@RequestParam UUID memberId,
 		@ParameterObject OrderPeriodFilterRequest request
 	) {
-		return wrap(orderService.getMyOrders(
+		return wrap(orderService.getOrders(
 			memberId,
 			request.months(),
 			request.startDate(),
