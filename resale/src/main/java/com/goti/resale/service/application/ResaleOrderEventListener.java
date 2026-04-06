@@ -102,7 +102,7 @@ public class ResaleOrderEventListener {
 				ResaleListingEntity resaleListing = listingMap.get(transaction.getListing().getId());
 
 				if (resaleListing == null) {
-					log.error("❌ Listing을 찾을 수 없음: {}", transaction.getListing().getId());
+					log.error(" Listing을 찾을 수 없음: {}", transaction.getListing().getId());
 					continue;
 				}
 
@@ -201,7 +201,7 @@ public class ResaleOrderEventListener {
 				return bearer.substring(7);
 			}
 		}
-		log.warn("⚠️ 현재 요청에서 인증 토큰을 찾을 수 없습니다.");
+		log.warn(" 현재 요청에서 인증 토큰을 찾을 수 없습니다.");
 		return null;
 	}
 }
