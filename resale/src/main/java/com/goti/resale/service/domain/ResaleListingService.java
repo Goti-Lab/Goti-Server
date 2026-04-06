@@ -2,6 +2,7 @@ package com.goti.resale.service.domain;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import org.springframework.data.domain.Page;
@@ -63,4 +64,6 @@ public interface ResaleListingService {
 		ResaleListingEntity resaleListing,
 		ResaleRestrictionEntity resaleRestriction
 	);
+
+	void updateListingOrders(Set<ResaleListingOrderEntity> listingOrders);
 }

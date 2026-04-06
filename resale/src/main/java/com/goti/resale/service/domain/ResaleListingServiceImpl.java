@@ -7,7 +7,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -40,7 +42,9 @@ import com.goti.resale.utils.ResalePricePolicy;
 import com.goti.resale.utils.ResaleRestrictionHandler;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ResaleListingServiceImpl implements ResaleListingService {
@@ -337,5 +341,36 @@ public class ResaleListingServiceImpl implements ResaleListingService {
 				ErrorCode.ORDER_HISTORY_PERIOD_INVALID_RANGE
 			);
 		}
+	}
+
+	public void updateListingOrders(Set<ResaleListingOrderEntity> listingOrders) {
+		List<UUID> listingOrderIds = listingOrders.stream()
+			.map(ResaleListingOrderEntity::getId)
+			.toList();
+
+		Map<UUID, List<ResaleListingEntity>> listingsByOrderId =
+			listingRepository.findAllByListingOrderIdIn(listingOrderIds)
+				.stream()
+				.collect(Collectors.groupingBy(l -> l.getListingOrder().getId()));
+
+		for (ResaleListingOrderEntity order : listingOrders) {
+			List<ResaleListingEntity> allListings = listingsByOrderId.getOrDefault(
+				order.getId(), List.of());
+
+			boolean allCompleted = allListings.stream()
+				.allMatch(l -> l.getListingStatus() == ResaleListingStatus.SOLD
+					|| l.getListingStatus() == ResaleListingStatus.CANCELED);
+
+			if (allCompleted) {
+				order.soldOut();
+				log.info("ListingOrder 완료 처리 - ID: {}", order.getId());
+			} else {
+				order.partial();
+				log.info("ListingOrder 부분 판매 처리 - ID: {}", order.getId());
+			}
+		}
+
+		listingOrderRepository.saveAll(listingOrders);
+		log.info("✅ ListingOrder 저장 완료 - {} 건", listingOrders.size());
 	}
 }
