@@ -24,7 +24,6 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 import com.goti.resale.constants.ResaleListingStatus;
 import com.goti.resale.domain.entity.resale.ResaleListingEntity;
 import com.goti.resale.domain.entity.resale.ResaleListingOrderEntity;
-import com.goti.resale.domain.entity.resale.ResaleOrderEntity;
 import com.goti.resale.domain.entity.resale.ResalePriceHistoryEntity;
 import com.goti.resale.domain.entity.resale.ResaleRestrictionEntity;
 import com.goti.resale.domain.entity.resale.ResaleTransactionEntity;
@@ -59,7 +58,6 @@ public class ResaleOrderEventListener {
 	private final ResaleRestrictionService restrictionService;
 	private final ResaleListingService listingService;
 	private final ResaleOrderService orderService;
-	private final ResaleOrderRepository resaleOrderRepository;
 	private final PaymentService paymentService;
 	private final ApplicationEventPublisher eventPublisher;
 

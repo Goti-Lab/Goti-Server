@@ -24,7 +24,7 @@ import com.goti.global.dto.Paging;
 import com.goti.resale.constants.ResaleGraphRange;
 import com.goti.resale.dto.request.ResaleListingCancelRequest;
 import com.goti.resale.dto.request.ResaleListingOrderCreateRequest;
-import com.goti.resale.dto.request.ResaleSalesSearchRequest;
+import com.goti.resale.dto.request.ResaleSearchSalesRequest;
 import com.goti.resale.dto.response.ResaleListingCountResponse;
 import com.goti.resale.dto.response.ResaleListingOrderCreateResponse;
 import com.goti.resale.dto.response.ResaleListingOrderResponse;

@@ -45,7 +45,7 @@ public class TicketResaleService {
 
 	@Transactional(readOnly = true)
 	public int getOwnedTicketCount(UUID userId, UUID gameId) {
-		return ticketService.getOwnedTicketCount(userId, gameId);
+		return ticketService.getOwnedTicketCountWithGame(userId, gameId);
 	}
 
 	@Transactional(readOnly = true)

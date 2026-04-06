@@ -63,15 +63,14 @@ public class PaymentResaleController {
 	}
 
 	@Operation(
-		summary = "미정산 금액 조회",
+		summary = "미정산 금액 조회 (내부용)",
 		description = "미정산 금액 조회 API"
 	)
 	@GetMapping("/unsettled")
 	public ResponseEntity<ApiSuccessResponse<UnsettledAmountResponse>> getUnsettledAmounts(
 		@AuthenticationPrincipal(expression = "id") UUID sellerId) {
 		return wrap(
-			paymentLedgerProcessService
-				.getUnsettledAmounts(sellerId)
+			paymentLedgerProcessService.getUnsettledAmounts(sellerId)
 		);
 	}
 
