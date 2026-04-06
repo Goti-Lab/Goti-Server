@@ -52,8 +52,14 @@ public class QueueMetricsScheduler {
 
 	@Scheduled(fixedDelay = 5000)
 	public void publishQueueMetrics() {
-		Set<String> metaKeys = stringRedisTemplate.keys("queue:*:meta");
-		if (metaKeys == null || metaKeys.isEmpty()) {
+		// KEYS(O(N) blocking) → SCAN(non-blocking cursor)으로 변경
+		Set<String> metaKeys = new java.util.HashSet<>();
+		try (var cursor = stringRedisTemplate.scan(
+				org.springframework.data.redis.core.ScanOptions.scanOptions()
+					.match("queue:*:meta").count(100).build())) {
+			cursor.forEachRemaining(metaKeys::add);
+		}
+		if (metaKeys.isEmpty()) {
 			return;
 		}
 

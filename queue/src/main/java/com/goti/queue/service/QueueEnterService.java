@@ -2,6 +2,7 @@ package com.goti.queue.service;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.List;
 import java.util.UUID;
 
 import lombok.extern.slf4j.Slf4j;
@@ -37,59 +38,30 @@ public class QueueEnterService {
 		}
 
 		String matchId = request.gameId().toString();
-		QueueEntry existingEntry = queueRedisRepository.getEntry(request.gameId(), userId);
-		Long previousQueueNumber = existingEntry == null ? null : existingEntry.queueNumber();
-		if (existingEntry != null) {
+
+		// Lua All-in-One: 기존 entry 체크 + cleanup + meta init + sequence + ZADD (1 RTT)
+		List<Long> luaResult = queueRedisRepository.enterQueue(
+			request.gameId(), userId, queueProperties.maxCapacity()
+		);
+		long queueNumber = luaResult.get(0);
+		long oldQueueNumber = luaResult.get(1);
+
+		if (oldQueueNumber >= 0) {
 			meterRegistry.counter("queue.enter.duplicate", "match_id", matchId).increment();
-			queueRedisRepository.removeWaiting(request.gameId(), userId);
-			queueRedisRepository.deleteEntry(request.gameId(), userId);
+			log.info("action=ENTER gameId={} userId={} oldQueueNumber={} newQueueNumber={}",
+				request.gameId(), userId, oldQueueNumber, queueNumber);
 		}
 
-		queueRedisRepository.initializeMetaIfAbsent(request.gameId(), queueProperties.maxCapacity());
-
-		long queueNumber = queueRedisRepository.nextSequence(request.gameId());
 		Instant issuedAt = Instant.now().truncatedTo(ChronoUnit.MILLIS);
 		String queueToken = queueTokenProvider.createToken(request.gameId(), userId, queueNumber, issuedAt);
 
-		QueueEntry queueEntry = new QueueEntry(
-			queueNumber,
-			issuedAt,
-			QueueStatus.WAITING
-		);
+		QueueEntry queueEntry = new QueueEntry(queueNumber, issuedAt, QueueStatus.WAITING);
+		queueRedisRepository.saveEntry(request.gameId(), userId, queueEntry, queueProperties.entryTtl()); // 2nd RTT
 
-		queueRedisRepository.addWaiting(request.gameId(), userId, queueNumber);
-		queueRedisRepository.saveEntry(request.gameId(), userId, queueEntry, queueProperties.entryTtl());
-
-		EnterResult result = new EnterResult(
-			new QueueEnterResponse(
-				queueToken,
-				queueNumber,
-				request.gameId(),
-				issuedAt
-			),
-			previousQueueNumber
-		);
-
-		QueueEnterResponse response = result.response();
-		if (result.previousQueueNumber() != null) {
-			log.info(
-				"action=ENTER gameId={} userId={} oldQueueNumber={} newQueueNumber={}",
-				request.gameId(),
-				userId,
-				result.previousQueueNumber(),
-				response.queueNumber()
-			);
-		}
-		log.info("action=ENTER gameId={} userId={} queueNumber={}", request.gameId(), userId, response.queueNumber());
+		log.info("action=ENTER gameId={} userId={} queueNumber={}", request.gameId(), userId, queueNumber);
 		meterRegistry.counter("queue.enter", "match_id", matchId).increment();
 		meterRegistry.counter("queue.token.issued", "match_id", matchId).increment();
 
-		return response;
-	}
-
-	private record EnterResult(
-		QueueEnterResponse response,
-		Long previousQueueNumber
-	) {
+		return new QueueEnterResponse(queueToken, queueNumber, request.gameId(), issuedAt);
 	}
 }

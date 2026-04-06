@@ -2,11 +2,13 @@ package com.goti.queue.repository;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.script.RedisScript;
 import org.springframework.stereotype.Repository;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -242,6 +244,164 @@ public class QueueRedisRepository {
 			QueueMetaField.PUBLISHED_RANK, String.valueOf(publishedRank),
 			QueueMetaField.UPDATED_AT, updatedAt.toString()
 		));
+	}
+
+	// ── Lua All-in-One: Enter (5-7 RTT → 1 RTT) ─────────────────────
+	// 기존 entry 존재 시 cleanup + meta 초기화 + sequence 발급 + waiting 추가를 1 Lua로 통합.
+	// saveEntry(JSON 직렬화)만 별도 호출 필요 → 전체 2 RTT.
+	private static final String ENTER_QUEUE_SCRIPT =
+		"local existing = redis.call('GET', KEYS[4]) " +
+		"local oldQueueNumber = -1 " +
+		"if existing then " +
+		"  local ok, entry = pcall(cjson.decode, existing) " +
+		"  if ok and entry.queueNumber then oldQueueNumber = entry.queueNumber end " +
+		"  redis.call('ZREM', KEYS[3], ARGV[1]) " +
+		"  redis.call('DEL', KEYS[4]) " +
+		"end " +
+		"if redis.call('EXISTS', KEYS[1]) == 0 then " +
+		"  redis.call('HSET', KEYS[1], " +
+		"    'maxCapacity', ARGV[2], 'activeCount', '0', " +
+		"    'publishedRank', '0', 'currentAllowedRank', '0', " +
+		"    'lastEnteredRank', '0', 'updatedAt', ARGV[3]) " +
+		"end " +
+		"local seq = redis.call('INCR', KEYS[2]) " +
+		"redis.call('ZADD', KEYS[3], seq, ARGV[1]) " +
+		"return {seq, oldQueueNumber}";
+
+	/**
+	 * Enter All-in-One Lua.
+	 * @return {newQueueNumber, oldQueueNumber}. oldQueueNumber == -1이면 신규 진입.
+	 */
+	public List<Long> enterQueue(UUID gameId, UUID userId, long maxCapacity) {
+		List<String> keys = List.of(
+			RedisKey.QUEUE_META.getKey(gameId),
+			RedisKey.QUEUE_SEQUENCE.getKey(gameId),
+			RedisKey.QUEUE_WAITING.getKey(gameId),
+			RedisKey.QUEUE_ENTRY.getKey(gameId, userId)
+		);
+		@SuppressWarnings("unchecked")
+		List<Long> result = stringRedisTemplate.execute(
+			RedisScript.of(ENTER_QUEUE_SCRIPT, List.class),
+			keys,
+			userId.toString(),
+			String.valueOf(maxCapacity),
+			Instant.now().toString()
+		);
+		return result;
+	}
+
+	// ── Lua All-in-One: Seat-Enter / Admit (9 RTT → 1 RTT) ──────────
+	// entry 검증 + active 체크 + publishedRank 계산 + capacity 체크 + increment
+	// + rank 갱신 + active 추가 + waiting 제거 + expiration 추가를 1 Lua로 통합.
+	private static final String TRY_ADMIT_SCRIPT =
+		"local raw = redis.call('GET', KEYS[1]) " +
+		"if not raw then return {-1} end " +
+		"local ok, entry = pcall(cjson.decode, raw) " +
+		"if not ok then return {-1} end " +
+		"if entry.status ~= 'WAITING' then return {-2} end " +
+		"if tostring(entry.queueNumber) ~= ARGV[2] then return {-3} end " +
+
+		"if redis.call('SISMEMBER', KEYS[2], ARGV[1]) == 1 then return {-4} end " +
+
+		"local active = tonumber(redis.call('HGET', KEYS[3], 'activeCount') or '0') " +
+		"local max = tonumber(redis.call('HGET', KEYS[3], 'maxCapacity') or '0') " +
+		"local curAllowed = tonumber(redis.call('HGET', KEYS[3], 'currentAllowedRank') or '0') " +
+		"local lastEntered = tonumber(redis.call('HGET', KEYS[3], 'lastEnteredRank') or '0') " +
+		"local available = math.max(0, max - active) " +
+		"local publishedRank = math.max(curAllowed, lastEntered + available) " +
+
+		"local qn = tonumber(entry.queueNumber) " +
+		"if qn > publishedRank then return {-5} end " +
+
+		"if active >= max then return {-6} end " +
+		"redis.call('HINCRBY', KEYS[3], 'activeCount', 1) " +
+
+		"if qn > lastEntered then redis.call('HSET', KEYS[3], 'lastEnteredRank', qn) end " +
+		"if qn > curAllowed then redis.call('HSET', KEYS[3], 'currentAllowedRank', qn) end " +
+		"redis.call('HSET', KEYS[3], 'updatedAt', ARGV[3]) " +
+
+		"redis.call('SADD', KEYS[2], ARGV[1]) " +
+		"redis.call('ZREM', KEYS[4], ARGV[1]) " +
+		"redis.call('ZADD', KEYS[5], tonumber(ARGV[4]), ARGV[5]) " +
+
+		"return {1, qn}";
+
+	/**
+	 * Seat-Enter All-in-One Lua.
+	 * @return 코드 목록. [0] = 결과코드: 1=성공, -1=ENTRY_NOT_FOUND, -2/-3=ENTRY_MISMATCH,
+	 *         -4=ALREADY_ADMITTED, -5=NOT_ALLOWED_YET, -6=CAPACITY_FULL.
+	 *         성공 시 [1] = queueNumber.
+	 */
+	public List<Long> tryAdmit(UUID gameId, UUID userId, long expectedQueueNumber, Instant expiresAt) {
+		List<String> keys = List.of(
+			RedisKey.QUEUE_ENTRY.getKey(gameId, userId),
+			RedisKey.QUEUE_ACTIVE_USERS.getKey(gameId),
+			RedisKey.QUEUE_META.getKey(gameId),
+			RedisKey.QUEUE_WAITING.getKey(gameId),
+			RedisKey.QUEUE_EXPIRATION_USERS.getKey("")
+		);
+		@SuppressWarnings("unchecked")
+		List<Long> result = stringRedisTemplate.execute(
+			RedisScript.of(TRY_ADMIT_SCRIPT, List.class),
+			keys,
+			userId.toString(),
+			String.valueOf(expectedQueueNumber),
+			Instant.now().toString(),
+			String.valueOf(expiresAt.toEpochMilli()),
+			expirationMember(gameId, userId)
+		);
+		return result;
+	}
+
+	// ── Lua All-in-One: Leave (8 RTT → 1 RTT) ───────────────────────
+	// entry 읽기 + active 체크 + activeCount 감소 + active 제거 + expiration 제거를 1 Lua로 통합.
+	private static final String EXECUTE_LEAVE_SCRIPT =
+		"local raw = redis.call('GET', KEYS[1]) " +
+		"local isActive = redis.call('SISMEMBER', KEYS[2], ARGV[1]) " +
+
+		"local status = 'UNKNOWN' " +
+		"if raw then " +
+		"  local ok, entry = pcall(cjson.decode, raw) " +
+		"  if ok then status = entry.status or 'UNKNOWN' end " +
+		"end " +
+
+		"if isActive == 0 and (not raw or status == 'LEFT' or status == 'EXPIRED') then " +
+		"  return {0, 0} " +
+		"end " +
+
+		"if isActive == 1 then " +
+		"  redis.call('SREM', KEYS[2], ARGV[1]) " +
+		"  if redis.call('EXISTS', KEYS[3]) == 1 then " +
+		"    redis.call('HINCRBY', KEYS[3], 'activeCount', -1) " +
+		"    redis.call('HSET', KEYS[3], 'updatedAt', ARGV[2]) " +
+		"  end " +
+		"end " +
+
+		"redis.call('ZREM', KEYS[4], ARGV[3]) " +
+
+		"return {isActive, 1}";
+
+	/**
+	 * Leave All-in-One Lua.
+	 * @return [0] = released (1=active user가 퇴장, 0=이미 퇴장 또는 비활성),
+	 *         [1] = processed (1=처리됨, 0=early return)
+	 */
+	public List<Long> executeLeave(UUID gameId, UUID userId) {
+		List<String> keys = List.of(
+			RedisKey.QUEUE_ENTRY.getKey(gameId, userId),
+			RedisKey.QUEUE_ACTIVE_USERS.getKey(gameId),
+			RedisKey.QUEUE_META.getKey(gameId),
+			RedisKey.QUEUE_EXPIRATION_USERS.getKey("")
+		);
+		@SuppressWarnings("unchecked")
+		List<Long> result = stringRedisTemplate.execute(
+			RedisScript.of(EXECUTE_LEAVE_SCRIPT, List.class),
+			keys,
+			userId.toString(),
+			Instant.now().toString(),
+			expirationMember(gameId, userId)
+		);
+		return result;
 	}
 
 	private long longFromString(Object value) {

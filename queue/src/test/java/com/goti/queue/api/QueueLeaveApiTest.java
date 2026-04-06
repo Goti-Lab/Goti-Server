@@ -121,7 +121,7 @@ class QueueLeaveApiTest extends PostgreSqlContainerSupport {
 		QueueEntry entry = objectMapper.convertValue(saved, QueueEntry.class);
 
 		assertThat(entry.status()).isEqualTo(QueueStatus.LEFT);
-		assertThat(redisTemplate.opsForSet().isMember(RedisKey.QUEUE_ACTIVE_USERS.getKey(gameId), userId.toString()))
+		assertThat(stringRedisTemplate.opsForSet().isMember(RedisKey.QUEUE_ACTIVE_USERS.getKey(gameId), userId.toString()))
 			.isFalse();
 		assertThat(Long.parseLong((String)stringRedisTemplate.opsForHash()
 			.get(RedisKey.QUEUE_META.getKey(gameId), QueueMetaField.ACTIVE_COUNT))).isZero();

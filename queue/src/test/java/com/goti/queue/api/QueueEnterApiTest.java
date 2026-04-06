@@ -99,7 +99,7 @@ class QueueEnterApiTest extends PostgreSqlContainerSupport {
 		String waitingKey = RedisKey.QUEUE_WAITING.getKey(lastGameId);
 		String entryKey = RedisKey.QUEUE_ENTRY.getKey(lastGameId, lastUserId);
 
-		Double score = redisTemplate.opsForZSet().score(waitingKey, lastUserId.toString());
+		Double score = stringRedisTemplate.opsForZSet().score(waitingKey, lastUserId.toString());
 		Object saved = redisTemplate.opsForValue().get(entryKey);
 
 		assertThat(score).isEqualTo(1.0);
@@ -138,9 +138,9 @@ class QueueEnterApiTest extends PostgreSqlContainerSupport {
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.data.queueNumber").value(2));
 
-		assertThat(redisTemplate.opsForZSet().score(RedisKey.QUEUE_WAITING.getKey(lastGameId), lastUserId.toString()))
+		assertThat(stringRedisTemplate.opsForZSet().score(RedisKey.QUEUE_WAITING.getKey(lastGameId), lastUserId.toString()))
 			.isEqualTo(1.0);
-		assertThat(redisTemplate.opsForZSet().score(RedisKey.QUEUE_WAITING.getKey(lastGameId), lastSecondUserId.toString()))
+		assertThat(stringRedisTemplate.opsForZSet().score(RedisKey.QUEUE_WAITING.getKey(lastGameId), lastSecondUserId.toString()))
 			.isEqualTo(2.0);
 	}
 
@@ -177,8 +177,8 @@ class QueueEnterApiTest extends PostgreSqlContainerSupport {
 		JsonNode secondData = readData(secondResult);
 
 		Object saved = redisTemplate.opsForValue().get(RedisKey.QUEUE_ENTRY.getKey(lastGameId, lastUserId));
-		Double score = redisTemplate.opsForZSet().score(RedisKey.QUEUE_WAITING.getKey(lastGameId), lastUserId.toString());
-		Long size = redisTemplate.opsForZSet().zCard(RedisKey.QUEUE_WAITING.getKey(lastGameId));
+		Double score = stringRedisTemplate.opsForZSet().score(RedisKey.QUEUE_WAITING.getKey(lastGameId), lastUserId.toString());
+		Long size = stringRedisTemplate.opsForZSet().zCard(RedisKey.QUEUE_WAITING.getKey(lastGameId));
 
 		assertThat(firstData.get("queueToken").asText()).isNotEqualTo(secondData.get("queueToken").asText());
 		QueueEntry entry = objectMapper.convertValue(saved, QueueEntry.class);

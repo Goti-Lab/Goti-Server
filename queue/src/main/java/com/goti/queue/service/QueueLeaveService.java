@@ -1,6 +1,7 @@
 package com.goti.queue.service;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 
 import lombok.extern.slf4j.Slf4j;
@@ -12,7 +13,6 @@ import com.goti.exception.CustomException;
 import com.goti.queue.config.properties.QueueProperties;
 import com.goti.queue.constants.QueueStatus;
 import com.goti.queue.domain.model.QueueEntry;
-import com.goti.queue.domain.model.QueueMeta;
 import com.goti.queue.dto.response.QueueLeaveResponse;
 import com.goti.queue.repository.QueueRedisRepository;
 
@@ -41,40 +41,31 @@ public class QueueLeaveService {
 			throw new CustomException(ErrorCode.AUTH_INVALID);
 		}
 
-		QueueEntry currentEntry = queueRedisRepository.getEntry(gameId, userId);
-		QueueMeta queueMeta = queueRedisRepository.getMeta(gameId);
-		boolean activeUser = queueRedisRepository.isActiveUser(gameId, userId);
+		// Lua All-in-One: entry 읽기 + active 체크 + cleanup (1 RTT)
+		List<Long> result = queueRedisRepository.executeLeave(gameId, userId);
+		boolean released = result.get(0) == 1L;
+		boolean processed = result.get(1) == 1L;
 
-		if (!activeUser && (currentEntry == null || currentEntry.status() == QueueStatus.LEFT || currentEntry.status() == QueueStatus.EXPIRED)) {
-			QueueLeaveResponse response = new QueueLeaveResponse(
-				gameId,
-				false,
-				currentEntry == null ? QueueStatus.LEFT : currentEntry.status()
-			);
-			recordLeave(gameId, userId, reason, response.released());
+		if (!processed) {
+			QueueLeaveResponse response = new QueueLeaveResponse(gameId, false, QueueStatus.LEFT);
+			recordLeave(gameId, userId, reason, false);
 			return response;
 		}
 
+		// entry 상태 업데이트 (2nd RTT) — JSON 직렬화 필요
+		QueueEntry currentEntry = queueRedisRepository.getEntry(gameId, userId);
 		if (currentEntry != null) {
 			QueueStatus nextStatus = reason == LeaveReason.TTL_EXPIRED ? QueueStatus.EXPIRED : QueueStatus.LEFT;
 			queueRedisRepository.saveEntry(
-				gameId,
-				userId,
+				gameId, userId,
 				new QueueEntry(currentEntry.queueNumber(), currentEntry.issuedAt(), nextStatus),
 				queueProperties.entryTtl()
 			);
 		}
 
-		queueRedisRepository.removeActiveUser(gameId, userId);
-		queueRedisRepository.removeExpirationUser(gameId, userId);
-
-		if (queueMeta != null && activeUser) {
-			queueRedisRepository.decrementActiveCount(gameId);
-		}
-
 		QueueStatus responseStatus = reason == LeaveReason.TTL_EXPIRED ? QueueStatus.EXPIRED : QueueStatus.LEFT;
-		QueueLeaveResponse response = new QueueLeaveResponse(gameId, activeUser, responseStatus);
-		recordLeave(gameId, userId, reason, response.released());
+		QueueLeaveResponse response = new QueueLeaveResponse(gameId, released, responseStatus);
+		recordLeave(gameId, userId, reason, released);
 		return response;
 	}
 

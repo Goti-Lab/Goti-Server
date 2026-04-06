@@ -117,9 +117,9 @@ class QueueSeatEnterApiTest extends PostgreSqlContainerSupport {
 		QueueEntry entry = objectMapper.convertValue(saved, QueueEntry.class);
 
 		assertThat(entry.status()).isEqualTo(QueueStatus.ADMITTED);
-		assertThat(redisTemplate.opsForSet().isMember(RedisKey.QUEUE_ACTIVE_USERS.getKey(gameId), userId.toString()))
+		assertThat(stringRedisTemplate.opsForSet().isMember(RedisKey.QUEUE_ACTIVE_USERS.getKey(gameId), userId.toString()))
 			.isTrue();
-		assertThat(redisTemplate.opsForZSet().score(RedisKey.QUEUE_WAITING.getKey(gameId), userId.toString()))
+		assertThat(stringRedisTemplate.opsForZSet().score(RedisKey.QUEUE_WAITING.getKey(gameId), userId.toString()))
 			.isNull();
 		assertThat(Long.parseLong((String)stringRedisTemplate.opsForHash()
 			.get(RedisKey.QUEUE_META.getKey(gameId), QueueMetaField.ACTIVE_COUNT))).isEqualTo(1L);

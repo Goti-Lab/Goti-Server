@@ -9,6 +9,7 @@ import static org.mockito.Mockito.verify;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -67,8 +68,8 @@ class QueueEnterServiceTest {
 		UUID userId = UUID.randomUUID();
 		QueueEnterRequest request = new QueueEnterRequest(gameId);
 
-		given(queueRedisRepository.getEntry(gameId, userId)).willReturn(null);
-		given(queueRedisRepository.nextSequence(gameId)).willReturn(1L);
+		given(queueRedisRepository.enterQueue(eq(gameId), eq(userId), eq(5000L)))
+			.willReturn(List.of(1L, -1L));
 		given(queueTokenProvider.createToken(eq(gameId), eq(userId), eq(1L), any(Instant.class)))
 			.willReturn("queue-token");
 
@@ -79,20 +80,18 @@ class QueueEnterServiceTest {
 		assertThat(response.gameId()).isEqualTo(gameId);
 		assertThat(response.issuedAt()).isNotNull();
 
-		verify(queueRedisRepository).initializeMetaIfAbsent(gameId, queueProperties.maxCapacity());
-		verify(queueRedisRepository).addWaiting(gameId, userId, 1L);
+		verify(queueRedisRepository).enterQueue(gameId, userId, 5000L);
 		verify(queueRedisRepository).saveEntry(eq(gameId), eq(userId), any(QueueEntry.class), eq(queueProperties.entryTtl()));
 	}
 
 	@Test
-	void reEnterDeletesExistingEntryAndIssuesNewNumber() {
+	void reEnterReturnsOldQueueNumber() {
 		UUID gameId = UUID.randomUUID();
 		UUID userId = UUID.randomUUID();
 		QueueEnterRequest request = new QueueEnterRequest(gameId);
-		QueueEntry existingEntry = new QueueEntry(3L, Instant.parse("2026-03-25T10:00:00Z"), QueueStatus.WAITING);
 
-		given(queueRedisRepository.getEntry(gameId, userId)).willReturn(existingEntry);
-		given(queueRedisRepository.nextSequence(gameId)).willReturn(4L);
+		given(queueRedisRepository.enterQueue(eq(gameId), eq(userId), eq(5000L)))
+			.willReturn(List.of(4L, 3L));
 		given(queueTokenProvider.createToken(eq(gameId), eq(userId), eq(4L), any(Instant.class)))
 			.willReturn("new-queue-token");
 
@@ -100,10 +99,6 @@ class QueueEnterServiceTest {
 
 		assertThat(response.queueNumber()).isEqualTo(4L);
 		assertThat(response.queueToken()).isEqualTo("new-queue-token");
-
-		verify(queueRedisRepository).removeWaiting(gameId, userId);
-		verify(queueRedisRepository).deleteEntry(gameId, userId);
-		verify(queueRedisRepository).addWaiting(gameId, userId, 4L);
 	}
 
 	@Test
@@ -112,8 +107,8 @@ class QueueEnterServiceTest {
 		UUID userId = UUID.randomUUID();
 		QueueEnterRequest request = new QueueEnterRequest(gameId);
 
-		given(queueRedisRepository.getEntry(gameId, userId)).willReturn(null);
-		given(queueRedisRepository.nextSequence(gameId)).willReturn(11L);
+		given(queueRedisRepository.enterQueue(eq(gameId), eq(userId), eq(5000L)))
+			.willReturn(List.of(11L, -1L));
 		given(queueTokenProvider.createToken(eq(gameId), eq(userId), eq(11L), any(Instant.class)))
 			.willReturn("queue-token");
 
