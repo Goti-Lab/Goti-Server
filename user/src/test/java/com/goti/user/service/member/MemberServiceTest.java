@@ -1,9 +1,8 @@
-package com.goti.user.service;
+package com.goti.user.service.member;
 
 import com.goti.constants.Gender;
 import com.goti.infra.cache.RedisCache;
 import com.goti.infra.constants.redis.RedisKey;
-import com.goti.user.GotiUserApplication;
 
 import com.goti.user.domain.entity.user.MemberEntity;
 import com.goti.user.repository.MemberRepository;
