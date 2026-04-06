@@ -7,6 +7,7 @@ import com.goti.user.domain.entity.user.AddressEntity;
 import com.goti.user.domain.entity.user.MemberEntity;
 import com.goti.user.domain.entity.user.SocialProviderEntity;
 import com.goti.user.dto.response.MemberDetailResponse;
+import com.goti.user.dto.response.MemberSummaryResponse;
 import com.goti.user.service.application.member.MemberProfileService;
 import com.goti.user.service.domain.account.AccountService;
 import com.goti.user.service.domain.address.AddressService;
@@ -88,6 +89,43 @@ public class MemberProfileServiceTest {
 		assertThat(response.socialConnection().isGoogleConnected()).isTrue();
 		log.info("response :: {}", response);
 		verify(socialProviderService, times(1)).getSocialProvider(anyString() , any());
+	}
+
+	@Test
+	@DisplayName("회원 요약 정보 조회 성공 테스트")
+	void 회원_요약_정보_조회_성공() {
+		// given
+		String providerId = "google_12345";
+		OAuthProvider provider = OAuthProvider.GOOGLE;
+		String email = "goti1234@google.com";
+		String name = "김고티";
+		String mobile = "01012345678";
+
+		// 1. Member 엔티티 생성
+		MemberEntity mockMember = MemberEntity.create(
+			mobile, name, Gender.MALE, LocalDate.of(2000, 10, 21)
+		);
+
+		// 2. SocialProvider 모킹 및 연관관계 설정
+		SocialProviderEntity mockSocial = mock(SocialProviderEntity.class);
+		given(mockSocial.getMember()).willReturn(mockMember);
+		given(mockSocial.getEmail()).willReturn(email);
+
+		given(socialProviderService.getSocialProvider(providerId, provider))
+			.willReturn(mockSocial);
+
+		// when
+		MemberSummaryResponse response = memberProfileService.getProfileSummary(providerId, provider);
+
+		// then
+		assertThat(response.name()).isEqualTo(name);
+		assertThat(response.mobile()).isEqualTo(mobile);
+		assertThat(response.email()).isEqualTo(email);
+
+		log.info("summary response :: {}", response);
+
+		// 검증
+		verify(socialProviderService, times(1)).getSocialProvider(eq(providerId), eq(provider));
 	}
 
 }
