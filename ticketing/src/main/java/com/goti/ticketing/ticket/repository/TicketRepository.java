@@ -17,6 +17,8 @@ public interface TicketRepository extends JpaRepository<TicketEntity, UUID> {
 
 	List<TicketEntity> findAllByOrderItemIdIn(Collection<UUID> orderItemIds);
 
+	List<TicketEntity> findAllByIdIn(Collection<UUID> ticketIds);
+
 	int countByUserIdAndGameId(UUID userId, UUID gameId);
 
 	int countByUserIdAndTicketStatusIn(UUID userId, Collection<TicketStatus> statuses);

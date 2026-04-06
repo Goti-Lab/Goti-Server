@@ -3,7 +3,6 @@ package com.goti.ticketing.game.service.domain;
 import com.goti.ticketing.constants.TicketingStatus;
 import com.goti.ticketing.domain.entity.game.GameScheduleEntity;
 import com.goti.ticketing.domain.entity.game.GameTicketingStatusEntity;
-
 import com.goti.ticketing.game.repository.GameTicketingStatusRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -35,6 +34,13 @@ public class GameTicketingStatusServiceImpl implements GameTicketingStatusServic
 			gameSchedule, openedAt, endAt, status
 		);
 		return gameTicketingStatusRepository.save(gameTicketingStatus);
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public GameTicketingStatusEntity getLocked(GameScheduleEntity gameSchedule) {
+		return gameTicketingStatusRepository.findByGameSchedule(gameSchedule)
+			.orElse(null);
 	}
 
 	private LocalDateTime calculateOpenedAt(LocalDateTime gameStartAt, LocalDateTime now) {

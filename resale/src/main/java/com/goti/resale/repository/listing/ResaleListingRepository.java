@@ -3,6 +3,7 @@ package com.goti.resale.repository.listing;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -10,11 +11,8 @@ import org.springframework.data.repository.query.Param;
 import com.goti.resale.constants.ResaleListingStatus;
 import com.goti.resale.domain.entity.resale.ResaleListingEntity;
 
-public interface ResaleListingRepository extends JpaRepository<ResaleListingEntity, UUID>, ResaleListingRepositoryCustom {
-
-	List<ResaleListingEntity> findAllBySellerId(UUID sellerId);
-
-	Long countByGameIdAndSectionIdAndListingStatus(UUID gameId, UUID sectionId, ResaleListingStatus status);
+public interface ResaleListingRepository extends JpaRepository<ResaleListingEntity, UUID> {
+	Long countByGameIdAndGradeIdAndListingStatus(UUID gameId, UUID gradeId, ResaleListingStatus status);
 
 	Long countByGameIdAndListingStatus(UUID gameId, ResaleListingStatus status);
 
@@ -23,6 +21,11 @@ public interface ResaleListingRepository extends JpaRepository<ResaleListingEnti
 	List<ResaleListingEntity> findByGameIdInAndListingStatusIn(List<UUID> gameId, List<ResaleListingStatus> statuses);
 
 	List<ResaleListingEntity> findAllByListingOrderId(UUID listingOrderId);
+
+	@EntityGraph(attributePaths = "listingOrder")
+	List<ResaleListingEntity> findAllByListingOrderIdIn(List<UUID> orderIds);
+
+	List<ResaleListingEntity> findBySellerId(UUID sellerId);
 
 	@Query("SELECT r FROM ResaleListingEntity r "
 		+ "WHERE r.gameId = :gameId "

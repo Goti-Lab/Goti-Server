@@ -12,8 +12,9 @@ public enum RedisKey {
 	OAUTH_STATE("oauth:state:", Duration.ofMinutes(5)),
 	TICKET_QR("ticket:qr-token:", Duration.ofMinutes(3)),
 	RESERVATION_SESSION("ticketing:reservation-session:", Duration.ofMinutes(10)),
-	REFRESH_TOKEN("auth:refresh-token:", Duration.ofDays(7));
-
+	REFRESH_TOKEN("auth:refresh-token:", Duration.ofDays(7)),
+	MEMBER_IDENTITY_VERIFY("member:identity:verify:", Duration.ofMinutes(3))
+	;
 	private final String prefix;
 
 	private final Duration ttl;

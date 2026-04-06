@@ -48,14 +48,13 @@ public class SeatServiceImpl implements SeatService {
 			ErrorCode.SEAT_BULK_CREATE_LIMIT_EXCEEDED
 		);
 
-		SeatSectionEntity seatSection = seatSectionRepository.findById(sectionId)
-			.orElseThrow(() -> new CustomException(ErrorCode.SEAT_SECTION_NOT_FOUND));
+		SeatSectionEntity seatSection = getSeatSection(sectionId);
 
 		List<Integer> seatNumbers = IntStream.rangeClosed(startSeatNumber, endSeatNumber)
 			.boxed()
 			.toList();
 
-		long currentSeatCount = seatRepository.countBySeatSection_Id(sectionId);
+		long currentSeatCount = seatRepository.countBySeatSection(seatSection);
 		long totalSeatCount = currentSeatCount + seatNumbers.size();
 
 		Preconditions.validate(
@@ -95,9 +94,20 @@ public class SeatServiceImpl implements SeatService {
 			ErrorCode.AUTH_INVALID
 		);
 		reservationSessionService.validateActiveSession(userId, gameId);
+		SeatSectionEntity seatSection = getSeatSection(sectionId);
 
-		return seatRepository.findAllBySection(sectionId).stream()
+		return seatRepository.findAllBySection(seatSection).stream()
 			.map(SeatResponse::from)
+			.toList();
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public List<UUID> getSeatIdsBySectionId(UUID sectionId) {
+		SeatSectionEntity seatSection = getSeatSection(sectionId);
+
+		return seatRepository.findAllBySection(seatSection).stream()
+			.map(SeatEntity::getId)
 			.toList();
 	}
 
@@ -105,5 +115,10 @@ public class SeatServiceImpl implements SeatService {
 	@Transactional(readOnly = true)
 	public List<SeatEntity> getByStadiumId(UUID stadiumId) {
 		return seatRepository.findAllByStadiumId(stadiumId);
+	}
+
+	private SeatSectionEntity getSeatSection(UUID sectionId) {
+		return seatSectionRepository.findById(sectionId)
+			.orElseThrow(() -> new CustomException(ErrorCode.SEAT_SECTION_NOT_FOUND));
 	}
 }

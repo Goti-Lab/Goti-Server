@@ -69,6 +69,11 @@ public class GameTicketingStatusEntity extends ModificationTimestampEntity {
 		);
 	}
 
+	public boolean isExhausted() {
+		return this.status != null &&
+			this.status == TicketingStatus.EXHAUSTED;
+	}
+
 	private static void validate(
 		GameScheduleEntity gameSchedule,
 		LocalDateTime ticketingOpenedAt,

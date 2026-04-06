@@ -56,7 +56,8 @@ public class SocialAuthReissueTokenApiTest {
 
 	MemberEntity member;
 	SocialProviderEntity socialProvider;
-
+	private final static String PROVIDER_ID = "test_provider_id";
+	private final static OAuthProvider PROVIDER = OAuthProvider.KAKAO;
 	@BeforeEach
 	void setup() {
 		saveMember();
@@ -67,14 +68,16 @@ public class SocialAuthReissueTokenApiTest {
 	void 토큰_재발급_성공__200_OK() throws Exception {
 		String loginAccessToken = jwtTokenProvider.create(
 			member.getId(),
-			member.getMobile(),
 			member.getRole(),
+			PROVIDER_ID,
+			PROVIDER,
 			TokenType.ACCESS
 		);
 		String loginRefreshToken = jwtTokenProvider.create(
 			member.getId(),
-			member.getMobile(),
 			member.getRole(),
+			PROVIDER_ID,
+			PROVIDER,
 			TokenType.REFRESH
 		);
 

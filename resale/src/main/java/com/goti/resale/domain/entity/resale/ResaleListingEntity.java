@@ -28,8 +28,6 @@ import lombok.NoArgsConstructor;
 	indexes = {
 		@Index(name = "idx_ticket_id", columnList = "ticket_id"),
 		@Index(name = "idx_seller_id", columnList = "seller_id"),
-		@Index(name = "idx_section_id", columnList = "section_id"),
-		@Index(name = "idx_game_id", columnList = "game_id"),
 		@Index(name = "idx_listing_order_id", columnList = "listing_order_id")
 	})
 @NoArgsConstructor(access = PROTECTED)

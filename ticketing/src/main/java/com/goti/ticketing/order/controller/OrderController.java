@@ -61,15 +61,15 @@ public class OrderController {
 	}
 
 	@Operation(
-		summary = "내 주문 목록 조회",
-		description = "주문 목록 조회 API"
+		summary = "주문 목록 조회 (내부용)",
+		description = "payment 모듈에서 구매 내역 통합 조회용 주문 목록 조회 API"
 	)
-	@GetMapping
-	public ResponseEntity<ApiSuccessResponse<List<OrderListResponse>>> getMyOrders(
-		@AuthenticationPrincipal(expression = "id") UUID memberId,
+	@GetMapping("/internal")
+	public ResponseEntity<ApiSuccessResponse<List<OrderListResponse>>> getOrdersInternal(
+		@RequestParam UUID memberId,
 		@ParameterObject OrderPeriodFilterRequest request
 	) {
-		return wrap(orderService.getMyOrders(
+		return wrap(orderService.getOrders(
 			memberId,
 			request.months(),
 			request.startDate(),

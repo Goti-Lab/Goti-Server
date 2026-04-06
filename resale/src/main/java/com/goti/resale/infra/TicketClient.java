@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.UUID;
 
 import com.goti.resale.dto.response.ResaleTicketResponse;
+import com.goti.resale.infra.dto.ResaleTicketPurchaseInfo;
 import com.goti.resale.infra.dto.TicketGameInfo;
 
 public interface TicketClient {
@@ -20,6 +21,8 @@ public interface TicketClient {
 
 	void cancelResaleListing(UUID ticketId, UUID userId);
 
+	List<ResaleTicketPurchaseInfo> getPurchaseInfos(List<UUID> ticketIds);
+
 	void transferOwnership(
 		UUID ticketId,
 		UUID buyerId,
@@ -27,6 +30,7 @@ public interface TicketClient {
 		String buyerEmail,
 		String buyerPhone,
 		UUID transactionId,
-		Integer transactionPrice
+		Integer transactionPrice,
+		String authToken
 	);
 }

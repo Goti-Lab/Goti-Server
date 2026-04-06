@@ -7,7 +7,7 @@ import java.util.UUID;
 import com.goti.ticketing.domain.entity.order.OrderEntity;
 
 public interface OrderRepositoryCustom {
-	List<OrderEntity> findMyOrders(
+	List<OrderEntity> findOrders(
 		UUID memberId,
 		Integer months,
 		LocalDate startDate,

@@ -58,7 +58,7 @@ public class TicketApiController {
 		@RequestParam UUID userId,
 		@RequestParam UUID gameId
 	) {
-		return wrap(ticketResaleService.getOwnedTicketCountWithGame(userId, gameId));
+		return wrap(ticketResaleService.getOwnedTicketCount(userId, gameId));
 	}
 
 	@Operation(

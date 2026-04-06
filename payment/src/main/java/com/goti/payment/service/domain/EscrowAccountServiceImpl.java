@@ -89,7 +89,7 @@ public class EscrowAccountServiceImpl implements EscrowAccountService {
 	@Transactional(readOnly = true)
 	public Long sumUnsettledAmounts(UUID sellerId) {
 		return Optional.ofNullable(
-			escrowAccountRepository.sumTotalAmountByStatus(sellerId, EscrowStatus.HOLDING)
+			escrowAccountRepository.sumUnsettledAmount(sellerId, EscrowStatus.HOLDING)
 		).orElse(0L);
 	}
 

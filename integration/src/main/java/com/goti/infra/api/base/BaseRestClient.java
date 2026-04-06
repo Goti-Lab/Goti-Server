@@ -184,6 +184,18 @@ public abstract class BaseRestClient {
 			.toBodilessEntity();
 	}
 
+	protected void postVoid(String uri, Map<String, String> headers, Object body) {
+		restClient.post()
+			.uri(uriBuilder -> getActualUriBuilder(uri, uriBuilder).build())
+			.headers(header -> {
+				if (headers != null)
+					headers.forEach(header::add); // 👈 헤더 추가 로직
+			})
+			.body(body)
+			.retrieve()
+			.toBodilessEntity();
+	}
+
 	protected void patchVoid(String uri, Object body) {
 		restClient.patch()
 			.uri(uriBuilder -> getActualUriBuilder(uri, uriBuilder).build())
@@ -200,6 +212,23 @@ public abstract class BaseRestClient {
 					builder.queryParams(toParams(queryParams));
 				}
 				return builder.build();
+			})
+			.retrieve()
+			.toBodilessEntity();
+	}
+
+	protected void patchVoid(String uri, Map<String, String> headers, Map<String, ?> queryParams) {
+		restClient.patch()
+			.uri(uriBuilder -> {
+				UriBuilder builder = getActualUriBuilder(uri, uriBuilder);
+				if (queryParams != null) {
+					builder.queryParams(toParams(queryParams));
+				}
+				return builder.build();
+			})
+			.headers(header -> {
+				if (headers != null)
+					headers.forEach(header::add); // 👈 헤더 추가 로직
 			})
 			.retrieve()
 			.toBodilessEntity();

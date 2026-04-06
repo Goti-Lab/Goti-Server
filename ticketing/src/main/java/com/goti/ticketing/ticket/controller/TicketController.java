@@ -2,6 +2,7 @@ package com.goti.ticketing.ticket.controller;
 
 import static com.goti.global.api.ApiSuccessResponse.*;
 
+import java.util.List;
 import java.util.UUID;
 
 import org.springframework.http.ResponseEntity;
@@ -9,9 +10,11 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.goti.global.api.ApiSuccessResponse;
+import com.goti.ticketing.ticket.dto.response.TicketPurchaseInfoResponse;
 import com.goti.ticketing.ticket.dto.response.TicketMyPageDashboardResponse;
 import com.goti.ticketing.ticket.dto.response.TicketQrResponse;
 import com.goti.ticketing.ticket.dto.response.TicketResponse;
@@ -53,6 +56,17 @@ public class TicketController {
 		@AuthenticationPrincipal(expression = "id") UUID userId
 	) {
 		return wrap(ticketService.getDetail(ticketId, userId));
+	}
+
+	@Operation(
+		summary = "티켓 구매 내역 정보 목록 조회 (내부용)",
+		description = "구매 내역 티켓 정보 목록 조회 내부용 API"
+	)
+	@GetMapping("/purchase-infos")
+	public ResponseEntity<ApiSuccessResponse<List<TicketPurchaseInfoResponse>>> getPurchaseInfos(
+		@RequestParam List<UUID> ticketIds
+	) {
+		return wrap(ticketService.getPurchaseInfos(ticketIds));
 	}
 
 	@Operation(
