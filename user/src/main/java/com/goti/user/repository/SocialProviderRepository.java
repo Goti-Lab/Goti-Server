@@ -5,9 +5,8 @@ import com.goti.constants.messages.ErrorCode;
 import com.goti.exception.CustomException;
 import com.goti.user.domain.entity.user.SocialProviderEntity;
 
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
@@ -24,6 +23,7 @@ public interface SocialProviderRepository extends JpaRepository<SocialProviderEn
 		);
 	}
 
+	@EntityGraph(attributePaths = {"member", "member.socialProviders"})
 	Optional<SocialProviderEntity> findByProviderIdAndProvider(String providerId, OAuthProvider provider);
 
 }
