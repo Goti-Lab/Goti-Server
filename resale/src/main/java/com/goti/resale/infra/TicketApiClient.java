@@ -20,6 +20,7 @@ import com.goti.global.api.ApiSuccessResponse;
 import com.goti.infra.api.base.BaseRestClient;
 import com.goti.resale.dto.response.ResaleTicketResponse;
 import com.goti.resale.infra.dto.ResaleTicketPurchaseInfo;
+import com.goti.resale.infra.dto.GameScheduleResponse;
 import com.goti.resale.infra.dto.TicketGameInfo;
 import com.goti.resale.infra.dto.TicketTransferRequest;
 
@@ -29,6 +30,7 @@ import jakarta.servlet.http.HttpServletRequest;
 public class TicketApiClient extends BaseRestClient implements TicketClient {
 	private static final String TICKET_API = "/api/v1/tickets";
 	private static final String TICKETING_RESALE_API = "/api/v1/tickets/resales";
+	private static final String TICKETING_GAME_API = "/api/v1/games";
 	private static final String PATH_SEPARATOR = "/";
 
 	public TicketApiClient(RestClient.Builder builder, ApiEndpointProperties properties) {
@@ -158,5 +160,17 @@ public class TicketApiClient extends BaseRestClient implements TicketClient {
 			}
 		}
 		return null;
+	}
+
+	@Override
+	public GameScheduleResponse getGameSchedule(UUID gameId) {
+		String uri = TICKETING_GAME_API + PATH_SEPARATOR + gameId + PATH_SEPARATOR + "schedule";
+		return getGotiResponse(
+			uri,
+			null,
+			null,
+			new ParameterizedTypeReference<>() {
+			}
+		);
 	}
 }

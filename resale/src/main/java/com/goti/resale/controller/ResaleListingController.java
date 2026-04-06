@@ -31,6 +31,7 @@ import com.goti.resale.dto.response.ResaleListingOrderResponse;
 import com.goti.resale.dto.response.ResaleListingResponse;
 import com.goti.resale.dto.response.ResaleListingsCountResponse;
 import com.goti.resale.dto.response.ResalePriceHistoryResponse;
+import com.goti.resale.dto.response.ResaleStatusResponse;
 import com.goti.resale.service.application.ResaleListingProcessService;
 import com.goti.resale.service.application.ResalePriceProcessService;
 
@@ -187,5 +188,17 @@ public class ResaleListingController {
 	) {
 		long count = listingService.getListingCountByGrade(gameId, gradeId);
 		return wrap(new ResaleListingCountResponse(count));
+	}
+
+	@Operation(
+		summary = "경기의 리셀 상태 조회",
+		description = "경기의 리셀 가능 여부 (SCHEDULED, AVAILABLE, UNAVAILABLE) 조회 API"
+	)
+	@GetMapping("/games/{gameId}/status")
+	public ResponseEntity<ApiSuccessResponse<ResaleStatusResponse>> getResaleStatus(
+		@PathVariable UUID gameId
+	) {
+		ResaleStatusResponse response = listingService.getResaleStatus(gameId);
+		return wrap(response);
 	}
 }

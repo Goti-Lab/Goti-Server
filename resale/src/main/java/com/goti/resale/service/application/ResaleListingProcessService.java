@@ -13,6 +13,7 @@ import com.goti.global.dto.Paging;
 import com.goti.resale.constants.ResaleListingOrderStatus;
 import com.goti.resale.constants.ResaleListingStatus;
 import com.goti.resale.constants.ResaleOrderSearchStatus;
+import com.goti.resale.constants.ResaleStatus;
 import com.goti.resale.domain.entity.resale.ResaleListingEntity;
 import com.goti.resale.domain.entity.resale.ResaleRestrictionEntity;
 import com.goti.resale.dto.request.ResaleListingCancelRequest;
@@ -21,6 +22,7 @@ import com.goti.resale.dto.response.ResaleListingOrderCreateResponse;
 import com.goti.resale.dto.response.ResaleListingOrderResponse;
 import com.goti.resale.dto.response.ResaleListingResponse;
 import com.goti.resale.dto.response.ResaleListingsCountResponse;
+import com.goti.resale.dto.response.ResaleStatusResponse;
 import com.goti.resale.repository.ResaleRestrictionRepository;
 import com.goti.resale.repository.listing.ResaleListingRepository;
 import com.goti.resale.service.domain.ResaleListingService;
@@ -143,5 +145,11 @@ public class ResaleListingProcessService {
 
 		listingRepository.saveAll(listings);
 		restrictionRepository.saveAll(restrictionMap.values());
+	}
+
+	@Transactional(readOnly = true)
+	public ResaleStatusResponse getResaleStatus(UUID gameId) {
+		ResaleStatus status = resaleListingService.getResaleStatus(gameId);
+		return new ResaleStatusResponse(status);
 	}
 }
