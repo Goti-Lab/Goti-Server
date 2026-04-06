@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.goti.global.api.ApiSuccessResponse;
@@ -144,9 +145,9 @@ public class ResaleListingController {
 	)
 	@GetMapping("/listings/count")
 	public ResponseEntity<ApiSuccessResponse<ResaleListingsCountResponse>> getResaleCount(
-		@AuthenticationPrincipal(expression = "id") UUID sellerId
+		@RequestParam UUID userId
 	) {
-		ResaleListingsCountResponse count = listingService.getResaleCount(sellerId);
+		ResaleListingsCountResponse count = listingService.getResaleCount(userId);
 		return wrap(count);
 	}
 

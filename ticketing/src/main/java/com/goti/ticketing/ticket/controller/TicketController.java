@@ -18,7 +18,7 @@ import com.goti.ticketing.ticket.dto.response.TicketMyInfoResponse;
 import com.goti.ticketing.ticket.dto.response.TicketPurchaseInfoResponse;
 import com.goti.ticketing.ticket.dto.response.TicketQrResponse;
 import com.goti.ticketing.ticket.dto.response.TicketResponse;
-import com.goti.ticketing.ticket.service.application.TicketMyPageService;
+import com.goti.ticketing.ticket.service.application.TicketMyInfoService;
 import com.goti.ticketing.ticket.service.application.TicketQrService;
 import com.goti.ticketing.ticket.service.domain.TicketService;
 
@@ -33,7 +33,7 @@ import lombok.RequiredArgsConstructor;
 public class TicketController {
 	private final TicketService ticketService;
 	private final TicketQrService ticketQrService;
-	private final TicketMyPageService ticketMyPageService;
+	private final TicketMyInfoService ticketMyInfoService;
 
 	@Operation(
 		summary = "사용자 티켓 현황 조회",
@@ -43,7 +43,7 @@ public class TicketController {
 	public ResponseEntity<ApiSuccessResponse<TicketMyInfoResponse>> getInfo(
 		@AuthenticationPrincipal(expression = "id") UUID userId
 	) {
-		return wrap(ticketMyPageService.getMyTicketInfo(userId));
+		return wrap(ticketMyInfoService.getMyTicketInfo(userId));
 	}
 
 	@Operation(

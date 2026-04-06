@@ -16,7 +16,7 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-public class TicketMyPageService {
+public class TicketMyInfoService {
 	private final TicketService ticketService;
 	private final TicketResaleClient ticketResaleClient;
 	private final TicketPaymentClient ticketPaymentClient;

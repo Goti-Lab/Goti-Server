@@ -13,7 +13,7 @@ import com.goti.ticketing.infra.api.dto.response.ResaleListingMyPageCountRespons
 
 @Component
 public class TicketResaleApiClient extends BaseRestClient implements TicketResaleClient {
-	private final static String RESALE_GET_API = "/api/v1/internal/resales";
+	private final static String RESALE_GET_API = "/api/v1/resales";
 	private final static String PATH_SEPARATOR = "/";
 
 	public TicketResaleApiClient(RestClient.Builder builder, ApiEndpointProperties properties) {
@@ -22,11 +22,11 @@ public class TicketResaleApiClient extends BaseRestClient implements TicketResal
 
 	@Override
 	public ResaleListingMyPageCountResponse getMySales(UUID userId) {
-		String uri = RESALE_GET_API + PATH_SEPARATOR + "listings" + PATH_SEPARATOR + "count" + PATH_SEPARATOR + "listing";
+		String uri = RESALE_GET_API + PATH_SEPARATOR + "listings" + PATH_SEPARATOR + "count";
 		return getGotiResponse(
 			uri,
 			null,
-			Map.of("sellerId", userId),
+			Map.of("userId", userId),
 			new ParameterizedTypeReference<>() {
 			}
 		);

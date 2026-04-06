@@ -154,7 +154,7 @@ public class TicketApiClient extends BaseRestClient implements TicketClient {
 			String bearerToken = request.getHeader("Authorization");
 
 			if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
-				return createBearerHeader(bearerToken.substring(7)); // BaseRestClient의 헬퍼 메서드 활용
+				return createBearerHeader(bearerToken.substring(7));
 			}
 		}
 		return null;

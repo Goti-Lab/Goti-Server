@@ -17,7 +17,7 @@ import com.goti.ticketing.order.dto.request.OrderPaymentCancelRequest;
 @Component
 public class TicketPaymentApiClient extends BaseRestClient implements TicketPaymentClient {
 	private static final String PAYMENT_CANCEL_API = "/api/v1/payments/orders";
-	private static final String PAYMENT_UNSETTLED_API = "/api/v1/internal/payments";
+	private static final String PAYMENT_UNSETTLED_API = "/api/v1/payments/resales";
 	private static final String PATH_SEPARATOR = "/";
 
 	public TicketPaymentApiClient(RestClient.Builder builder, ApiEndpointProperties properties) {
@@ -35,11 +35,11 @@ public class TicketPaymentApiClient extends BaseRestClient implements TicketPaym
 		);
 	}
 
-	public UnsettledAmountResponse getUnsettledAmounts(UUID sellerId) {
+	public UnsettledAmountResponse getUnsettledAmounts(UUID userId) {
 		return getGotiResponse(
-			PAYMENT_UNSETTLED_API + PATH_SEPARATOR + "resales" + PATH_SEPARATOR + "unsettled",
+			PAYMENT_UNSETTLED_API + PATH_SEPARATOR + "unsettled",
 			null,
-			Map.of("sellerId", sellerId),
+			Map.of("userId", userId),
 			new ParameterizedTypeReference<>() {
 			}
 		);
