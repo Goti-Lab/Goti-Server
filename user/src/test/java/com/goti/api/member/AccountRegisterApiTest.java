@@ -2,6 +2,7 @@ package com.goti.api.member;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.goti.constants.Gender;
+import com.goti.constants.OAuthProvider;
 import com.goti.user.GotiUserApplication;
 
 import com.goti.user.domain.entity.user.MemberEntity;
@@ -54,6 +55,7 @@ public class AccountRegisterApiTest {
 
 	@BeforeEach
 	void setup() {
+		OAuthProvider provider = OAuthProvider.KAKAO;
 		member = MemberEntity.create(
 			"01012341234",
 			"테스트회원",
@@ -65,7 +67,8 @@ public class AccountRegisterApiTest {
 		authenticator = new ExtendedUserDetails(
 			member.getId(),
 			member.getRole(),
-			PROVIDER_ID
+			PROVIDER_ID,
+			provider
 		);
 	}
 

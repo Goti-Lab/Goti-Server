@@ -21,7 +21,7 @@ public interface OrderService {
 
 	void expire(OrderEntity order);
 
-	List<OrderListResponse> getMyOrders(
+	List<OrderListResponse> getOrders(
 		UUID memberId,
 		Integer months,
 		LocalDate startDate,

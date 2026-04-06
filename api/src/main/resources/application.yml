@@ -94,3 +94,4 @@ infra:
       stadium: ${STADIUM_API_URL:http://localhost:8080}
       payment: ${PAYMENT_BASE_URL:http://localhost:8080}
       resale: ${RESALE_BASE_URL:http://localhost:8080}
+      ticketing: ${TICKETING_BASE_URL:http://localhost:8080}

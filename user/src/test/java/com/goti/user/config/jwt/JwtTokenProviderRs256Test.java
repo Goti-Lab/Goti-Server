@@ -9,6 +9,8 @@ import java.time.Duration;
 import java.util.Base64;
 import java.util.UUID;
 
+import com.goti.constants.OAuthProvider;
+
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -56,7 +58,9 @@ class JwtTokenProviderRs256Test {
 		);
 		ExtendedUserDetailsService mockService = new ExtendedUserDetailsService() {
 			@Override
-			public UserDetails loadUserById(String userId, String providerId) throws UsernameNotFoundException {
+			public UserDetails loadUserById(
+				String userId, String providerId, OAuthProvider provider
+			) throws UsernameNotFoundException {
 				return null;
 			}
 
@@ -85,9 +89,12 @@ class JwtTokenProviderRs256Test {
 			// Given
 			UUID userId = UUID.randomUUID();
 			String providerId = "test_provider_id";
+			OAuthProvider providerName = OAuthProvider.GOOGLE;
 
 			// When
-			String token = provider.create(userId, UserRole.MEMBER, providerId, TokenType.ACCESS);
+			String token = provider.create(
+				userId, UserRole.MEMBER, providerId, providerName, TokenType.ACCESS
+			);
 
 			// Then
 			assertThatCode(() -> provider.validateToken(token))
@@ -100,8 +107,11 @@ class JwtTokenProviderRs256Test {
 			// Given
 			UUID userId = UUID.randomUUID();
 			String providerId = "test_provider_id";
+			OAuthProvider providerName = OAuthProvider.GOOGLE;
 
-			String token = provider.create(userId, UserRole.ADMIN, providerId, TokenType.ACCESS);
+			String token = provider.create(
+				userId, UserRole.ADMIN, providerId, providerName, TokenType.ACCESS
+			);
 
 			// When
 			String jti = provider.extractJti(token);
@@ -150,9 +160,12 @@ class JwtTokenProviderRs256Test {
 			// Given
 			UUID userId = UUID.randomUUID();
 			String providerId = "test_provider_id";
+			OAuthProvider providerName = OAuthProvider.GOOGLE;
 
 			// When
-			String token = provider.create(userId, UserRole.MEMBER, providerId, TokenType.ACCESS);
+			String token = provider.create(
+				userId, UserRole.MEMBER, providerId, providerName, TokenType.ACCESS
+			);
 
 			// Then
 			assertThatCode(() -> provider.validateToken(token))
@@ -174,7 +187,7 @@ class JwtTokenProviderRs256Test {
 		@DisplayName("만료된 토큰은 fallback 없이 즉시 실패한다")
 		void should_throwExpired_when_tokenExpired() {
 			String providerId = "test_provider_id";
-
+			OAuthProvider providerName = OAuthProvider.GOOGLE;
 			// Given: 이미 만료된 토큰을 생성하기 위해 유효시간 0인 provider
 			JwtProperties properties = new JwtProperties(
 				HMAC_SECRET, rsaPrivateKeyPem, rsaPublicKeyPem, "goti-user-service",
@@ -182,7 +195,9 @@ class JwtTokenProviderRs256Test {
 			);
 			ExtendedUserDetailsService mockService = new ExtendedUserDetailsService() {
 				@Override
-				public UserDetails loadUserById(String userId, String providerId) throws UsernameNotFoundException {
+				public UserDetails loadUserById(
+					String userId, String providerId, OAuthProvider provider
+				) throws UsernameNotFoundException {
 					return null;
 				}
 
@@ -195,7 +210,9 @@ class JwtTokenProviderRs256Test {
 			expiredProvider.initKeys();
 
 			UUID userId = UUID.randomUUID();
-			String token = expiredProvider.create(userId, UserRole.MEMBER, providerId, TokenType.ACCESS);
+			String token = expiredProvider.create(
+				userId, UserRole.MEMBER, providerId, providerName, TokenType.ACCESS
+			);
 
 			// When & Then
 			assertThatThrownBy(() -> expiredProvider.validateToken(token))

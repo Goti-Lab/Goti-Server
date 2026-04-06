@@ -18,16 +18,15 @@ import com.goti.resale.constants.ResaleOrderStatus;
 import com.goti.resale.domain.entity.resale.ResaleHoldEntity;
 import com.goti.resale.domain.entity.resale.ResaleOrderEntity;
 import com.goti.resale.domain.entity.resale.ResaleTransactionEntity;
-import com.goti.resale.dto.request.ResaleOrderRequest;
 import com.goti.resale.dto.response.ResaleOrderCompleteResponse;
 import com.goti.resale.dto.response.ResaleOrderCreateResponse;
 import com.goti.resale.dto.response.ResaleOrderListResponse;
 import com.goti.resale.dto.response.ResalePurchaseListResponse;
 import com.goti.resale.infra.dto.ResaleOrderPaymentCompletedEvent;
 import com.goti.resale.infra.dto.SettlementCompletedEvent;
-import com.goti.resale.repository.ResaleOrderRepository;
-import com.goti.resale.repository.ResaleTransactionRepository;
 import com.goti.resale.repository.hold.ResaleHoldRepository;
+import com.goti.resale.repository.order.ResaleOrderRepository;
+import com.goti.resale.repository.transaction.ResaleTransactionRepository;
 import com.goti.resale.service.domain.ResaleOrderService;
 
 import lombok.RequiredArgsConstructor;
@@ -48,9 +47,12 @@ public class ResaleOrderProcessService {
 
 	public ResaleOrderCreateResponse initOrder(
 		UUID buyerId,
-		ResaleOrderRequest request
+		List<UUID> holdIds,
+		String buyerNickname,
+		String buyerEmail,
+		String buyerPhone
 	) {
-		List<ResaleHoldEntity> holds = validateAndGetHolds(buyerId, request.holdIds());
+		List<ResaleHoldEntity> holds = validateAndGetHolds(buyerId, holdIds);
 		UUID gameId = holds.getFirst().getResaleListing().getGameId();
 
 		String lockKey = LOCK_KEY_PREFIX + buyerId + ":" + gameId;
@@ -58,7 +60,10 @@ public class ResaleOrderProcessService {
 		return distributedLockManager.withLock(
 			lockKey,
 			ErrorCode.PURCHASABLE_CHECK_FAILED,
-			() -> resaleOrderService.initOrder(buyerId, holds, gameId)
+			() -> resaleOrderService.initOrder(
+				buyerId, holds, gameId,
+				buyerNickname, buyerEmail, buyerPhone
+			)
 		);
 	}
 
@@ -75,7 +80,7 @@ public class ResaleOrderProcessService {
 		resaleOrder.complete();
 		resaleOrderRepository.save(resaleOrder);
 
-		List<ResaleTransactionEntity> transactions = resaleTransactionRepository.findAllByResaleOrderId(resaleOrderId);
+		List<ResaleTransactionEntity> transactions = resaleOrderService.findTransactionByOrder(resaleOrderId);
 		for (ResaleTransactionEntity transaction : transactions) {
 			transaction.complete(paymentId);
 		}
@@ -97,7 +102,7 @@ public class ResaleOrderProcessService {
 
 	@Transactional(readOnly = true)
 	public ResaleOrderListResponse getTransactionIds(UUID resaleOrderId) {
-		List<UUID> transactions = resaleTransactionRepository.findAllByResaleOrderId(resaleOrderId).stream()
+		List<UUID> transactions = resaleOrderService.findTransactionByOrder(resaleOrderId).stream()
 			.map(ResaleTransactionEntity::getId)
 			.toList();
 

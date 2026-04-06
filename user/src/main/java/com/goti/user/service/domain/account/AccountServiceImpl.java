@@ -10,6 +10,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Optional;
+
 @Service
 @RequiredArgsConstructor
 public class AccountServiceImpl implements AccountService {
@@ -21,7 +23,7 @@ public class AccountServiceImpl implements AccountService {
 	public AccountRegisterResponse register(
 		String accountNumber, String bankName, String accountHolder, MemberEntity member
 	) {
-		AccountEntity account = accountRepository.findByMember(member)
+		AccountEntity account = findAccount(member)
 			.map(existingAccount -> {
 				existingAccount.updateDetails(accountNumber, bankName, accountHolder);
 				return existingAccount;
@@ -33,5 +35,10 @@ public class AccountServiceImpl implements AccountService {
 		accountRepository.save(account);
 
 		return AccountRegisterResponse.from(account);
+	}
+
+	@Override
+	public Optional<AccountEntity> findAccount(MemberEntity member) {
+		return accountRepository.findByMember(member);
 	}
 }

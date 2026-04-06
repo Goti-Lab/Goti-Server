@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.goti.constants.messages.ErrorCode;
 import com.goti.global.validation.Preconditions;
+import com.goti.infra.queue.QueueAccessReader;
 import com.goti.ticketing.constants.SeatStatus;
 import com.goti.ticketing.domain.entity.game.GameScheduleEntity;
 import com.goti.ticketing.domain.entity.seat.SeatGradeEntity;
@@ -30,6 +31,7 @@ import lombok.RequiredArgsConstructor;
 public class SeatGradeServiceImpl implements SeatGradeService {
 	private final SeatGradeRepository seatGradeRepository;
 	private final SeatStatusRepository seatStatusRepository;
+	private final QueueAccessReader queueAccessReader;
 	private final ReservationSessionService reservationSessionService;
 	private final GameScheduleService gameScheduleService;
 
@@ -52,6 +54,10 @@ public class SeatGradeServiceImpl implements SeatGradeService {
 		Preconditions.validate(
 			userId != null,
 			ErrorCode.AUTH_INVALID
+		);
+		Preconditions.validate(
+			queueAccessReader.isAdmitted(gameId, userId),
+			ErrorCode.QUEUE_ADMISSION_REQUIRED
 		);
 
 		GameScheduleEntity gameSchedule = gameScheduleService.get(gameId);

@@ -97,7 +97,7 @@ public abstract class BaseRestClient {
 		ParameterizedTypeReference<ApiSuccessResponse<T>> responseType
 	) {
 		ApiSuccessResponse<T> response = get(uri, headers, queryParams, responseType);
-		return (response != null) ? response.getData() : null;
+		return response.getData();
 	}
 
 	protected <T> T post(
@@ -184,6 +184,18 @@ public abstract class BaseRestClient {
 			.toBodilessEntity();
 	}
 
+	protected void postVoid(String uri, Map<String, String> headers, Object body) {
+		restClient.post()
+			.uri(uriBuilder -> getActualUriBuilder(uri, uriBuilder).build())
+			.headers(header -> {
+				if (headers != null)
+					headers.forEach(header::add);
+			})
+			.body(body)
+			.retrieve()
+			.toBodilessEntity();
+	}
+
 	protected void patchVoid(String uri, Object body) {
 		restClient.patch()
 			.uri(uriBuilder -> getActualUriBuilder(uri, uriBuilder).build())
@@ -200,6 +212,23 @@ public abstract class BaseRestClient {
 					builder.queryParams(toParams(queryParams));
 				}
 				return builder.build();
+			})
+			.retrieve()
+			.toBodilessEntity();
+	}
+
+	protected void patchVoid(String uri, Map<String, String> headers, Map<String, ?> queryParams) {
+		restClient.patch()
+			.uri(uriBuilder -> {
+				UriBuilder builder = getActualUriBuilder(uri, uriBuilder);
+				if (queryParams != null) {
+					builder.queryParams(toParams(queryParams));
+				}
+				return builder.build();
+			})
+			.headers(header -> {
+				if (headers != null)
+					headers.forEach(header::add);
 			})
 			.retrieve()
 			.toBodilessEntity();

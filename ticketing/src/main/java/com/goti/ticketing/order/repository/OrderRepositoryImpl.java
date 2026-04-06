@@ -22,7 +22,7 @@ public class OrderRepositoryImpl implements OrderRepositoryCustom {
 	private final JPAQueryFactory queryFactory;
 
 	@Override
-	public List<OrderEntity> findMyOrders(
+	public List<OrderEntity> findOrders(
 		UUID memberId,
 		Integer months,
 		LocalDate startDate,
@@ -50,24 +50,24 @@ public class OrderRepositoryImpl implements OrderRepositoryCustom {
 	) {
 		if (startDate != null && endDate != null) {
 			return order.createdAt.between(
-				toStartInstant(startDate),
-				toEndInstant(endDate)
+				toStartAt(startDate),
+				toEndAt(endDate)
 			);
 		}
 
 		if (months != null) {
-			Instant from = toStartInstant(LocalDate.now().minusMonths(months));
+			Instant from = toStartAt(LocalDate.now().minusMonths(months));
 			return order.createdAt.goe(from);
 		}
 
 		return null;
 	}
 
-	private Instant toStartInstant(LocalDate date) {
+	private Instant toStartAt(LocalDate date) {
 		return date.atStartOfDay().toInstant(ZoneOffset.UTC);
 	}
 
-	private Instant toEndInstant(LocalDate date) {
+	private Instant toEndAt(LocalDate date) {
 		return date.plusDays(1).atStartOfDay().minusNanos(1).toInstant(ZoneOffset.UTC);
 	}
 }

@@ -8,8 +8,10 @@ public final class SecurityPathConstants {
 
 	public static final String[] PUBLIC_URLS = {
 		"/api/v1/games/**",
+		"/api/v1/orders/internal",              // 내부용: payment → ticketing (주문 목록 조회)
 		"/api/v1/orders/*/payment-order",        // 내부용: payment → ticketing (mTLS로 보호)
 		"/api/v1/orders/*/payment-confirmations", // 내부용: payment → ticketing (결제 확인 콜백)
 		"/api/v1/tickets/purchase-infos",       // 내부용: resale → ticketing
+		"/api/v1/tickets/resales/**"            // 내부용 : ticketing → resale
 	};
 }

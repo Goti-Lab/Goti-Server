@@ -7,8 +7,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,6 +22,7 @@ import com.goti.exception.CustomException;
 import com.goti.global.validation.Preconditions;
 import com.goti.resale.constants.ResaleListingOrderStatus;
 import com.goti.resale.constants.ResaleListingStatus;
+import com.goti.resale.constants.ResaleStatus;
 import com.goti.resale.domain.entity.resale.ResaleListingEntity;
 import com.goti.resale.domain.entity.resale.ResaleListingOrderEntity;
 import com.goti.resale.domain.entity.resale.ResalePriceHistoryEntity;
@@ -27,22 +32,31 @@ import com.goti.resale.dto.request.ResaleListingCreateRequest;
 import com.goti.resale.dto.request.ResaleListingOrderCreateRequest;
 import com.goti.resale.dto.response.ResaleListingOrderCreateResponse;
 import com.goti.resale.dto.response.ResaleListingResponse;
+import com.goti.resale.dto.response.ResaleListingsCountResponse;
 import com.goti.resale.dto.response.ResaleTicketResponse;
 import com.goti.resale.infra.TicketClient;
-import com.goti.resale.repository.ResaleListingOrderRepository;
+import com.goti.resale.infra.dto.GameScheduleResponse;
 import com.goti.resale.repository.ResaleRestrictionRepository;
 import com.goti.resale.repository.history.ResalePriceHistoryRepository;
 import com.goti.resale.repository.listing.ResaleListingRepository;
+import com.goti.resale.repository.listingorder.ResaleListingOrderRepository;
 import com.goti.resale.utils.ResalePricePolicy;
 import com.goti.resale.utils.ResaleRestrictionHandler;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ResaleListingServiceImpl implements ResaleListingService {
 
 	private static final DateTimeFormatter ORDER_NUMBER_FORMATTER = DateTimeFormatter.ofPattern("yyMMdd");
+	private static final List<Integer> ALLOWED_MONTHS = List.of(1, 3, 6);
+	private static final List<ResaleListingOrderStatus> ALLOWED_STATUSES = List.of(ResaleListingOrderStatus.LISTING,
+		ResaleListingOrderStatus.PARTIAL);
+	private static final List<ResaleListingStatus> DUPLICATE_STATUSES = List.of(ResaleListingStatus.LISTING,
+		ResaleListingStatus.HOLD, ResaleListingStatus.SOLD);
 
 	private final ResaleListingRepository listingRepository;
 	private final ResaleListingOrderRepository listingOrderRepository;
@@ -77,7 +91,7 @@ public class ResaleListingServiceImpl implements ResaleListingService {
 				listingOrderRepository.findBySellerAndGrade(
 					sellerId,
 					gradeId,
-					List.of(ResaleListingOrderStatus.LISTING, ResaleListingOrderStatus.PARTIAL)
+					ALLOWED_STATUSES
 				).orElseGet(() -> {
 					ResaleListingOrderEntity order = ResaleListingOrderEntity.create(
 						generateListingOrderNumber(),
@@ -117,6 +131,10 @@ public class ResaleListingServiceImpl implements ResaleListingService {
 		listingRepository.saveAll(listings);
 		restrictionRepository.save(resaleRestriction);
 
+		for (ResaleListingEntity listing : listings) {
+			ticketClient.markAsResaleListing(listing.getTicketId(), sellerId);
+		}
+
 		List<ResaleListingResponse> listingResponses = listings.stream()
 			.map(ResaleListingResponse::from)
 			.toList();
@@ -142,6 +160,8 @@ public class ResaleListingServiceImpl implements ResaleListingService {
 
 		resaleListing.cancel();
 		listingRepository.save(resaleListing);
+
+		ticketClient.cancelResaleListing(resaleListing.getTicketId(), sellerId);
 
 		ResaleListingOrderEntity order = resaleListing.getListingOrder();
 		order.partial();
@@ -177,6 +197,7 @@ public class ResaleListingServiceImpl implements ResaleListingService {
 			if (listing.isCancelable()) {
 				validateListingCancellation(sellerId, listing, restriction);
 				listing.cancel();
+				ticketClient.cancelResaleListing(listing.getTicketId(), sellerId);
 				restrictionHandler.handleAfterCancel(restriction, listing.getGameId());
 			}
 		}
@@ -190,20 +211,81 @@ public class ResaleListingServiceImpl implements ResaleListingService {
 
 	@Override
 	@Transactional(readOnly = true)
-	public Long countListings(UUID sellerId) {
-		return listingRepository.countBySellerIdAndListingStatusIn(
-			sellerId,
-			List.of(ResaleListingStatus.LISTING, ResaleListingStatus.HOLD)
+	public Page<ResaleListingOrderEntity> getSalesHistory(
+		UUID sellerId,
+		List<ResaleListingOrderStatus> statuses,
+		Integer months,
+		LocalDate startDate,
+		LocalDate endDate,
+		Pageable pageable
+	) {
+		Preconditions.validate(
+			sellerId != null,
+			ErrorCode.AUTH_INVALID
 		);
+		validatePeriodFilter(months, startDate, endDate);
+
+		return listingOrderRepository.getSalesHistory(sellerId, statuses, months, startDate, endDate, pageable);
 	}
 
 	@Override
 	@Transactional(readOnly = true)
-	public Long countSold(UUID sellerId) {
-		return listingRepository.countBySellerIdAndListingStatusIn(
-			sellerId,
-			List.of(ResaleListingStatus.SOLD, ResaleListingStatus.SETTLED)
+	public ResaleListingEntity getListing(UUID sellerId, UUID listingId) {
+		ResaleListingEntity resaleListing = listingRepository.findById(listingId)
+			.orElseThrow(() -> new CustomException(ErrorCode.LISTING_NOT_FOUND));
+
+		validateListingOwnership(sellerId, resaleListing.getSellerId());
+
+		return resaleListing;
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public ResaleListingsCountResponse getResaleCount(UUID sellerId) {
+		List<ResaleListingEntity> listings = listingRepository.findBySellerId(sellerId);
+
+		long listingCount = listings.stream().filter(
+				r ->
+					r.getListingStatus() == ResaleListingStatus.LISTING ||
+						r.getListingStatus() == ResaleListingStatus.HOLD)
+			.count();
+
+		long soldCount = listings.stream()
+			.filter(r ->
+				r.getListingStatus() == ResaleListingStatus.SOLD ||
+					r.getListingStatus() == ResaleListingStatus.SETTLED)
+			.count();
+
+		return new ResaleListingsCountResponse(listingCount, soldCount);
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public List<ResaleListingEntity> getListingsByOrderId(UUID orderId) {
+		return listingRepository.findAllByListingOrderId(orderId);
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public ResaleStatus getResaleStatus(UUID gameId) {
+		GameScheduleResponse schedule = ticketClient.getGameSchedule(gameId);
+		LocalDateTime ticketingOpenedAt = schedule.ticketingOpenedAt();
+		LocalDateTime now = LocalDateTime.now();
+
+		if (now.isBefore(ticketingOpenedAt.plusHours(1))) {
+			return ResaleStatus.SCHEDULED;
+		}
+
+		long listingCount = listingRepository.countByGameIdAndListingStatusIn(
+			gameId,
+			List.of(ResaleListingStatus.LISTING, ResaleListingStatus.HOLD)
 		);
+
+		if (listingCount > 0) {
+			return ResaleStatus.AVAILABLE;
+		}
+
+		return ResaleStatus.UNAVAILABLE;
 	}
 
 	@Override
@@ -244,7 +326,7 @@ public class ResaleListingServiceImpl implements ResaleListingService {
 		Preconditions.validate(
 			!listingRepository.existsByTicketIdAndListingStatusIn(
 				ticketId,
-				List.of(ResaleListingStatus.LISTING, ResaleListingStatus.HOLD, ResaleListingStatus.SOLD)
+				DUPLICATE_STATUSES
 			), ErrorCode.ALREADY_LISTED);
 	}
 
@@ -254,5 +336,65 @@ public class ResaleListingServiceImpl implements ResaleListingService {
 			ErrorCode.AUTH_PERMISSION_DENIED,
 			"본인의 리셀만 취소할 수 있습니다"
 		);
+	}
+
+	private void validatePeriodFilter(
+		Integer months,
+		LocalDate startDate,
+		LocalDate endDate
+	) {
+		Preconditions.validate(
+			months == null || (startDate == null && endDate == null),
+			ErrorCode.ORDER_HISTORY_PERIOD_FILTER_CONFLICT
+		);
+
+		Preconditions.validate(
+			(startDate == null) == (endDate == null),
+			ErrorCode.ORDER_HISTORY_PERIOD_DATE_REQUIRED
+		);
+
+		if (months != null) {
+			Preconditions.validate(
+				ALLOWED_MONTHS.contains(months),
+				ErrorCode.ORDER_HISTORY_PERIOD_MONTHS_INVALID
+			);
+		}
+
+		if (startDate != null && endDate != null) {
+			Preconditions.validate(
+				!startDate.isAfter(endDate),
+				ErrorCode.ORDER_HISTORY_PERIOD_INVALID_RANGE
+			);
+		}
+	}
+
+	public void updateListingOrders(Set<ResaleListingOrderEntity> listingOrders) {
+		List<UUID> listingOrderIds = listingOrders.stream()
+			.map(ResaleListingOrderEntity::getId)
+			.toList();
+
+		Map<UUID, List<ResaleListingEntity>> listingsByOrderId =
+			listingRepository.findAllByListingOrderIdIn(listingOrderIds)
+				.stream()
+				.collect(Collectors.groupingBy(l -> l.getListingOrder().getId()));
+
+		for (ResaleListingOrderEntity order : listingOrders) {
+			List<ResaleListingEntity> allListings = listingsByOrderId.getOrDefault(
+				order.getId(), List.of());
+
+			boolean allCompleted = allListings.stream()
+				.allMatch(l -> l.getListingStatus() == ResaleListingStatus.SOLD
+					|| l.getListingStatus() == ResaleListingStatus.CANCELED);
+
+			if (allCompleted) {
+				order.soldOut();
+				log.info("ListingOrder 완료 처리 - ID: {}", order.getId());
+			} else {
+				order.partial();
+				log.info("ListingOrder 부분 판매 처리 - ID: {}", order.getId());
+			}
+		}
+
+		listingOrderRepository.saveAll(listingOrders);
 	}
 }

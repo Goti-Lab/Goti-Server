@@ -67,4 +67,12 @@ public class UserEntity extends ModificationTimestampEntity {
 		this.status = UserStatus.ACTIVATED;
 		this.role = role;
 	}
+
+	protected void updateName(String name) {
+		this.name = name;
+	}
+
+	protected void updateMobile(String mobile) {
+		this.mobile = mobile;
+	}
 }

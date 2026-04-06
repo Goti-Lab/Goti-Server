@@ -68,3 +68,9 @@ logging:
 internal:
   ticketing:
     base-url: ${INTERNAL_TICKETING_BASE_URL:http://localhost:8080}
+
+infra:
+  api:
+    endpoints:
+      ticketing: ${TICKETING_BASE_URL:http://localhost:8080}
+      payment: ${PAYMENT_BASE_URL:http://localhost:8080}

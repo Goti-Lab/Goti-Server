@@ -1,28 +1,31 @@
 package com.goti.ticketing.game.repository.gameschedule;
 
-import com.goti.ticketing.domain.entity.game.QGameScheduleEntity;
-import com.goti.ticketing.domain.entity.game.QGameStatusEntity;
-import com.goti.ticketing.domain.entity.game.QGameTicketingStatusEntity;
-import com.goti.ticketing.domain.entity.seat.QSeatStatusEntity;
-import com.goti.ticketing.constants.SeatStatus;
-import com.goti.ticketing.game.dto.request.GameScheduleSearchCondition;
-import com.goti.ticketing.game.dto.response.GameScheduleSearchResponse;
-import com.goti.ticketing.game.dto.response.QGameScheduleSearchResponse;
-import com.querydsl.core.types.dsl.BooleanExpression;
-import com.querydsl.core.types.dsl.Expressions;
-import com.querydsl.jpa.impl.JPAQueryFactory;
-
-import lombok.RequiredArgsConstructor;
-
-import org.springframework.stereotype.Repository;
+import static com.goti.ticketing.domain.entity.game.QGameScheduleEntity.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
-import static com.goti.ticketing.domain.entity.game.QGameScheduleEntity.gameScheduleEntity;
+import org.springframework.stereotype.Repository;
+
+import com.goti.ticketing.constants.SeatStatus;
+import com.goti.ticketing.domain.entity.game.QGameScheduleEntity;
+import com.goti.ticketing.domain.entity.game.QGameStatusEntity;
+import com.goti.ticketing.domain.entity.game.QGameTicketingStatusEntity;
+import com.goti.ticketing.domain.entity.seat.QSeatStatusEntity;
+import com.goti.ticketing.game.dto.request.GameScheduleSearchCondition;
+import com.goti.ticketing.game.dto.response.GameScheduleSearchResponse;
+import com.goti.ticketing.game.dto.response.QGameScheduleSearchResponse;
+import com.querydsl.core.types.ExpressionUtils;
+import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.Expressions;
+import com.querydsl.jpa.JPAExpressions;
+import com.querydsl.jpa.impl.JPAQueryFactory;
+
+import lombok.RequiredArgsConstructor;
 
 @Repository
 @RequiredArgsConstructor
@@ -33,7 +36,6 @@ public class GameScheduleRepositoryImpl implements GameScheduleRepositoryCustom 
 	private final QGameStatusEntity gameStatus = QGameStatusEntity.gameStatusEntity;
 	private final QGameTicketingStatusEntity ticketingStatus = QGameTicketingStatusEntity.gameTicketingStatusEntity;
 	private final QSeatStatusEntity seatStatus = QSeatStatusEntity.seatStatusEntity;
-
 
 	@Override
 	public boolean existsDuplicateSchedule(
@@ -62,9 +64,9 @@ public class GameScheduleRepositoryImpl implements GameScheduleRepositoryCustom 
 					gameSchedule.homeTeamId,
 					gameSchedule.awayTeamId,
 					gameSchedule.stadiumId,
-					Expressions.nullExpression(String.class), // homeTeam DisplayName
-					Expressions.nullExpression(String.class), // awayTeamName DisplayName
-					Expressions.nullExpression(String.class), // stadiumLocation
+					Expressions.nullExpression(String.class),
+					Expressions.nullExpression(String.class),
+					Expressions.nullExpression(String.class),
 					gameStatus.gameStatus,
 					gameStatus.homeTeamScore,
 					gameStatus.awayTeamScore,
@@ -72,41 +74,74 @@ public class GameScheduleRepositoryImpl implements GameScheduleRepositoryCustom 
 					ticketingStatus.status,
 					ticketingStatus.ticketingOpenedAt,
 					ticketingStatus.ticketingEndAt,
-					seatStatus.id.count()
+					ExpressionUtils.as(
+						JPAExpressions
+							.select(seatStatus.count())
+							.from(seatStatus)
+							.where(
+								seatStatus.game.eq(gameSchedule),
+								seatStatus.status.eq(SeatStatus.AVAILABLE)
+							),
+						"remainingSeatCount"
+					)
 				)
 			)
 			.from(gameSchedule)
 			.leftJoin(gameStatus).on(gameStatus.gameSchedule.eq(gameSchedule))
 			.leftJoin(ticketingStatus).on(ticketingStatus.gameSchedule.eq(gameSchedule))
-			.leftJoin(seatStatus).on(
-				seatStatus.game.eq(gameSchedule),
-				seatStatus.status.eq(SeatStatus.AVAILABLE)
-			)
 			.where(
 				teamIdEq(gameSchedule, condition.teamId()),
 				dateFilter(gameSchedule, condition)
-			)
-			.groupBy(
-				gameSchedule.id,
-				gameSchedule.startAt,
-				gameSchedule.leagueType,
-				gameSchedule.homeTeamId,
-				gameSchedule.awayTeamId,
-				gameSchedule.stadiumId,
-				gameStatus.gameStatus,
-				gameStatus.homeTeamScore,
-				gameStatus.awayTeamScore,
-				gameStatus.gameResult,
-				ticketingStatus.status,
-				ticketingStatus.ticketingOpenedAt,
-				ticketingStatus.ticketingEndAt
 			)
 			.orderBy(gameSchedule.startAt.asc())
 			.fetch();
 	}
 
+	@Override
+	public Optional<GameScheduleSearchResponse> findScheduleByGameId(UUID gameId) {
+		return Optional.ofNullable(
+			jpaQueryFactory
+				.select(
+					new QGameScheduleSearchResponse(
+						gameSchedule.id,
+						gameSchedule.startAt,
+						gameSchedule.leagueType,
+						gameSchedule.homeTeamId,
+						gameSchedule.awayTeamId,
+						gameSchedule.stadiumId,
+						Expressions.nullExpression(String.class), // homeTeam DisplayName
+						Expressions.nullExpression(String.class), // awayTeamName DisplayName
+						Expressions.nullExpression(String.class), // stadiumLocation
+						gameStatus.gameStatus,
+						gameStatus.homeTeamScore,
+						gameStatus.awayTeamScore,
+						gameStatus.gameResult,
+						ticketingStatus.status,
+						ticketingStatus.ticketingOpenedAt,
+						ticketingStatus.ticketingEndAt,
+						ExpressionUtils.as(
+							JPAExpressions
+								.select(seatStatus.count())
+								.from(seatStatus)
+								.where(
+									seatStatus.game.eq(gameSchedule),
+									seatStatus.status.eq(SeatStatus.AVAILABLE)
+								),
+							"remainingSeatCount"
+						)
+					)
+				)
+				.from(gameSchedule)
+				.leftJoin(gameStatus).on(gameStatus.gameSchedule.eq(gameSchedule))
+				.leftJoin(ticketingStatus).on(ticketingStatus.gameSchedule.eq(gameSchedule))
+				.where(gameSchedule.id.eq(gameId))
+				.fetchOne()
+		);
+	}
+
 	private BooleanExpression teamIdEq(QGameScheduleEntity game, UUID teamId) {
-		if (teamId == null) return null;
+		if (teamId == null)
+			return null;
 		return game.homeTeamId.eq(teamId).or(game.awayTeamId.eq(teamId));
 	}
 
