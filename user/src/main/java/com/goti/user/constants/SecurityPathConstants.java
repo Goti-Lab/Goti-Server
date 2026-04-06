@@ -23,6 +23,8 @@ public final class SecurityPathConstants {
 		"/swagger-ui/**",
 		"/v3/api-docs/**",
 		"/.well-known/**",
+		"/api/v1/resales/listings/count",
+		"/api/v1/payments/resales/unsettled",
 	};
 
 	public static final String[] MEMBER_URLS = {

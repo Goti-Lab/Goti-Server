@@ -9,6 +9,7 @@ import com.goti.ticketing.domain.entity.order.OrderItemEntity;
 import com.goti.ticketing.domain.entity.ticket.TicketEntity;
 import com.goti.ticketing.ticket.dto.response.TicketPurchaseInfoResponse;
 import com.goti.ticketing.ticket.dto.response.ResaleTicketResponse;
+import com.goti.ticketing.ticket.dto.response.ResaleTicketResponse;
 import com.goti.ticketing.ticket.dto.response.TicketResponse;
 
 public interface TicketService {
@@ -41,7 +42,9 @@ public interface TicketService {
 
 	ResaleTicketResponse getResaleTicketInfo(UUID ticketId, UUID userId);
 
-	int getOwnedTicketCount(UUID userId, UUID gameId);
+	int getOwnedTicketCountWithGame(UUID userId, UUID gameId);
+
+	int getOwnedTicketCount(UUID userId);
 
 	TicketEntity createByResale(
 		TicketEntity oldTicket,

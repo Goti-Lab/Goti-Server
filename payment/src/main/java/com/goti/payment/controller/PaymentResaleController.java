@@ -6,13 +6,13 @@ import java.util.UUID;
 
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.goti.global.api.ApiSuccessResponse;
@@ -63,15 +63,15 @@ public class PaymentResaleController {
 	}
 
 	@Operation(
-		summary = "미정산 금액 조회",
+		summary = "미정산 금액 조회 (내부용)",
 		description = "미정산 금액 조회 API"
 	)
 	@GetMapping("/unsettled")
 	public ResponseEntity<ApiSuccessResponse<UnsettledAmountResponse>> getUnsettledAmounts(
-		@AuthenticationPrincipal(expression = "id") UUID sellerId) {
+		@RequestParam UUID userId
+	) {
 		return wrap(
-			paymentLedgerProcessService
-				.getUnsettledAmounts(sellerId)
+			paymentLedgerProcessService.getUnsettledAmounts(userId)
 		);
 	}
 
