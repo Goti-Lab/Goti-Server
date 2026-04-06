@@ -7,6 +7,7 @@ import com.goti.global.validation.Preconditions;
 import com.goti.infra.cache.RedisCache;
 import com.goti.infra.constants.redis.RedisKey;
 import com.goti.user.domain.entity.user.MemberEntity;
+import com.goti.user.dto.response.MemberUpdateResponse;
 import com.goti.user.repository.MemberRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -47,7 +48,7 @@ public class MemberServiceImpl implements MemberService {
 
 	@Override
 	@Transactional
-	public MemberEntity update(
+	public MemberUpdateResponse update(
 		UUID memberId,
 		String mobile,
 		String name,
@@ -73,7 +74,7 @@ public class MemberServiceImpl implements MemberService {
 			redisCache.consume(key),
 			ErrorCode.AUTH_CODE_NOT_FOUND
 		);
-		return member;
+		return MemberUpdateResponse.from(member);
 	}
 
 	private void verifyDuplicatedMobile(MemberEntity member, String mobile) {
