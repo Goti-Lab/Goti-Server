@@ -54,7 +54,13 @@ public class ResaleTransactionController {
 		@AuthenticationPrincipal(expression = "id") UUID buyerId,
 		@Valid @RequestBody ResaleOrderRequest request
 	) {
-		ResaleOrderCreateResponse response = resaleOrderProcessService.initOrder(buyerId, request);
+		ResaleOrderCreateResponse response = resaleOrderProcessService.initOrder(
+			buyerId,
+			request.holdIds(),
+			request.buyerNickname(),
+			request.buyerEmail(),
+			request.buyerPhone()
+		);
 		return wrap(response);
 	}
 

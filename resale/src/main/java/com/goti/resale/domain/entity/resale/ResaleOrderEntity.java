@@ -34,6 +34,15 @@ public class ResaleOrderEntity extends ModificationTimestampEntity {
 	private UUID buyerId;
 
 	@Column(nullable = false)
+	private String buyerNickname;
+
+	@Column(nullable = false)
+	private String buyerEmail;
+
+	@Column(nullable = false)
+	private String buyerPhone;
+
+	@Column(nullable = false)
 	private Integer totalAmount;
 
 	@Enumerated(EnumType.STRING)
@@ -43,10 +52,16 @@ public class ResaleOrderEntity extends ModificationTimestampEntity {
 	private ResaleOrderEntity(
 		String orderNumber,
 		UUID buyerId,
+		String buyerNickname,
+		String buyerEmail,
+		String buyerPhone,
 		Integer totalAmount
 	) {
 		this.orderNumber = orderNumber;
 		this.buyerId = buyerId;
+		this.buyerNickname = buyerNickname;
+		this.buyerEmail = buyerEmail;
+		this.buyerPhone = buyerPhone;
 		this.totalAmount = totalAmount;
 		this.orderStatus = ResaleOrderStatus.PENDING;
 	}
@@ -54,12 +69,18 @@ public class ResaleOrderEntity extends ModificationTimestampEntity {
 	public static ResaleOrderEntity create(
 		String orderNumber,
 		UUID buyerId,
+		String buyerNickname,
+		String buyerEmail,
+		String buyerPhone,
 		Integer totalAmount
 	) {
 		Preconditions.domainValidate(orderNumber != null, "주문 번호는 필수입니다.");
 		Preconditions.domainValidate(buyerId != null, "구매자 ID는 필수입니다.");
+		Preconditions.domainValidate(buyerNickname != null, "구매자 닉네임은 필수입니다.");
+		Preconditions.domainValidate(buyerEmail != null, "구매자 이메일은 필수입니다.");
+		Preconditions.domainValidate(buyerPhone != null, "구매자 전화번호는 필수입니다.");
 		Preconditions.domainValidate(totalAmount != null && totalAmount >= 0, "총 금액은 0 이상이어야 합니다.");
-		return new ResaleOrderEntity(orderNumber, buyerId, totalAmount);
+		return new ResaleOrderEntity(orderNumber, buyerId, buyerNickname, buyerEmail, buyerPhone, totalAmount);
 	}
 
 	public void complete() {
