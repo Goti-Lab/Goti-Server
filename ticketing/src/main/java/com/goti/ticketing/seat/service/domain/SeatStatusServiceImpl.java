@@ -15,11 +15,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.goti.constants.messages.ErrorCode;
 import com.goti.global.validation.Preconditions;
+import com.goti.ticketing.constants.SeatStatus;
 import com.goti.ticketing.domain.entity.game.GameScheduleEntity;
 import com.goti.ticketing.domain.entity.seat.SeatEntity;
 import com.goti.ticketing.domain.entity.seat.SeatStatusEntity;
-import com.goti.ticketing.constants.SeatStatus;
-import com.goti.ticketing.seat.dto.response.GameSeatStatusResponse;
 import com.goti.ticketing.seat.repository.SeatStatusRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -32,44 +31,17 @@ public class SeatStatusServiceImpl implements SeatStatusService {
 
 	@Override
 	@Transactional(readOnly = true)
-	public List<GameSeatStatusResponse> get(
-		UUID gameId,
-		UUID sectionId,
-		UUID userId
-	) {
-		Preconditions.validate(
-			userId != null,
-			ErrorCode.AUTH_INVALID
-		);
-
-		List<GameSeatStatusResponse> seatStatuses = seatStatusRepository.findSeatStatuses(gameId, sectionId).stream()
-			.map(GameSeatStatusResponse::from)
-			.toList();
-
-		Map<SeatStatus, Long> counts = seatStatuses.stream()
-			.collect(Collectors.groupingBy(GameSeatStatusResponse::status, Collectors.counting()));
-
-		log.info(
-			"action=SEAT_STATUS gameId={} userId={} sectionId={} total={} available={} held={} sold={} blocked={}",
-			gameId,
-			userId,
-			sectionId,
-			seatStatuses.size(),
-			counts.getOrDefault(SeatStatus.AVAILABLE, 0L),
-			counts.getOrDefault(SeatStatus.HELD, 0L),
-			counts.getOrDefault(SeatStatus.SOLD, 0L),
-			counts.getOrDefault(SeatStatus.BLOCKED, 0L)
-		);
-
-		return seatStatuses;
-	}
-
-	@Override
-	@Transactional(readOnly = true)
 	public Map<UUID, SeatStatusEntity> getByGameIdAndSeatIds(UUID gameId, List<UUID> seatIds) {
+		if (seatIds.isEmpty()) {
+			return Map.of();
+		}
+
 		return seatStatusRepository.findAllByGameAndSeatIds(gameId, seatIds)
 			.stream()
-			.collect(Collectors.toMap(seatStatus -> seatStatus.getSeat().getId(), seatStatus -> seatStatus));
+			.collect(Collectors.toMap(
+				seatStatus -> seatStatus.getSeat().getId(),
+				seatStatus -> seatStatus
+			));
 	}
 
 	@Override
