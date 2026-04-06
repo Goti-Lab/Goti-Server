@@ -14,10 +14,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.github.f4b6a3.tsid.TsidCreator;
 import com.goti.constants.messages.ErrorCode;
-import com.goti.ticketing.domain.entity.order.OrderItemEntity;
-import com.goti.ticketing.domain.entity.ticket.TicketEntity;
 import com.goti.exception.CustomException;
 import com.goti.global.validation.Preconditions;
+import com.goti.ticketing.domain.entity.order.OrderItemEntity;
+import com.goti.ticketing.domain.entity.ticket.TicketEntity;
 import com.goti.ticketing.order.repository.OrderItemRepository;
 import com.goti.ticketing.ticket.dto.response.ResaleTicketResponse;
 import com.goti.ticketing.ticket.dto.response.TicketPurchaseInfoResponse;
@@ -25,7 +25,6 @@ import com.goti.ticketing.ticket.dto.response.TicketResponse;
 import com.goti.ticketing.ticket.repository.TicketRepository;
 
 import lombok.RequiredArgsConstructor;
-import static java.util.stream.Collectors.toMap;
 
 @Service
 @RequiredArgsConstructor
@@ -157,7 +156,7 @@ public class TicketServiceImpl implements TicketService {
 
 		TicketEntity newTicket = TicketEntity.create(
 			generateTicketNumber(),
-			oldTicket.getOrderItemId(),
+			transactionId,
 			transactionId,
 			oldTicket.getGameId(),
 			buyerId,
