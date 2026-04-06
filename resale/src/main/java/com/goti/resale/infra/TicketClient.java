@@ -30,6 +30,7 @@ public interface TicketClient {
 		String buyerEmail,
 		String buyerPhone,
 		UUID transactionId,
-		Integer transactionPrice
+		Integer transactionPrice,
+		String authToken
 	);
 }
