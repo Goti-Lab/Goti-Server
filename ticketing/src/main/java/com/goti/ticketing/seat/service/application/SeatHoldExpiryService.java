@@ -6,7 +6,6 @@ import com.goti.infra.lock.DistributedLockManager;
 import com.goti.ticketing.seat.repository.SeatHoldRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -24,10 +23,10 @@ public class SeatHoldExpiryService {
 	// TODO: 동시성 및 hold/release/expire 경합 상황 테스트 추가
 	public SeatHoldExpiryBatchResult expireHolds(int batchSize) {
 		LocalDateTime now = LocalDateTime.now();
-		List<SeatHoldEntity> expiredHolds = seatHoldRepository.findExpiredHolds(
+		List<SeatHoldEntity> expiredHolds = seatHoldRepository.findHoldsWithSeatAndGame(
 			SeatHoldStatus.HOLDING,
 			now,
-			PageRequest.of(0, batchSize)
+			batchSize
 		);
 
 		int succeeded = 0;
