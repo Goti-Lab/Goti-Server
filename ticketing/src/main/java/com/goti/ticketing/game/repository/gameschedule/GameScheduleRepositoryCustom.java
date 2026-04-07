@@ -2,6 +2,7 @@ package com.goti.ticketing.game.repository.gameschedule;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -17,6 +18,8 @@ public interface GameScheduleRepositoryCustom {
 	);
 
 	List<GameScheduleSearchResponse> searchSchedules(GameScheduleSearchCondition request);
+
+	Map<UUID, Long> findRemainingSeatCounts(List<UUID> scheduleIds);
 
 	Optional<GameScheduleSearchResponse> findScheduleByGameId(UUID gameId);
 

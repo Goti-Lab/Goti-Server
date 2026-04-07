@@ -32,9 +32,11 @@ public class GameScheduleSearchService {
 	public List<GameScheduleSearchResponse> searchSchedules(GameScheduleSearchCondition condition) {
 		List<GameScheduleSearchResponse> schedules = gameScheduleRepository.searchSchedules(condition);
 
-		if (schedules.isEmpty())
+		if (schedules.isEmpty()) {
 			return schedules;
+		}
 
+		List<UUID> gameIds = schedules.stream().map(GameScheduleSearchResponse::gameId).toList();
 		Set<UUID> teamIds = schedules.stream()
 			.flatMap(s -> Stream.of(s.homeTeamId(), s.awayTeamId()))
 			.filter(java.util.Objects::nonNull)
@@ -47,12 +49,14 @@ public class GameScheduleSearchService {
 
 		Map<UUID, String> teamDisplayNameMap = getBaseballTeamDisplayNamesMap(teamIds);
 		Map<UUID, String> stadiumLocationMap = getStadiumLocationsMap(stadiumIds);
+		Map<UUID, Long> seatCountMap = gameScheduleRepository.findRemainingSeatCounts(gameIds);
 
 		return schedules.stream().map(
-			schedule -> schedule.withExternalInfo(
+			schedule -> schedule.withDynamicInfo(
 				teamDisplayNameMap.get(schedule.homeTeamId()),
 				teamDisplayNameMap.get(schedule.awayTeamId()),
-				stadiumLocationMap.get(schedule.stadiumId())
+				stadiumLocationMap.get(schedule.stadiumId()),
+				seatCountMap.getOrDefault(schedule.gameId(), 0L)
 			)
 		).toList();
 	}
@@ -89,10 +93,13 @@ public class GameScheduleSearchService {
 			Set.of(schedule.stadiumId())
 		);
 
-		return schedule.withExternalInfo(
+		List<UUID> gameIds = List.of(gameId);
+		Map<UUID, Long> seatCountMap = gameScheduleRepository.findRemainingSeatCounts(gameIds);
+		return schedule.withDynamicInfo(
 			teamNames.get(schedule.homeTeamId()),
 			teamNames.get(schedule.awayTeamId()),
-			stadiumLocations.get(schedule.stadiumId())
+			stadiumLocations.get(schedule.stadiumId()),
+			seatCountMap.getOrDefault(schedule.gameId(), 0L)
 		);
 	}
 }

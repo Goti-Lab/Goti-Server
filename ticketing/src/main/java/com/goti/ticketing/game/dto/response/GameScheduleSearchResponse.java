@@ -124,4 +124,21 @@ public record GameScheduleSearchResponse(
 			ticketingStatus, ticketingOpenedAt, ticketingEndAt, remainingSeatCount
 		);
 	}
+
+	public GameScheduleSearchResponse withDynamicInfo(
+		String homeTeamName,
+		String awayTeamName,
+		String stadiumLocation,
+		Long remainingSeatCount
+	) {
+		return new GameScheduleSearchResponse(
+			gameId, startAt, leagueType,
+			homeTeamId, awayTeamId, stadiumId,
+			homeTeamName, awayTeamName, stadiumLocation,
+			gameStatus, homeTeamScore, awayTeamScore, gameResult,
+			ticketingStatus, ticketingOpenedAt, ticketingEndAt,
+			remainingSeatCount
+		);
+	}
+
 }
