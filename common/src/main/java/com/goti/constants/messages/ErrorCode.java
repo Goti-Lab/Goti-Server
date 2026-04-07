@@ -67,6 +67,17 @@ public enum ErrorCode {
 	GAME_ALREADY_EXISTS(HttpStatus.CONFLICT, "이미 동일한 경기 일정이 존재합니다."),
 	GAME_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 경기입니다."),
 
+	QUEUE_META_NOT_FOUND(HttpStatus.NOT_FOUND, "대기열 메타 정보를 찾을 수 없습니다."),
+	QUEUE_TOKEN_REQUIRED(HttpStatus.BAD_REQUEST, "대기열 토큰은 필수입니다."),
+	QUEUE_TOKEN_INVALID(HttpStatus.UNAUTHORIZED, "유효하지 않은 대기열 토큰입니다."),
+	QUEUE_ENTRY_NOT_FOUND(HttpStatus.NOT_FOUND, "대기열 엔트리 정보를 찾을 수 없습니다."),
+	QUEUE_ENTRY_MISMATCH(HttpStatus.BAD_REQUEST, "현재 유효한 대기열 정보와 일치하지 않습니다."),
+	QUEUE_NOT_ALLOWED_YET(HttpStatus.FORBIDDEN, "아직 입장 가능한 대기 순번이 아닙니다."),
+	QUEUE_ALREADY_ADMITTED(HttpStatus.CONFLICT, "이미 입장 처리된 사용자입니다."),
+	QUEUE_ADMISSION_REQUIRED(HttpStatus.FORBIDDEN, "좌석 조회는 대기열 입장 완료 후에만 가능합니다."),
+	QUEUE_CAPACITY_FULL(HttpStatus.CONFLICT, "현재 입장 가능 인원이 가득 찼습니다."),
+	QUEUE_LOCK_ACQUIRE_FAILED(HttpStatus.BAD_REQUEST, "대기열 요청이 몰리고 있습니다. 잠시 후 다시 시도해주세요."),
+
 	ORDER_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 주문입니다."),
 	ORDER_HISTORY_NOT_FOUND(HttpStatus.NOT_FOUND, "주문자 정보를 찾을 수 없습니다."),
 	ORDER_HISTORY_PERIOD_DATE_REQUIRED(HttpStatus.BAD_REQUEST, "시작 날짜와 종료 날짜는 함께 요청되어야 합니다."),
