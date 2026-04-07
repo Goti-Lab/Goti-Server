@@ -71,7 +71,7 @@ public class SeatHoldTransactionalService {
 
 	@Transactional
 	public UUID release(UUID holdId, UUID userId) {
-		SeatHoldEntity seatHold = seatHoldRepository.findById(holdId)
+		SeatHoldEntity seatHold = seatHoldRepository.findHoldWithSeatAndGame(holdId)
 			.orElseThrow(() -> new CustomException(ErrorCode.SEAT_HOLD_NOT_FOUND));
 
 		Preconditions.validate(

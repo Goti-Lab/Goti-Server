@@ -27,7 +27,7 @@ public class SeatHoldServiceImpl implements SeatHoldService {
 	@Override
 	@Transactional(readOnly = true)
 	public SeatHoldEntity findSeatHold(UUID holdId) {
-		return seatHoldRepository.findById(holdId)
+		return seatHoldRepository.findHoldWithSeatAndGame(holdId)
 			.orElseThrow(() -> new CustomException(ErrorCode.SEAT_HOLD_NOT_FOUND));
 	}
 
