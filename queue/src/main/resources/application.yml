@@ -1,0 +1,62 @@
+server:
+  port: ${SERVER_PORT:8080}
+
+spring:
+  application:
+    name: goti-queue-service
+  profiles:
+    include:
+      - integration
+  datasource:
+    url: ${DATASOURCE_URL}
+    username: ${DATASOURCE_USERNAME}
+    password: ${DATASOURCE_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      idle-timeout: 30000
+      max-lifetime: 420000
+      minimum-idle: 2
+      connection-timeout: 5000
+      validation-timeout: 3000
+  jpa:
+    hibernate:
+      ddl-auto: ${JPA_DDL_AUTO:update}
+      naming:
+        physical-strategy: org.hibernate.boot.model.naming.CamelCaseToUnderscoresNamingStrategy
+    properties:
+      hibernate:
+        jdbc.time_zone: UTC
+        default_schema: queue_service
+        hbm2ddl.create_namespaces: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+  config:
+    import:
+      - optional:file:.env[.properties]
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info, metrics, prometheus
+  endpoint:
+    health:
+      show-details: when-authorized
+  prometheus:
+    metrics:
+      export:
+        enabled: true
+
+logging:
+  pattern:
+    level: "%5p [${spring.application.name:},%X{trace_id:-},%X{span_id:-}]"
+
+queue:
+  max-capacity: ${QUEUE_MAX_CAPACITY:5000}
+  entry-ttl: ${QUEUE_ENTRY_TTL:10m}
+  admitted-ttl: ${QUEUE_ADMITTED_TTL:15m}
+  token-secret: ${QUEUE_TOKEN_SECRET:goti-2026-queue-token-secret-key-minimum-32-chars}
+  expiration-check-interval: ${QUEUE_EXPIRATION_CHECK_INTERVAL:30s}
