@@ -1,6 +1,10 @@
 # Goti-server
 
-대규모 티켓팅 서비스 백엔드 (Spring Boot 3.5, Java 21, Gradle 8.14)
+### 대규모 티켓팅 서비스 백엔드 기술스택
+    - Language: Java 21
+    - Framework: Spring 6.2.15 (Spring Boot 3.5.10)
+    - Build: Gradle 8.14
+    - Docs: SpringDoc OpenAPI (Swagger) 2.8.14
 
 ## 프로젝트 구조
 
