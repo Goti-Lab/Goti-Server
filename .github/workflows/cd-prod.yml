@@ -40,7 +40,7 @@ jobs:
           BEFORE_SHA: ${{ github.event.before }}
           CURRENT_SHA: ${{ github.sha }}
         run: |
-          SERVICES="user stadium ticketing payment resale"
+          SERVICES="user stadium ticketing payment resale queue"
 
           if [ -n "$INPUT_SERVICES" ]; then
             # workflow_dispatch 수동 지정
