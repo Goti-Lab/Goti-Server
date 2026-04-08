@@ -71,8 +71,12 @@ public class TicketServiceImpl implements TicketService {
 
 	@Override
 	@Transactional(readOnly = true)
-	public Map<UUID, TicketEntity> getByOrderItemIds(List<UUID> orderItemIds) {
-		return ticketRepository.findAllByOrderItemIdIn(orderItemIds).stream()
+	public Map<UUID, TicketEntity> getByOrderItemIds(List<UUID> orderItemIds, UUID userId) {
+		return ticketRepository.findAllByOrderItemIdIn(
+				orderItemIds,
+				userId
+			)
+			.stream()
 			.collect(toMap(TicketEntity::getOrderItemId, ticket -> ticket));
 	}
 

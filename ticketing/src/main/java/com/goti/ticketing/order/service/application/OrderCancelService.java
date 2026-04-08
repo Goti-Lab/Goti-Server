@@ -6,8 +6,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
-import com.goti.ticketing.order.service.domain.OrderCancellationService;
-
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,7 +18,6 @@ import com.goti.ticketing.constants.GameStatus;
 import com.goti.ticketing.constants.OrderCancellationRequestType;
 import com.goti.ticketing.constants.OrderItemStatus;
 import com.goti.ticketing.constants.TicketStatus;
-import com.goti.ticketing.infra.api.dto.response.PaymentCancelResponse;
 import com.goti.ticketing.domain.entity.order.OrderCancellationEntity;
 import com.goti.ticketing.domain.entity.order.OrderEntity;
 import com.goti.ticketing.domain.entity.order.OrderItemEntity;
@@ -28,10 +25,12 @@ import com.goti.ticketing.domain.entity.ticket.TicketEntity;
 import com.goti.ticketing.game.repository.GameStatusRepository;
 import com.goti.ticketing.game.service.application.GameTicketManagementService;
 import com.goti.ticketing.infra.api.TicketPaymentApiClient;
+import com.goti.ticketing.infra.api.dto.response.PaymentCancelResponse;
 import com.goti.ticketing.order.dto.request.OrderCancelRequest;
 import com.goti.ticketing.order.dto.response.OrderCancelResponse;
 import com.goti.ticketing.order.service.domain.OrderCancellationItemService;
 import com.goti.ticketing.order.service.domain.OrderCancellationRefundPolicy;
+import com.goti.ticketing.order.service.domain.OrderCancellationService;
 import com.goti.ticketing.order.service.domain.OrderItemService;
 import com.goti.ticketing.order.service.domain.OrderService;
 import com.goti.ticketing.seat.service.domain.SeatStatusService;
@@ -76,7 +75,7 @@ public class OrderCancelService {
 		validateTargetItems(targetItems, request.requestType());
 
 		Map<UUID, TicketEntity> ticketMap = ticketService.getByOrderItemIds(
-			targetItems.stream().map(OrderItemEntity::getId).toList()
+			targetItems.stream().map(OrderItemEntity::getId).toList(), memberId
 		);
 		validateTickets(ticketMap, targetItems);
 
