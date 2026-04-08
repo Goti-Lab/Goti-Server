@@ -30,7 +30,8 @@ import lombok.NoArgsConstructor;
 	name = "tickets",
 	indexes = {
 		@Index(name = "idx_tickets_game_id", columnList = "game_id"),
-		@Index(name = "idx_tickets_user_id", columnList = "user_id")
+		@Index(name = "idx_tickets_user_id", columnList = "user_id"),
+		@Index(name = "idx_tickets_order_item_id", columnList = "order_item_id")
 	}
 )
 @NoArgsConstructor(access = PROTECTED)
@@ -221,6 +222,10 @@ public class TicketEntity extends ModificationTimestampEntity {
 	}
 
 	public void resaleEnable() {
+		Preconditions.domainValidate(
+			this.ticketStatus == TicketStatus.ISSUED,
+			"발행 완료 상태의 티켓만 리셀 가능 상태로 변경할 수 있습니다."
+		);
 		Preconditions.domainValidate(
 			this.resaleEnabledStatus == ResaleEnabledStatus.DISABLED,
 			"리셀 불가능 상태의 티켓만 가능 상태로 변경할 수 있습니다."
