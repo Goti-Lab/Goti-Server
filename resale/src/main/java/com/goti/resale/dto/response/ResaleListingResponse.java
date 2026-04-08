@@ -5,6 +5,7 @@ import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.goti.resale.constants.ResaleAvailableStatus;
 import com.goti.resale.constants.ResaleListingStatus;
 import com.goti.resale.domain.entity.resale.ResaleListingEntity;
@@ -23,8 +24,11 @@ public record ResaleListingResponse(
 	ResaleListingStatus listingStatus,
 	ResaleAvailableStatus availableStatus,
 	Integer lastTransactionPrice,
+	@JsonFormat(pattern = "yyyy-MM-dd HH:mm")
 	LocalDateTime listedAt,
+	@JsonFormat(pattern = "yyyy-MM-dd HH:mm")
 	LocalDateTime soldAt,
+	@JsonFormat(pattern = "yyyy-MM-dd HH:mm")
 	LocalDateTime canceledAt,
 	Boolean isCancelable,
 	Boolean isPurchasable,

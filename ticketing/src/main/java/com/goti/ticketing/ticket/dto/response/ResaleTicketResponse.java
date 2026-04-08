@@ -4,6 +4,7 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.goti.ticketing.domain.entity.ticket.TicketEntity;
 
 public record ResaleTicketResponse(
@@ -15,8 +16,10 @@ public record ResaleTicketResponse(
 	UUID gradeId,
 	String seatInfo,
 	Integer ticketPrice,
+	@JsonFormat(pattern = "yyyy-MM-dd HH:mm")
 	LocalDateTime gameDate,
 	UUID transactionId,
+	@JsonFormat(pattern = "yyyy-MM-dd HH:mm", timezone = "Asia/Seoul")
 	Instant createdAt
 ) {
 	public static ResaleTicketResponse from(
