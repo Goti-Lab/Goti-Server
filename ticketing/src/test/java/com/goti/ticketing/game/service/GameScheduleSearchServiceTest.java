@@ -14,6 +14,10 @@ import com.goti.stadium.repository.StadiumRepository;
 
 import com.goti.ticketing.infra.api.StadiumApiClient;
 
+import com.goti.ticketing.infra.api.dto.response.BaseballTeamDisplayNameResponse;
+
+import com.goti.ticketing.infra.api.dto.response.StadiumLocationResponse;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -29,6 +33,7 @@ import java.util.List;
 import java.util.Map;
 
 import static org.assertj.core.api.AssertionsForInterfaceTypes.*;
+import static org.mockito.Mockito.*;
 
 @SpringBootTest(classes = GotiTicketingApplication.class)
 @Transactional
@@ -61,6 +66,17 @@ public class GameScheduleSearchServiceTest {
 		saveSamsung();
 		saveKia();
 		saveStadium();
+
+		when(StadiumApiClient.getBaseballTeamDisplayNames(anyList()))
+			.thenReturn(List.of(
+				new BaseballTeamDisplayNameResponse(kia.getId(), kia.getDisplayName()),
+				new BaseballTeamDisplayNameResponse(samsung.getId(), samsung.getDisplayName())
+			));
+
+		when(StadiumApiClient.getStadiumLocations(anyList()))
+			.thenReturn(List.of(
+				new StadiumLocationResponse(stadium.getId(), stadium.getLocation())
+			));
 
 		gameManagementService.register(
 			kia.getId(),
@@ -96,7 +112,7 @@ public class GameScheduleSearchServiceTest {
 
 		// then
 		assertThat(responses).hasSize(2);
-		assertThat(responses.get(0).homeTeamId()).isEqualTo(kia.getId());
+		assertThat(responses.get(0).homeTeamDisplayName()).isEqualTo(kia.getDisplayName());
 	}
 
 	@Test
@@ -114,8 +130,8 @@ public class GameScheduleSearchServiceTest {
 		List<GameScheduleSearchResponse> responses = gameScheduleSearchService.searchSchedules(condition);
 
 		assertThat(responses).hasSizeGreaterThanOrEqualTo(2);
-		assertThat(responses).extracting("homeTeamId")
-			.contains(kia.getId(), samsung.getId());
+		assertThat(responses).extracting("homeTeamDisplayName")
+			.contains(kia.getDisplayName(), samsung.getDisplayName());
 	}
 
 	@Test
