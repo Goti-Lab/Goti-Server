@@ -16,7 +16,7 @@ public record ResalePaymentLedgerResponse(
 	Integer vat,
 	Integer netProfit,
 	Integer settlementAmount,
-	@JsonFormat(pattern = "yyyy-MM-dd HH:mm", timezone = "Asia/Seoul")
+	@JsonFormat(pattern = "yyyy-MM-dd HH:mm")
 	Instant createdAt
 ) {
 	public static ResalePaymentLedgerResponse from(PaymentLedgerEntity ledger) {

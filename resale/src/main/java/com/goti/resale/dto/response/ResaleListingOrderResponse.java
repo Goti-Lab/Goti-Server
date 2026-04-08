@@ -24,7 +24,7 @@ public record ResaleListingOrderResponse(
 	ResaleListingOrderStatus orderStatus,
 
 	@Schema(description = "생성 일시")
-	@JsonFormat(pattern = "yyyy-MM-dd HH:mm", timezone = "Asia/Seoul")
+	@JsonFormat(pattern = "yyyy-MM-dd HH:mm")
 	Instant createdAt
 ) {
 	public static ResaleListingOrderResponse from(ResaleListingOrderEntity entity) {

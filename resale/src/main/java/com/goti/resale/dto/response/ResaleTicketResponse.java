@@ -18,7 +18,7 @@ public record ResaleTicketResponse(
 	@JsonFormat(pattern = "yyyy-MM-dd HH:mm")
 	LocalDateTime gameDate,
 	UUID transactionId,
-	@JsonFormat(pattern = "yyyy-MM-dd HH:mm", timezone = "Asia/Seoul")
+	@JsonFormat(pattern = "yyyy-MM-dd HH:mm")
 	Instant createdAt
 ) {
 }
