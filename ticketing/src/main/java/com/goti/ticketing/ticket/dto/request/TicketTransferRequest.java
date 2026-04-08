@@ -28,7 +28,7 @@ public record TicketTransferRequest(
 	@NotNull(message = "리셀 거래 가격은 필수입니다.")
 	Integer transactionPrice,
 
-	@NotNull(message = "티켓 번호는 필수입니다.")
+	@NotBlank(message = "티켓 번호는 필수입니다.")
 	String ticketNumber
 ) {
 }

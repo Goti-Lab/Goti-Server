@@ -100,10 +100,10 @@ public class TicketOwnershipTransferListener {
 		}
 	}
 
-	public String createPrefix(Instant createdAt, String orderNumber) {
+	private String createPrefix(Instant createdAt, String orderNumber) {
 		return String.join("",
 			TICKET_NUMBER_PREFIX,
-			TICKET_NUMBER_DATE_FORMATTER.format(createdAt.atZone(ZoneId.of("Asia/Seoul"))),
+			TICKET_NUMBER_DATE_FORMATTER.format(createdAt),
 			extractSuffix(orderNumber)
 		);
 	}
