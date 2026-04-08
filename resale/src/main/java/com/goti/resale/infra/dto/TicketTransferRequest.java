@@ -8,6 +8,7 @@ public record TicketTransferRequest(
 	String buyerEmail,
 	String buyerPhone,
 	UUID transactionId,
-	Integer transactionPrice
+	Integer transactionPrice,
+	String ticketNumber
 ) {
 }

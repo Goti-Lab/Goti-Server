@@ -26,6 +26,9 @@ public record TicketTransferRequest(
 	UUID transactionId,
 
 	@NotNull(message = "리셀 거래 가격은 필수입니다.")
-	Integer transactionPrice
+	Integer transactionPrice,
+
+	@NotNull(message = "티켓 번호는 필수입니다.")
+	String ticketNumber
 ) {
 }
