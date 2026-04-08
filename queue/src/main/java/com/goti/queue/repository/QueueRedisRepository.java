@@ -251,6 +251,8 @@ public class QueueRedisRepository {
 	// ── Lua All-in-One: Enter (5-7 RTT → 1 RTT) ─────────────────────
 	// 기존 entry 존재 시 cleanup + meta 초기화 + sequence 발급 + waiting 추가를 1 Lua로 통합.
 	// saveEntry(JSON 직렬화)만 별도 호출 필요 → 전체 2 RTT.
+	// KEYS: [1]=META, [2]=SEQUENCE, [3]=WAITING, [4]=ENTRY, [5]=ACTIVE_USERS, [6]=EXPIRATION_USERS
+	// ARGV: [1]=userId, [2]=maxCapacity, [3]=now, [4]=expirationMember(gameId:userId)
 	private static final String ENTER_QUEUE_SCRIPT =
 		"local existing = redis.call('GET', KEYS[4]) " +
 		"local oldQueueNumber = -1 " +
@@ -259,6 +261,16 @@ public class QueueRedisRepository {
 		"  if ok and entry.queueNumber then oldQueueNumber = entry.queueNumber end " +
 		"  redis.call('ZREM', KEYS[3], ARGV[1]) " +
 		"  redis.call('DEL', KEYS[4]) " +
+		// re-enter 시 ADMITTED 상태의 잔여 active-users + expiration 정리
+		// WHY: leave 없이 브라우저를 닫고 재진입하면 active-users에 좀비가 남아 409 유발
+		"  if redis.call('SISMEMBER', KEYS[5], ARGV[1]) == 1 then " +
+		"    redis.call('SREM', KEYS[5], ARGV[1]) " +
+		"    if redis.call('EXISTS', KEYS[1]) == 1 then " +
+		"      local cur = tonumber(redis.call('HGET', KEYS[1], 'activeCount') or '0') " +
+		"      if cur > 0 then redis.call('HINCRBY', KEYS[1], 'activeCount', -1) end " +
+		"    end " +
+		"  end " +
+		"  redis.call('ZREM', KEYS[6], ARGV[4]) " +
 		"end " +
 		"if redis.call('EXISTS', KEYS[1]) == 0 then " +
 		"  redis.call('HSET', KEYS[1], " +
@@ -276,18 +288,21 @@ public class QueueRedisRepository {
 	 */
 	public List<Long> enterQueue(UUID gameId, UUID userId, long maxCapacity) {
 		List<String> keys = List.of(
-			RedisKey.QUEUE_META.getKey(gameId),
-			RedisKey.QUEUE_SEQUENCE.getKey(gameId),
-			RedisKey.QUEUE_WAITING.getKey(gameId),
-			RedisKey.QUEUE_ENTRY.getKey(gameId, userId)
+			RedisKey.QUEUE_META.getKey(gameId),          // KEYS[1]
+			RedisKey.QUEUE_SEQUENCE.getKey(gameId),      // KEYS[2]
+			RedisKey.QUEUE_WAITING.getKey(gameId),       // KEYS[3]
+			RedisKey.QUEUE_ENTRY.getKey(gameId, userId), // KEYS[4]
+			RedisKey.QUEUE_ACTIVE_USERS.getKey(gameId),  // KEYS[5]
+			RedisKey.QUEUE_EXPIRATION_USERS.getKey()     // KEYS[6]
 		);
 		@SuppressWarnings("unchecked")
 		List<Long> result = stringRedisTemplate.execute(
 			RedisScript.of(ENTER_QUEUE_SCRIPT, List.class),
 			keys,
-			userId.toString(),
-			String.valueOf(maxCapacity),
-			Instant.now().toString()
+			userId.toString(),                           // ARGV[1]
+			String.valueOf(maxCapacity),                  // ARGV[2]
+			Instant.now().toString(),                     // ARGV[3]
+			expirationMember(gameId, userId)              // ARGV[4]
 		);
 		return result;
 	}
@@ -405,6 +420,41 @@ public class QueueRedisRepository {
 			expirationMember(gameId, userId)
 		);
 		return result;
+	}
+
+	// ── Lua: Game Cleanup (game 단위 전체 키 삭제) ──────────────────
+	// WARNING: 진행 중인 game에서 호출하면 활성 사용자 전원이 강제 퇴장됨.
+	// 반드시 game 종료 후 또는 dev 테스트 정리 용도로만 사용할 것.
+	private static final String CLEANUP_GAME_SCRIPT =
+		"redis.call('DEL', KEYS[1], KEYS[2], KEYS[3], KEYS[4]) " +
+		"local cursor = '0' " +
+		"repeat " +
+		"  local result = redis.call('ZSCAN', KEYS[5], cursor, 'MATCH', ARGV[1] .. '*', 'COUNT', 100) " +
+		"  cursor = result[1] " +
+		"  local members = result[2] " +
+		"  for i = 1, #members, 2 do " +
+		"    redis.call('ZREM', KEYS[5], members[i]) " +
+		"  end " +
+		"until cursor == '0' " +
+		"return 1";
+
+	/**
+	 * 해당 gameId의 모든 queue 관련 Redis 키를 일괄 삭제.
+	 * WARNING: 진행 중인 game에서 호출하면 활성 사용자 전원이 강제 퇴장됨.
+	 */
+	public void cleanupGame(UUID gameId) {
+		List<String> keys = List.of(
+			RedisKey.QUEUE_SEQUENCE.getKey(gameId),     // KEYS[1]
+			RedisKey.QUEUE_META.getKey(gameId),          // KEYS[2]
+			RedisKey.QUEUE_WAITING.getKey(gameId),       // KEYS[3]
+			RedisKey.QUEUE_ACTIVE_USERS.getKey(gameId),  // KEYS[4]
+			RedisKey.QUEUE_EXPIRATION_USERS.getKey()     // KEYS[5]
+		);
+		stringRedisTemplate.execute(
+			RedisScript.of(CLEANUP_GAME_SCRIPT, Long.class),
+			keys,
+			gameId + ":"                                  // ARGV[1]: gameId prefix for ZSCAN
+		);
 	}
 
 	private long longFromString(Object value) {
