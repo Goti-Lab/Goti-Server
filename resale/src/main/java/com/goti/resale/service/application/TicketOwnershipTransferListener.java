@@ -26,7 +26,7 @@ import lombok.extern.slf4j.Slf4j;
 @Component
 @RequiredArgsConstructor
 public class TicketOwnershipTransferListener {
-	private static final String TICKET_NUMBER_PREFIX = "RES-";
+	private static final String TICKET_NUMBER_PREFIX = "RST-";
 	private static final DateTimeFormatter TICKET_NUMBER_DATE_FORMATTER = DateTimeFormatter.ofPattern("MMdd")
 		.withZone(ZoneId.of("Asia/Seoul"));
 	private static final int ORDER_SUFFIX_START_INDEX = 12;
