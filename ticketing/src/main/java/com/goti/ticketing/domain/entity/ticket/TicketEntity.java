@@ -5,13 +5,12 @@ import static lombok.AccessLevel.*;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-import com.goti.ticketing.constants.TicketStatus;
-
 import org.springframework.util.StringUtils;
 
-import com.goti.ticketing.constants.ResaleEnabledStatus;
 import com.goti.domain.base.ModificationTimestampEntity;
 import com.goti.global.validation.Preconditions;
+import com.goti.ticketing.constants.ResaleEnabledStatus;
+import com.goti.ticketing.constants.TicketStatus;
 
 import jakarta.persistence.AttributeOverride;
 import jakarta.persistence.Column;
@@ -40,7 +39,7 @@ public class TicketEntity extends ModificationTimestampEntity {
 	@Column(nullable = false, unique = true)
 	private String ticketNumber;
 
-	@Column(nullable = false, unique = true)
+	@Column(nullable = false)
 	private UUID orderItemId;
 
 	@Column
@@ -219,6 +218,14 @@ public class TicketEntity extends ModificationTimestampEntity {
 			"리셀 발행 상태의 티켓만 일반 상태로 복구할 수 있습니다."
 		);
 		this.ticketStatus = TicketStatus.ISSUED;
+	}
+
+	public void resaleEnable() {
+		Preconditions.domainValidate(
+			this.resaleEnabledStatus == ResaleEnabledStatus.DISABLED,
+			"리셀 불가능 상태의 티켓만 가능 상태로 변경할 수 있습니다."
+		);
+		this.resaleEnabledStatus = ResaleEnabledStatus.ENABLED;
 	}
 
 	public boolean isFrozen() {
