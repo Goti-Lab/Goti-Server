@@ -2,11 +2,13 @@ package com.goti.queue.service;
 
 import java.util.UUID;
 
+import org.springframework.data.redis.RedisSystemException;
 import org.springframework.stereotype.Service;
 
 import com.goti.queue.repository.QueueRedisRepository;
 
 import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Timer;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -26,10 +28,21 @@ public class QueueCleanupService {
 	/**
 	 * 해당 gameId의 모든 queue 키를 일괄 삭제.
 	 * 삭제 대상: sequence, meta, waiting, active-users, expiration:users 내 해당 game 엔트리
+	 * @throws RedisSystemException Redis 명령 실행 실패 시
 	 */
 	public void cleanupGame(UUID gameId) {
-		log.warn("action=QUEUE_CLEANUP gameId={} — 해당 game의 모든 queue 데이터 삭제", gameId);
-		queueRedisRepository.cleanupGame(gameId);
-		meterRegistry.counter("queue.cleanup", "match_id", gameId.toString()).increment();
+		// 파괴적 작업이므로 의도적으로 warn 레벨
+		log.warn("action=QUEUE_CLEANUP gameId={}", gameId);
+		Timer.Sample sample = Timer.start(meterRegistry);
+		try {
+			queueRedisRepository.cleanupGame(gameId);
+			meterRegistry.counter("queue.cleanup").increment();
+		} catch (RedisSystemException e) {
+			log.error("action=QUEUE_CLEANUP_FAILED gameId={} error={}", gameId, e.getMessage());
+			meterRegistry.counter("queue.cleanup.error").increment();
+			throw e;
+		} finally {
+			sample.stop(meterRegistry.timer("queue.cleanup.duration"));
+		}
 	}
 }

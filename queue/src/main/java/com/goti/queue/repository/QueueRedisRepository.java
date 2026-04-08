@@ -253,6 +253,7 @@ public class QueueRedisRepository {
 	// saveEntry(JSON 직렬화)만 별도 호출 필요 → 전체 2 RTT.
 	// KEYS: [1]=META, [2]=SEQUENCE, [3]=WAITING, [4]=ENTRY, [5]=ACTIVE_USERS, [6]=EXPIRATION_USERS
 	// ARGV: [1]=userId, [2]=maxCapacity, [3]=now, [4]=expirationMember(gameId:userId)
+	// NOTE: standalone Redis 전제. KEYS[6](글로벌 키)은 Cluster 환경에서 cross-slot 에러 발생 → 분리 실행 필요.
 	private static final String ENTER_QUEUE_SCRIPT =
 		"local existing = redis.call('GET', KEYS[4]) " +
 		"local oldQueueNumber = -1 " +
@@ -425,17 +426,16 @@ public class QueueRedisRepository {
 	// ── Lua: Game Cleanup (game 단위 전체 키 삭제) ──────────────────
 	// WARNING: 진행 중인 game에서 호출하면 활성 사용자 전원이 강제 퇴장됨.
 	// 반드시 game 종료 후 또는 dev 테스트 정리 용도로만 사용할 것.
+	// NOTE: standalone Redis 전제. Cluster 전환 시 글로벌 키(KEYS[5]) 분리 실행 필요.
+	// KEYS: [1]=SEQUENCE, [2]=META, [3]=WAITING, [4]=ACTIVE_USERS, [5]=EXPIRATION_USERS
+	// ARGV: [1]=gameId prefix (gameId:)
 	private static final String CLEANUP_GAME_SCRIPT =
+		// SMEMBERS로 해당 game의 active users만 가져와서 expiration에서 제거 (ZSCAN 전체 순회 방지)
+		"local users = redis.call('SMEMBERS', KEYS[4]) " +
+		"for _, u in ipairs(users) do " +
+		"  redis.call('ZREM', KEYS[5], ARGV[1] .. u) " +
+		"end " +
 		"redis.call('DEL', KEYS[1], KEYS[2], KEYS[3], KEYS[4]) " +
-		"local cursor = '0' " +
-		"repeat " +
-		"  local result = redis.call('ZSCAN', KEYS[5], cursor, 'MATCH', ARGV[1] .. '*', 'COUNT', 100) " +
-		"  cursor = result[1] " +
-		"  local members = result[2] " +
-		"  for i = 1, #members, 2 do " +
-		"    redis.call('ZREM', KEYS[5], members[i]) " +
-		"  end " +
-		"until cursor == '0' " +
 		"return 1";
 
 	/**
