@@ -11,6 +11,9 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import com.goti.ticketing.game.dto.response.repository.GameScheduleQueryModel;
+import com.goti.ticketing.game.dto.response.repository.QGameScheduleQueryModel;
+
 import org.springframework.stereotype.Repository;
 
 import com.goti.ticketing.constants.SeatStatus;
@@ -19,10 +22,7 @@ import com.goti.ticketing.domain.entity.game.QGameStatusEntity;
 import com.goti.ticketing.domain.entity.game.QGameTicketingStatusEntity;
 import com.goti.ticketing.domain.entity.seat.QSeatStatusEntity;
 import com.goti.ticketing.game.dto.request.GameScheduleSearchCondition;
-import com.goti.ticketing.game.dto.response.GameScheduleSearchResponse;
-import com.goti.ticketing.game.dto.response.QGameScheduleSearchResponse;
 import com.querydsl.core.types.dsl.BooleanExpression;
-import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 
 import lombok.RequiredArgsConstructor;
@@ -54,28 +54,24 @@ public class GameScheduleRepositoryImpl implements GameScheduleRepositoryCustom 
 	}
 
 	@Override
-	public List<GameScheduleSearchResponse> searchSchedules(GameScheduleSearchCondition condition) {
+	public List<GameScheduleQueryModel> searchSchedules(GameScheduleSearchCondition condition) {
 		LocalDateTime now = LocalDateTime.now();
 		return jpaQueryFactory
 			.select(
-				new QGameScheduleSearchResponse(
+				new QGameScheduleQueryModel(
 					gameSchedule.id,
 					gameSchedule.startAt,
 					gameSchedule.leagueType,
 					gameSchedule.homeTeamId,
 					gameSchedule.awayTeamId,
 					gameSchedule.stadiumId,
-					Expressions.nullExpression(String.class),
-					Expressions.nullExpression(String.class),
-					Expressions.nullExpression(String.class),
 					gameStatus.gameStatus,
 					gameStatus.homeTeamScore,
 					gameStatus.awayTeamScore,
 					gameStatus.gameResult,
 					ticketingStatus.status,
 					ticketingStatus.ticketingOpenedAt,
-					ticketingStatus.ticketingEndAt,
-					Expressions.constant(0L)
+					ticketingStatus.ticketingEndAt
 				)
 			)
 			.from(gameSchedule)
@@ -110,28 +106,24 @@ public class GameScheduleRepositoryImpl implements GameScheduleRepositoryCustom 
 
 
 	@Override
-	public Optional<GameScheduleSearchResponse> findScheduleByGameId(UUID gameId) {
+	public Optional<GameScheduleQueryModel> findScheduleByGameId(UUID gameId) {
 		return Optional.ofNullable(
 			jpaQueryFactory
 				.select(
-					new QGameScheduleSearchResponse(
+					new QGameScheduleQueryModel(
 						gameSchedule.id,
 						gameSchedule.startAt,
 						gameSchedule.leagueType,
 						gameSchedule.homeTeamId,
 						gameSchedule.awayTeamId,
 						gameSchedule.stadiumId,
-						Expressions.nullExpression(String.class), // homeTeam DisplayName
-						Expressions.nullExpression(String.class), // awayTeamName DisplayName
-						Expressions.nullExpression(String.class), // stadiumLocation
 						gameStatus.gameStatus,
 						gameStatus.homeTeamScore,
 						gameStatus.awayTeamScore,
 						gameStatus.gameResult,
 						ticketingStatus.status,
 						ticketingStatus.ticketingOpenedAt,
-						ticketingStatus.ticketingEndAt,
-						Expressions.constant(0L)
+						ticketingStatus.ticketingEndAt
 					)
 				)
 				.from(gameSchedule)
