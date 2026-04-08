@@ -431,10 +431,14 @@ public class QueueRedisRepository {
 	// ARGV: [1]=gameId prefix (gameId:)
 	private static final String CLEANUP_GAME_SCRIPT =
 		// SMEMBERS로 해당 game의 active users만 가져와서 expiration에서 제거 (ZSCAN 전체 순회 방지)
+		// NOTE: SMEMBERS는 O(N)이므로 active users가 수만 건이면 blocking 발생.
+		// game 종료 시점에는 대부분 leave/expire 처리 후이므로 실제 대상은 수십~수백 수준.
+		// prod 스케일(수만) 시 application 레벨 SSCAN batch + pipeline ZREM으로 전환 필요.
 		"local users = redis.call('SMEMBERS', KEYS[4]) " +
 		"for _, u in ipairs(users) do " +
 		"  redis.call('ZREM', KEYS[5], ARGV[1] .. u) " +
 		"end " +
+		// EXPIRATION_USERS(KEYS[5])는 글로벌 공유 키 → DEL 아닌 개별 ZREM으로 해당 game 엔트리만 제거
 		"redis.call('DEL', KEYS[1], KEYS[2], KEYS[3], KEYS[4]) " +
 		"return 1";
 
