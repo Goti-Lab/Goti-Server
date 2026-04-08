@@ -9,8 +9,6 @@ import com.goti.constants.messages.ErrorCode;
 import com.goti.exception.CustomException;
 import com.goti.infra.cloudflare.TurnstileService;
 
-import lombok.extern.slf4j.Slf4j;
-
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -36,7 +34,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
-@Slf4j
 @Tag(name = "Seat Grade", description = "구장 별 좌석 등급 및 구역 API")
 @RestController
 @RequiredArgsConstructor
@@ -76,12 +73,6 @@ public class StadiumSeatController {
 		@RequestHeader(name = TURNSTILE_TOKEN_HEADER, required = false) String turnstileToken,
 		@RequestParam(defaultValue = "false") boolean forceNewSession
 	) {
-		log.info("action=TURNSTILE_HEADER_CHECK gameId={} userId={} tokenPresent={} tokenLength={}",
-			gameId,
-			userId,
-			turnstileToken != null && !turnstileToken.isBlank(),
-			turnstileToken != null ? turnstileToken.length() : 0
-		);
 		if (!turnstileService.verify(turnstileToken)) {
 			throw new CustomException(ErrorCode.TURNSTILE_VERIFICATION_FAILED);
 		}
