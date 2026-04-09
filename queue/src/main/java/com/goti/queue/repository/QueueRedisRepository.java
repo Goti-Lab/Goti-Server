@@ -53,70 +53,14 @@ public class QueueRedisRepository {
 		redisTemplate.delete(RedisKey.QUEUE_ENTRY.getKey(gameId, userId));
 	}
 
-	public long nextSequence(UUID gameId) {
-		Long sequence = redisTemplate.opsForValue().increment(RedisKey.QUEUE_SEQUENCE.getKey(gameId));
-		return sequence == null ? 1L : sequence;
-	}
-
-	public void addWaiting(UUID gameId, UUID userId, long queueNumber) {
-		redisTemplate.opsForZSet().add(
-			RedisKey.QUEUE_WAITING.getKey(gameId),
-			userId.toString(),
-			queueNumber
-		);
-	}
-
-	public void removeWaiting(UUID gameId, UUID userId) {
-		redisTemplate.opsForZSet().remove(
-			RedisKey.QUEUE_WAITING.getKey(gameId),
-			userId.toString()
-		);
-	}
-
 	public long countWaitingUsers(UUID gameId) {
 		Long count = redisTemplate.opsForZSet().zCard(RedisKey.QUEUE_WAITING.getKey(gameId));
 		return count == null ? 0L : count;
 	}
 
-	public boolean isActiveUser(UUID gameId, UUID userId) {
-		Boolean member = redisTemplate.opsForSet().isMember(
-			RedisKey.QUEUE_ACTIVE_USERS.getKey(gameId),
-			userId.toString()
-		);
-		return Boolean.TRUE.equals(member);
-	}
-
-	public void addActiveUser(UUID gameId, UUID userId) {
-		redisTemplate.opsForSet().add(
-			RedisKey.QUEUE_ACTIVE_USERS.getKey(gameId),
-			userId.toString()
-		);
-	}
-
-	public void removeActiveUser(UUID gameId, UUID userId) {
-		redisTemplate.opsForSet().remove(
-			RedisKey.QUEUE_ACTIVE_USERS.getKey(gameId),
-			userId.toString()
-		);
-	}
-
-	public void addExpirationUser(UUID gameId, UUID userId, Instant expiresAt) {
-		redisTemplate.opsForZSet().add(
-			RedisKey.QUEUE_EXPIRATION_USERS.getKey(),
-			expirationMember(gameId, userId),
-			expiresAt.toEpochMilli()
-		);
-	}
-
-	public void removeExpirationUser(UUID gameId, UUID userId) {
-		redisTemplate.opsForZSet().remove(
-			RedisKey.QUEUE_EXPIRATION_USERS.getKey(),
-			expirationMember(gameId, userId)
-		);
-	}
-
-	public Set<Object> getExpiredUsers(Instant now) {
-		return redisTemplate.opsForZSet().rangeByScore(
+	// Lua 스크립트(stringRedisTemplate)가 plain string으로 ZADD하므로 동일한 serializer로 조회
+	public Set<String> getExpiredUsers(Instant now) {
+		return stringRedisTemplate.opsForZSet().rangeByScore(
 			RedisKey.QUEUE_EXPIRATION_USERS.getKey(),
 			0,
 			now.toEpochMilli()
