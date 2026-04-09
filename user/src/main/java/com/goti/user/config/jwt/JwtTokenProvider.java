@@ -161,7 +161,9 @@ public class JwtTokenProvider {
 		Claims claims = getClaims(token);
 		String userId = claims.getSubject();
 		String providerId = claims.get(PROVIDER_ID_KEY, String.class);
-		OAuthProvider provider = claims.get(PROVIDER_TYPE_KEY, OAuthProvider.class);
+		OAuthProvider provider = OAuthProvider.valueOf(
+			claims.get(PROVIDER_TYPE_KEY, String.class)
+		);
 		UserDetails userDetails = userDetailsService.loadUserById(userId, providerId, provider);
 		return UsernamePasswordAuthenticationToken.authenticated(
 			userDetails,
