@@ -4,6 +4,8 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+
 public record ResaleTicketResponse(
 	UUID ticketId,
 	UUID ownerId,
@@ -13,8 +15,10 @@ public record ResaleTicketResponse(
 	UUID gradeId,
 	String seatInfo,
 	Integer ticketPrice,
+	@JsonFormat(pattern = "yyyy-MM-dd HH:mm")
 	LocalDateTime gameDate,
 	UUID transactionId,
+	@JsonFormat(pattern = "yyyy-MM-dd HH:mm")
 	Instant createdAt
 ) {
 }
