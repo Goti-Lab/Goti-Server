@@ -65,6 +65,9 @@ seat:
     fixed-delay-ms: 1000
     batch-size: 200
 
+queue:
+  token-secret: ${QUEUE_TOKEN_SECRET}
+
 infra:
   api:
     endpoints:
