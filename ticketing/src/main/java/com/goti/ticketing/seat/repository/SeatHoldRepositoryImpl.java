@@ -1,5 +1,6 @@
 package com.goti.ticketing.seat.repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -43,6 +44,41 @@ public class SeatHoldRepositoryImpl implements SeatHoldRepositoryCustom {
 	}
 
 	@Override
+	public List<SeatHoldEntity> findHoldsWithSeatAndGame(SeatHoldStatus status, LocalDateTime now, int limit) {
+		QSeatHoldEntity seatHold = QSeatHoldEntity.seatHoldEntity;
+		QGameScheduleEntity gameSchedule = QGameScheduleEntity.gameScheduleEntity;
+		QSeatEntity seat = QSeatEntity.seatEntity;
+
+		return queryFactory
+			.selectFrom(seatHold)
+			.join(seatHold.gameSchedule, gameSchedule).fetchJoin()
+			.join(seatHold.seat, seat).fetchJoin()
+			.where(
+				seatHold.status.eq(status),
+				seatHold.expiredAt.before(now)
+			)
+			.orderBy(seatHold.expiredAt.asc())
+			.limit(limit)
+			.fetch();
+	}
+
+	@Override
+	public Optional<SeatHoldEntity> findHoldWithSeatAndGame(UUID holdId) {
+		QSeatHoldEntity seatHold = QSeatHoldEntity.seatHoldEntity;
+		QGameScheduleEntity gameSchedule = QGameScheduleEntity.gameScheduleEntity;
+		QSeatEntity seat = QSeatEntity.seatEntity;
+
+		return Optional.ofNullable(
+			queryFactory
+				.selectFrom(seatHold)
+				.join(seatHold.gameSchedule, gameSchedule).fetchJoin()
+				.join(seatHold.seat, seat).fetchJoin()
+				.where(seatHold.id.eq(holdId))
+				.fetchOne()
+		);
+	}
+
+	@Override
 	public List<SeatHoldEntity> findAllHoldingSeats(UUID gameId, UUID userId) {
 		QSeatHoldEntity seatHold = QSeatHoldEntity.seatHoldEntity;
 		QGameScheduleEntity gameSchedule = QGameScheduleEntity.gameScheduleEntity;
@@ -62,28 +98,5 @@ public class SeatHoldRepositoryImpl implements SeatHoldRepositoryCustom {
 				seatHold.status.eq(SeatHoldStatus.HOLDING)
 			)
 			.fetch();
-	}
-
-	@Override
-	public Optional<SeatHoldEntity> findLatestActiveHold(
-		GameScheduleEntity gameSchedule,
-		SeatEntity seat,
-		UUID userId,
-		SeatHoldStatus status
-	) {
-		QSeatHoldEntity seatHold = QSeatHoldEntity.seatHoldEntity;
-
-		return Optional.ofNullable(
-			queryFactory
-				.selectFrom(seatHold)
-				.where(
-					seatHold.gameSchedule.eq(gameSchedule),
-					seatHold.seat.eq(seat),
-					seatHold.userId.eq(userId),
-					seatHold.status.eq(status)
-				)
-				.orderBy(seatHold.createdAt.desc())
-				.fetchFirst()
-		);
 	}
 }

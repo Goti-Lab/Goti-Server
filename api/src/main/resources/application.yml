@@ -95,3 +95,8 @@ infra:
       payment: ${PAYMENT_BASE_URL:http://localhost:8080}
       resale: ${RESALE_BASE_URL:http://localhost:8080}
       ticketing: ${TICKETING_BASE_URL:http://localhost:8080}
+
+cloudflare:
+  turnstile:
+    secret: ${CLOUDFLARE_TURNSTILE_SECRET}
+    verify-url: https://challenges.cloudflare.com/turnstile/v0/siteverify

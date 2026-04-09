@@ -8,13 +8,7 @@ import com.goti.ticketing.constants.GameStatus;
 import com.goti.ticketing.constants.LeagueType;
 import com.goti.ticketing.constants.TicketingStatus;
 
-import com.goti.ticketing.domain.entity.game.GameScheduleEntity;
-
-import com.goti.ticketing.domain.entity.game.GameStatusEntity;
-
-import com.goti.ticketing.domain.entity.game.GameTicketingStatusEntity;
-
-import com.querydsl.core.annotations.QueryProjection;
+import com.goti.ticketing.game.dto.response.repository.GameScheduleQueryModel;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 
@@ -32,15 +26,6 @@ public record GameScheduleSearchResponse(
 
 	@Schema(description = "리그 타입", example = "REGULAR")
 	LeagueType leagueType,
-
-	@Schema(description = "홈 팀 ID", example = "550e8400-e29b-41d4-a716-446655440000")
-	UUID homeTeamId,
-
-	@Schema(description = "원정 팀 ID", example = "660f9511-f30c-52d5-b827-557766551111")
-	UUID awayTeamId,
-
-	@Schema(description = "경기장 ID", example = "770g0622-g41d-63e6-c938-668877662222")
-	UUID stadiumId,
 
 	@Schema(description = "홈 팀 표시명", example = "삼성")
 	String homeTeamDisplayName,
@@ -77,51 +62,29 @@ public record GameScheduleSearchResponse(
 	@Schema(description = "잔여 좌석 수", example = "12543")
 	Long remainingSeatCount
 ) {
-
-	@QueryProjection
-	public GameScheduleSearchResponse {}
-
-	public static GameScheduleSearchResponse of(
-		final GameScheduleEntity game,
-		final String homeTeamDisplayName,
-		final String awayTeamDisplayName,
-		final String stadiumLocation,
-		final GameStatusEntity status,
-		final GameTicketingStatusEntity ticketing,
-		final Long remainingSeatCount
+	public static GameScheduleSearchResponse from(
+		GameScheduleQueryModel model,
+		String homeTeamDisplayName,
+		String awayTeamDisplayName,
+		String stadiumLocation,
+		Long seatCount
 	) {
 		return new GameScheduleSearchResponse(
-			game.getId(),
-			game.getStartAt(),
-			game.getLeagueType(),
-			game.getHomeTeamId(),
-			game.getAwayTeamId(),
-			game.getStadiumId(),
+			model.gameId(),
+			model.startAt(),
+			model.leagueType(),
 			homeTeamDisplayName,
 			awayTeamDisplayName,
 			stadiumLocation,
-			status.getGameStatus(),
-			status.getHomeTeamScore(),
-			status.getAwayTeamScore(),
-			status.getGameResult(),
-			ticketing.getStatus(),
-			ticketing.getTicketingOpenedAt(),
-			ticketing.getTicketingEndAt(),
-			remainingSeatCount
+			model.gameStatus(),
+			model.homeTeamScore(),
+			model.awayTeamScore(),
+			model.gameResult(),
+			model.ticketingStatus(),
+			model.ticketingOpenedAt(),
+			model.ticketingEndAt(),
+			seatCount
 		);
 	}
 
-	public GameScheduleSearchResponse withExternalInfo(
-		String homeTeamName,
-		String awayTeamName,
-		String stadiumLocation
-	) {
-		return new GameScheduleSearchResponse(
-			gameId, startAt, leagueType,
-			homeTeamId, awayTeamId, stadiumId,
-			homeTeamName, awayTeamName, stadiumLocation,
-			gameStatus, homeTeamScore, awayTeamScore, gameResult,
-			ticketingStatus, ticketingOpenedAt, ticketingEndAt, remainingSeatCount
-		);
-	}
 }

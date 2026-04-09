@@ -2,11 +2,13 @@ package com.goti.ticketing.game.repository.gameschedule;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
 import com.goti.ticketing.game.dto.request.GameScheduleSearchCondition;
 import com.goti.ticketing.game.dto.response.GameScheduleSearchResponse;
+import com.goti.ticketing.game.dto.response.repository.GameScheduleQueryModel;
 
 public interface GameScheduleRepositoryCustom {
 
@@ -16,8 +18,10 @@ public interface GameScheduleRepositoryCustom {
 		LocalDateTime startAt
 	);
 
-	List<GameScheduleSearchResponse> searchSchedules(GameScheduleSearchCondition request);
+	List<GameScheduleQueryModel> searchSchedules(GameScheduleSearchCondition request);
 
-	Optional<GameScheduleSearchResponse> findScheduleByGameId(UUID gameId);
+	Map<UUID, Long> findRemainingSeatCounts(List<UUID> scheduleIds);
+
+	Optional<GameScheduleQueryModel> findScheduleByGameId(UUID gameId);
 
 }

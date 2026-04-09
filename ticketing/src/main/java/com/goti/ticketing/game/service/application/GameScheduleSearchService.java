@@ -3,10 +3,13 @@ package com.goti.ticketing.game.service.application;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import com.goti.ticketing.game.dto.response.repository.GameScheduleQueryModel;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,29 +33,35 @@ public class GameScheduleSearchService {
 
 	@Transactional(readOnly = true)
 	public List<GameScheduleSearchResponse> searchSchedules(GameScheduleSearchCondition condition) {
-		List<GameScheduleSearchResponse> schedules = gameScheduleRepository.searchSchedules(condition);
+		List<GameScheduleQueryModel> queryModels = gameScheduleRepository.searchSchedules(condition);
 
-		if (schedules.isEmpty())
-			return schedules;
+		if (queryModels.isEmpty()) return List.of();
 
-		Set<UUID> teamIds = schedules.stream()
-			.flatMap(s -> Stream.of(s.homeTeamId(), s.awayTeamId()))
-			.filter(java.util.Objects::nonNull)
+		List<UUID> gameIds = queryModels.stream().map(GameScheduleQueryModel::gameId).toList();
+
+		Set<UUID> teamIds = queryModels.stream()
+			.flatMap(
+				queryModel -> Stream.of(queryModel.homeTeamId(), queryModel.awayTeamId())
+			)
+			.filter(Objects::nonNull)
 			.collect(Collectors.toSet());
 
-		Set<UUID> stadiumIds = schedules.stream()
-			.map(GameScheduleSearchResponse::stadiumId)
-			.filter(java.util.Objects::nonNull)
+		Set<UUID> stadiumIds = queryModels.stream()
+			.map(GameScheduleQueryModel::stadiumId)
+			.filter(Objects::nonNull)
 			.collect(Collectors.toSet());
 
 		Map<UUID, String> teamDisplayNameMap = getBaseballTeamDisplayNamesMap(teamIds);
 		Map<UUID, String> stadiumLocationMap = getStadiumLocationsMap(stadiumIds);
+		Map<UUID, Long> seatCountMap = gameScheduleRepository.findRemainingSeatCounts(gameIds);
 
-		return schedules.stream().map(
-			schedule -> schedule.withExternalInfo(
-				teamDisplayNameMap.get(schedule.homeTeamId()),
-				teamDisplayNameMap.get(schedule.awayTeamId()),
-				stadiumLocationMap.get(schedule.stadiumId())
+		return queryModels.stream().map(
+			queryModel -> GameScheduleSearchResponse.from(
+				queryModel,
+				teamDisplayNameMap.get(queryModel.homeTeamId()),
+				teamDisplayNameMap.get(queryModel.awayTeamId()),
+				stadiumLocationMap.get(queryModel.stadiumId()),
+				seatCountMap.getOrDefault(queryModel.gameId(), 0L)
 			)
 		).toList();
 	}
@@ -79,20 +88,24 @@ public class GameScheduleSearchService {
 
 	@Transactional(readOnly = true)
 	public GameScheduleSearchResponse getGameSchedule(UUID gameId) {
-		GameScheduleSearchResponse schedule = gameScheduleRepository.findScheduleByGameId(gameId)
+		GameScheduleQueryModel queryModel = gameScheduleRepository.findScheduleByGameId(gameId)
 			.orElseThrow(() -> new CustomException(ErrorCode.GAME_NOT_FOUND));
 
 		Map<UUID, String> teamNames = getBaseballTeamDisplayNamesMap(
-			Set.of(schedule.homeTeamId(), schedule.awayTeamId())
+			Set.of(queryModel.homeTeamId(), queryModel.awayTeamId())
 		);
 		Map<UUID, String> stadiumLocations = getStadiumLocationsMap(
-			Set.of(schedule.stadiumId())
+			Set.of(queryModel.stadiumId())
 		);
 
-		return schedule.withExternalInfo(
-			teamNames.get(schedule.homeTeamId()),
-			teamNames.get(schedule.awayTeamId()),
-			stadiumLocations.get(schedule.stadiumId())
+		List<UUID> gameIds = List.of(gameId);
+		Map<UUID, Long> seatCountMap = gameScheduleRepository.findRemainingSeatCounts(gameIds);
+		return GameScheduleSearchResponse.from(
+			queryModel,
+			teamNames.get(queryModel.homeTeamId()),
+			teamNames.get(queryModel.awayTeamId()),
+			stadiumLocations.get(queryModel.stadiumId()),
+			seatCountMap.getOrDefault(queryModel.gameId(), 0L)
 		);
 	}
 }
