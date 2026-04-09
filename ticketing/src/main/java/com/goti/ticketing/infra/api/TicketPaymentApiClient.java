@@ -17,7 +17,7 @@ import com.goti.ticketing.order.dto.request.OrderPaymentCancelRequest;
 @Component
 public class TicketPaymentApiClient extends BaseRestClient implements TicketPaymentClient {
 	private static final String PAYMENT_CANCEL_API = "/api/v1/payments/orders";
-	private static final String PAYMENT_UNSETTLED_API = "/api/v1/payments/resales";
+	private static final String PAYMENT_UNSETTLED_API = "/internal/payments/resales";
 	private static final String PATH_SEPARATOR = "/";
 
 	public TicketPaymentApiClient(RestClient.Builder builder, ApiEndpointProperties properties) {
