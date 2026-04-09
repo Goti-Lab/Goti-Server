@@ -3,6 +3,7 @@ package com.goti.resale.dto.response;
 import java.time.Instant;
 import java.util.UUID;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.goti.resale.constants.ResaleListingOrderStatus;
 import com.goti.resale.domain.entity.resale.ResaleListingOrderEntity;
 
@@ -23,6 +24,7 @@ public record ResaleListingOrderResponse(
 	ResaleListingOrderStatus orderStatus,
 
 	@Schema(description = "생성 일시")
+	@JsonFormat(pattern = "yyyy-MM-dd HH:mm")
 	Instant createdAt
 ) {
 	public static ResaleListingOrderResponse from(ResaleListingOrderEntity entity) {
