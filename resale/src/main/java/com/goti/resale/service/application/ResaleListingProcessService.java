@@ -90,6 +90,7 @@ public class ResaleListingProcessService {
 
 	private List<ResaleListingOrderStatus> mapToStatuses(ResaleOrderSearchStatus status) {
 		return switch (status) {
+			case null -> null;
 			case ALL -> null;
 			case LISTING -> List.of(ResaleListingOrderStatus.LISTING, ResaleListingOrderStatus.PARTIAL);
 			case PENDING -> List.of(ResaleListingOrderStatus.SOLD);
