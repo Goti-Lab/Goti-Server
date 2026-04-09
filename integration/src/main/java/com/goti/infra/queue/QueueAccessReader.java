@@ -4,6 +4,7 @@ import java.time.Instant;
 import java.util.UUID;
 
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -17,6 +18,7 @@ public class QueueAccessReader {
 	private static final String ADMITTED_STATUS = "ADMITTED";
 
 	private final RedisTemplate<String, Object> redisTemplate;
+	private final StringRedisTemplate stringRedisTemplate;
 	private final ObjectMapper objectMapper;
 
 	public boolean isAdmitted(UUID gameId, UUID userId) {
@@ -25,7 +27,8 @@ public class QueueAccessReader {
 			return false;
 		}
 
-		Boolean activeUser = redisTemplate.opsForSet().isMember(
+		// Lua 스크립트(stringRedisTemplate)가 plain string으로 SADD하므로 동일한 serializer로 조회
+		Boolean activeUser = stringRedisTemplate.opsForSet().isMember(
 			RedisKey.QUEUE_ACTIVE_USERS.getKey(gameId),
 			userId.toString()
 		);
