@@ -23,14 +23,13 @@ public class QueueExpirationScheduler {
 
 	@Scheduled(fixedDelayString = "${queue.expiration-check-interval:30000}")
 	public void expireAdmittedUsers() {
-		Set<Object> expiredUsers = queueRedisRepository.getExpiredUsers(Instant.now());
+		Set<String> expiredUsers = queueRedisRepository.getExpiredUsers(Instant.now());
 		if (expiredUsers == null || expiredUsers.isEmpty()) {
 			return;
 		}
 
-		for (Object expiredUser : expiredUsers) {
+		for (String member : expiredUsers) {
 			try {
-				String member = String.valueOf(expiredUser);
 				String[] parts = member.split(":");
 				if (parts.length != 2) {
 					continue;
@@ -40,7 +39,7 @@ public class QueueExpirationScheduler {
 				UUID userId = UUID.fromString(parts[1]);
 				queueLeaveService.expire(gameId, userId);
 			} catch (Exception e) {
-				log.warn("action=EXPIRE_SKIP member={} error={}", expiredUser, e.getMessage());
+				log.warn("action=EXPIRE_SKIP member={} error={}", member, e.getMessage());
 			}
 		}
 	}
