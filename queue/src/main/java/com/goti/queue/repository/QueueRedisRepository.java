@@ -53,26 +53,6 @@ public class QueueRedisRepository {
 		redisTemplate.delete(RedisKey.QUEUE_ENTRY.getKey(gameId, userId));
 	}
 
-	public long nextSequence(UUID gameId) {
-		Long sequence = redisTemplate.opsForValue().increment(RedisKey.QUEUE_SEQUENCE.getKey(gameId));
-		return sequence == null ? 1L : sequence;
-	}
-
-	public void addWaiting(UUID gameId, UUID userId, long queueNumber) {
-		redisTemplate.opsForZSet().add(
-			RedisKey.QUEUE_WAITING.getKey(gameId),
-			userId.toString(),
-			queueNumber
-		);
-	}
-
-	public void removeWaiting(UUID gameId, UUID userId) {
-		redisTemplate.opsForZSet().remove(
-			RedisKey.QUEUE_WAITING.getKey(gameId),
-			userId.toString()
-		);
-	}
-
 	public long countWaitingUsers(UUID gameId) {
 		Long count = redisTemplate.opsForZSet().zCard(RedisKey.QUEUE_WAITING.getKey(gameId));
 		return count == null ? 0L : count;
