@@ -17,8 +17,8 @@ public record Paging(
 	int size
 ) {
 	public Paging {
-		if (page == 0) page = 1;
-		if (size == 0) size = 10;
+		if (page <= 0) page = 1;
+		if (size <= 0) size = 10;
 	}
 
 	public Pageable toPageable() {
