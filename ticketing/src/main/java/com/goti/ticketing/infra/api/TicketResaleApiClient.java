@@ -13,7 +13,7 @@ import com.goti.ticketing.infra.api.dto.response.ResaleListingMyPageCountRespons
 
 @Component
 public class TicketResaleApiClient extends BaseRestClient implements TicketResaleClient {
-	private final static String RESALE_GET_API = "/api/v1/resales";
+	private final static String RESALE_GET_API = "/internal/resales";
 	private final static String PATH_SEPARATOR = "/";
 
 	public TicketResaleApiClient(RestClient.Builder builder, ApiEndpointProperties properties) {
