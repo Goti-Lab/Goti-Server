@@ -5,12 +5,6 @@ import static com.goti.global.api.ApiSuccessResponse.*;
 import java.util.List;
 import java.util.UUID;
 
-import com.goti.constants.messages.ErrorCode;
-import com.goti.exception.CustomException;
-import com.goti.infra.cloudflare.TurnstileService;
-
-import lombok.extern.slf4j.Slf4j;
-
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,7 +12,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -36,17 +29,14 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
-@Slf4j
 @Tag(name = "Seat Grade", description = "구장 별 좌석 등급 및 구역 API")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/stadium-seats")
 public class StadiumSeatController {
-	private static final String TURNSTILE_TOKEN_HEADER = "X-Turnstile-Token";
 
 	private final SeatGradeService seatGradeService;
 	private final SeatSectionService seatSectionService;
-	private final TurnstileService turnstileService;
 
 	@Operation(
 		summary = "좌석 등급 생성",
@@ -67,20 +57,14 @@ public class StadiumSeatController {
 
 	@Operation(
 		summary = "좌석 등급 조회",
-		description = "구장별 좌석 등급 조회 API"
+		description = "구장별 좌석 등급 조회 API. 대기열 입장 완료(POST /api/v1/queue/{gameId}/seat-enter) 후에만 호출 가능합니다. 미입장 시 403 QUEUE_ADMISSION_REQUIRED 에러가 반환됩니다."
 	)
 	@GetMapping("/games/{gameId}/seat-grades")
 	public ResponseEntity<ApiSuccessResponse<SeatGradeSearchResultResponse>> getSeatGrades(
 		@AuthenticationPrincipal(expression = "id") UUID userId,
 		@PathVariable UUID gameId,
-		@RequestHeader(name = TURNSTILE_TOKEN_HEADER, required = false) String turnstileToken,
 		@RequestParam(defaultValue = "false") boolean forceNewSession
 	) {
-		log.info("StadiumSeatController::turnstileToken::{}", turnstileToken);
-		// if (!turnstileService.verify(turnstileToken)) {
-		// 	throw new CustomException(ErrorCode.TURNSTILE_VERIFICATION_FAILED);
-		// }
-
 		return wrap(seatGradeService.findSeatGrades(gameId, userId, forceNewSession));
 	}
 
