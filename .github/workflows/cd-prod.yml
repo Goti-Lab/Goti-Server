@@ -127,7 +127,7 @@ jobs:
           SERVICES=$(echo '${{ needs.detect-changes.outputs.matrix }}' | jq -r '.include[].service' | tr '\n' ' ')
 
           for svc in $SERVICES; do
-            FILE="environments/prod/goti-${svc}/values.yaml"
+            FILE="environments/prod/goti-${svc}/values-aws.yaml"
             NEW_REPO="${{ env.HARBOR_REGISTRY }}/${{ env.HARBOR_PROJECT }}/goti-${svc}"
             yq -i ".image.repository = \"${NEW_REPO}\"" "$FILE"
             yq -i ".image.tag = \"${IMAGE_TAG}\"" "$FILE"
