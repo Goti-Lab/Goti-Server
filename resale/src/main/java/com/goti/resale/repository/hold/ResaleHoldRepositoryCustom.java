@@ -2,6 +2,7 @@ package com.goti.resale.repository.hold;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.repository.query.Param;
@@ -15,4 +16,11 @@ public interface ResaleHoldRepositoryCustom {
 		@Param("now") LocalDateTime now,
 		Pageable pageable
 	);
+
+	List<ResaleHoldEntity> findAllByUserAndStatus(
+		List<UUID> ids,
+		UUID userId,
+		ResaleHoldStatus status
+	);
+
 }

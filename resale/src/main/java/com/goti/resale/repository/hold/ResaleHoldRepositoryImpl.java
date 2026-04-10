@@ -2,6 +2,7 @@ package com.goti.resale.repository.hold;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
@@ -39,5 +40,25 @@ public class ResaleHoldRepositoryImpl implements ResaleHoldRepositoryCustom {
 			.offset(pageable.getOffset())
 			.limit(pageable.getPageSize())
 			.fetch();
+	}
+
+	@Override
+	public List<ResaleHoldEntity> findAllByUserAndStatus(
+		List<UUID> ids,
+		UUID userId,
+		ResaleHoldStatus status
+	) {
+		if (ids == null || ids.isEmpty()) {
+			return List.of();
+		}
+
+		return queryFactory
+			.selectFrom(resaleHold)
+			.join(resaleHold.resaleListing, resaleListing).fetchJoin()
+			.where(
+				resaleHold.id.in(ids),
+				resaleHold.userId.eq(userId),
+				resaleHold.status.eq(status)
+			).fetch();
 	}
 }

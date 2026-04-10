@@ -237,3 +237,4 @@ public class TicketEntity extends ModificationTimestampEntity {
 		return freeze != null && freeze.isActive();
 	}
 }
+
