@@ -21,6 +21,6 @@ public record TicketingOrderListItemResponse(
 	@JsonFormat(pattern = "yyyy-MM-dd HH:mm")
 	LocalDateTime gameDate,
 	String stadiumLocation,
-	List<String> seatInfos
+	List<SeatGradeInfoResponse> seatGradeGroups
 ) {
 }
