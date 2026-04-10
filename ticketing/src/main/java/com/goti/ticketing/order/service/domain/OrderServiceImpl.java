@@ -205,13 +205,17 @@ public class OrderServiceImpl implements OrderService {
 			.entrySet().stream()
 			.map(entry -> new SeatGradeInfoResponse(entry.getKey(), entry.getValue()))
 			.toList();
+		List<UUID> ticketIds = tickets.stream()
+			.map(TicketEntity::getId)
+			.toList();
 
 		return OrderListResponse.of(
 			order,
 			representativeTicket.getGameTitle(),
 			representativeTicket.getGameDate(),
 			stadiumLocation,
-			seatGradeGroups
+			seatGradeGroups,
+			ticketIds
 		);
 	}
 

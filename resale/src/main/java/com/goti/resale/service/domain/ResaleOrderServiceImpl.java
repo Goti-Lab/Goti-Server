@@ -190,7 +190,7 @@ public class ResaleOrderServiceImpl implements ResaleOrderService {
 				Collectors.toList()
 			));
 		List<UUID> ticketIds = transactions.stream()
-			.map(transaction -> transaction.getListing().getTicketId())
+			.map(this::getPurchaseInfoTicketId)
 			.distinct()
 			.toList();
 		Map<UUID, ResaleTicketPurchaseInfo> ticketInfoMap = ticketClient.getPurchaseInfos(ticketIds).stream()
@@ -273,12 +273,17 @@ public class ResaleOrderServiceImpl implements ResaleOrderService {
 		UUID gameId = transactions.getFirst().getListing().getGameId();
 
 		List<UUID> ticketIds = transactions.stream()
-			.map(transaction -> transaction.getListing().getTicketId())
+			.map(ResaleTransactionEntity::getBuyerTicketId)
+			.filter(Objects::nonNull)
 			.toList();
 
-		ResaleTicketPurchaseInfo representativeTicket = ticketInfoMap.get(ticketIds.getFirst());
+		List<UUID> purchaseInfoTicketIds = transactions.stream()
+			.map(this::getPurchaseInfoTicketId)
+			.toList();
 
-		List<String> seatInfos = ticketIds.stream()
+		ResaleTicketPurchaseInfo representativeTicket = ticketInfoMap.get(purchaseInfoTicketIds.getFirst());
+
+		List<String> seatInfos = purchaseInfoTicketIds.stream()
 			.map(ticketInfoMap::get)
 			.filter(Objects::nonNull)
 			.map(ResaleTicketPurchaseInfo::seatInfo)
@@ -289,7 +294,15 @@ public class ResaleOrderServiceImpl implements ResaleOrderService {
 			gameId,
 			representativeTicket.gameTitle(),
 			representativeTicket.gameDate(),
-			seatInfos
+			seatInfos,
+			ticketIds
+		);
+	}
+
+	private UUID getPurchaseInfoTicketId(ResaleTransactionEntity transaction) {
+		return Objects.requireNonNullElse(
+			transaction.getBuyerTicketId(),
+			transaction.getListing().getTicketId()
 		);
 	}
 

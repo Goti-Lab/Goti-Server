@@ -20,6 +20,7 @@ public record PurchaseSearchResponse(
 	String gameTitle,
 	@JsonFormat(pattern = "yyyy-MM-dd HH:mm")
 	LocalDateTime gameDate,
-	List<String> seatInfos
+	List<String> seatInfos,
+	List<UUID> ticketIds
 ) {
 }

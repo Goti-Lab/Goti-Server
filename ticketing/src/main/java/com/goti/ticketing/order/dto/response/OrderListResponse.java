@@ -38,14 +38,17 @@ public record OrderListResponse(
 	@Schema(description = "구장 지역", example = "대구")
 	String stadiumLocation,
 	@Schema(description = "등급별 좌석 정보 묶음")
-	List<SeatGradeInfoResponse> seatGradeGroups
+	List<SeatGradeInfoResponse> seatGradeGroups,
+	@Schema(description = "티켓 ID 목록")
+	List<UUID> ticketIds
 ) {
 	public static OrderListResponse of(
 		OrderEntity order,
 		String gameTitle,
 		LocalDateTime gameDate,
 		String stadiumLocation,
-		List<SeatGradeInfoResponse> seatGradeGroups
+		List<SeatGradeInfoResponse> seatGradeGroups,
+		List<UUID> ticketIds
 	) {
 		return new OrderListResponse(
 			order.getId(),
@@ -59,7 +62,8 @@ public record OrderListResponse(
 			gameTitle,
 			gameDate,
 			stadiumLocation,
-			seatGradeGroups
+			seatGradeGroups,
+			ticketIds
 		);
 	}
 }
