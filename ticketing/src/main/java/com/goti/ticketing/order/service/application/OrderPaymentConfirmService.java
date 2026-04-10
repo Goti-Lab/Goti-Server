@@ -89,6 +89,10 @@ public class OrderPaymentConfirmService {
 		List<TicketResponse> tickets = ticketCreateService.create(order);
 		gameTicketManagementService.processSoldout(order.getGameSchedule());
 
+		UUID gameId = order.getGameSchedule().getId();
+		int ticketCount = orderItems.size();
+		gameSeatUpdateHandler.onSeatDecrease(gameId, ticketCount);
+
 		log.info(
 			"action=PAYMENT_CONFIRM gameId={} userId={} orderId={} ticketCount={}",
 			order.getGameSchedule().getId(),
