@@ -4,10 +4,11 @@ import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-import java.util.stream.Stream;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,6 +18,8 @@ import com.goti.ticketing.domain.entity.order.OrderEntity;
 import com.goti.ticketing.domain.entity.order.OrderItemEntity;
 import com.goti.ticketing.domain.entity.order.OrderHistoryEntity;
 import com.goti.exception.CustomException;
+import com.goti.ticketing.infra.api.StadiumClient;
+import com.goti.ticketing.infra.api.dto.response.BaseballTeamDisplayNameResponse;
 import com.goti.ticketing.order.repository.OrderItemRepository;
 import com.goti.ticketing.order.repository.OrderHistoryRepository;
 import com.goti.ticketing.ticket.dto.response.TicketResponse;
@@ -35,6 +38,7 @@ public class TicketCreateService {
 	private final OrderHistoryRepository orderHistoryRepository;
 	private final OrderItemRepository orderItemRepository;
 	private final TicketService ticketService;
+	private final StadiumClient stadiumClient;
 
 	@Transactional
 	public List<TicketResponse> create(OrderEntity order) {
@@ -43,9 +47,17 @@ public class TicketCreateService {
 
 		List<OrderItemEntity> orderItems = orderItemRepository.findOrderItemsByOrderId(order.getId());
 		String ticketNumberPrefix = createPrefix(order.getCreatedAt(), order.getOrderNumber());
+		String gameTitle = createGameTitle(order);
 
 		return IntStream.range(0, orderItems.size())
-			.mapToObj(index -> createTicket(order, orderHistory, orderItems.get(index), ticketNumberPrefix, index + 1))
+			.mapToObj(index -> createTicket(
+				order,
+				orderHistory,
+				orderItems.get(index),
+				ticketNumberPrefix,
+				gameTitle,
+				index + 1
+			))
 			.toList();
 	}
 
@@ -54,6 +66,7 @@ public class TicketCreateService {
 		OrderHistoryEntity orderHistory,
 		OrderItemEntity orderItem,
 		String ticketNumberPrefix,
+		String gameTitle,
 		int ticketSequence
 	) {
 		return TicketResponse.from(
@@ -65,7 +78,7 @@ public class TicketCreateService {
 				orderHistory.getName(),
 				orderHistory.getEmail(),
 				orderHistory.getMobile(),
-				null,
+				gameTitle,
 				order.getGameSchedule().getStartAt(),
 				buildSeatInfo(orderItem),
 				orderItem.getTicketPrice()
@@ -91,6 +104,28 @@ public class TicketCreateService {
 
 	private String generateTicketNumber(String ticketNumberPrefix, int ticketSequence) {
 		return ticketNumberPrefix + "-" + String.format("%03d", ticketSequence);
+	}
+
+	private String createGameTitle(OrderEntity order) {
+		UUID homeTeamId = order.getGameSchedule().getHomeTeamId();
+		UUID awayTeamId = order.getGameSchedule().getAwayTeamId();
+
+		Map<UUID, String> teamDisplayNames = stadiumClient.getBaseballTeamDisplayNames(
+				List.of(homeTeamId, awayTeamId)
+			).stream()
+			.collect(Collectors.toMap(
+				BaseballTeamDisplayNameResponse::teamId,
+				BaseballTeamDisplayNameResponse::teamDisplayName
+			));
+
+		String homeTeamDisplayName = teamDisplayNames.get(homeTeamId);
+		String awayTeamDisplayName = teamDisplayNames.get(awayTeamId);
+
+		if (homeTeamDisplayName == null || awayTeamDisplayName == null) {
+			throw new CustomException(ErrorCode.GAME_NOT_FOUND);
+		}
+
+		return homeTeamDisplayName + "vs" + awayTeamDisplayName;
 	}
 
 	private String buildSeatInfo(OrderItemEntity orderItem) {
