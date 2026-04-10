@@ -53,70 +53,14 @@ public class QueueRedisRepository {
 		redisTemplate.delete(RedisKey.QUEUE_ENTRY.getKey(gameId, userId));
 	}
 
-	public long nextSequence(UUID gameId) {
-		Long sequence = redisTemplate.opsForValue().increment(RedisKey.QUEUE_SEQUENCE.getKey(gameId));
-		return sequence == null ? 1L : sequence;
-	}
-
-	public void addWaiting(UUID gameId, UUID userId, long queueNumber) {
-		redisTemplate.opsForZSet().add(
-			RedisKey.QUEUE_WAITING.getKey(gameId),
-			userId.toString(),
-			queueNumber
-		);
-	}
-
-	public void removeWaiting(UUID gameId, UUID userId) {
-		redisTemplate.opsForZSet().remove(
-			RedisKey.QUEUE_WAITING.getKey(gameId),
-			userId.toString()
-		);
-	}
-
 	public long countWaitingUsers(UUID gameId) {
 		Long count = redisTemplate.opsForZSet().zCard(RedisKey.QUEUE_WAITING.getKey(gameId));
 		return count == null ? 0L : count;
 	}
 
-	public boolean isActiveUser(UUID gameId, UUID userId) {
-		Boolean member = redisTemplate.opsForSet().isMember(
-			RedisKey.QUEUE_ACTIVE_USERS.getKey(gameId),
-			userId.toString()
-		);
-		return Boolean.TRUE.equals(member);
-	}
-
-	public void addActiveUser(UUID gameId, UUID userId) {
-		redisTemplate.opsForSet().add(
-			RedisKey.QUEUE_ACTIVE_USERS.getKey(gameId),
-			userId.toString()
-		);
-	}
-
-	public void removeActiveUser(UUID gameId, UUID userId) {
-		redisTemplate.opsForSet().remove(
-			RedisKey.QUEUE_ACTIVE_USERS.getKey(gameId),
-			userId.toString()
-		);
-	}
-
-	public void addExpirationUser(UUID gameId, UUID userId, Instant expiresAt) {
-		redisTemplate.opsForZSet().add(
-			RedisKey.QUEUE_EXPIRATION_USERS.getKey(),
-			expirationMember(gameId, userId),
-			expiresAt.toEpochMilli()
-		);
-	}
-
-	public void removeExpirationUser(UUID gameId, UUID userId) {
-		redisTemplate.opsForZSet().remove(
-			RedisKey.QUEUE_EXPIRATION_USERS.getKey(),
-			expirationMember(gameId, userId)
-		);
-	}
-
-	public Set<Object> getExpiredUsers(Instant now) {
-		return redisTemplate.opsForZSet().rangeByScore(
+	// Lua 스크립트(stringRedisTemplate)가 plain string으로 ZADD하므로 동일한 serializer로 조회
+	public Set<String> getExpiredUsers(Instant now) {
+		return stringRedisTemplate.opsForZSet().rangeByScore(
 			RedisKey.QUEUE_EXPIRATION_USERS.getKey(),
 			0,
 			now.toEpochMilli()
@@ -251,6 +195,9 @@ public class QueueRedisRepository {
 	// ── Lua All-in-One: Enter (5-7 RTT → 1 RTT) ─────────────────────
 	// 기존 entry 존재 시 cleanup + meta 초기화 + sequence 발급 + waiting 추가를 1 Lua로 통합.
 	// saveEntry(JSON 직렬화)만 별도 호출 필요 → 전체 2 RTT.
+	// KEYS: [1]=META, [2]=SEQUENCE, [3]=WAITING, [4]=ENTRY, [5]=ACTIVE_USERS, [6]=EXPIRATION_USERS
+	// ARGV: [1]=userId, [2]=maxCapacity, [3]=now, [4]=expirationMember(gameId:userId)
+	// NOTE: standalone Redis 전제. KEYS[6](글로벌 키)은 Cluster 환경에서 cross-slot 에러 발생 → 분리 실행 필요.
 	private static final String ENTER_QUEUE_SCRIPT =
 		"local existing = redis.call('GET', KEYS[4]) " +
 		"local oldQueueNumber = -1 " +
@@ -259,6 +206,16 @@ public class QueueRedisRepository {
 		"  if ok and entry.queueNumber then oldQueueNumber = entry.queueNumber end " +
 		"  redis.call('ZREM', KEYS[3], ARGV[1]) " +
 		"  redis.call('DEL', KEYS[4]) " +
+		// re-enter 시 ADMITTED 상태의 잔여 active-users + expiration 정리
+		// WHY: leave 없이 브라우저를 닫고 재진입하면 active-users에 좀비가 남아 409 유발
+		"  if redis.call('SISMEMBER', KEYS[5], ARGV[1]) == 1 then " +
+		"    redis.call('SREM', KEYS[5], ARGV[1]) " +
+		"    if redis.call('EXISTS', KEYS[1]) == 1 then " +
+		"      local cur = tonumber(redis.call('HGET', KEYS[1], 'activeCount') or '0') " +
+		"      if cur > 0 then redis.call('HINCRBY', KEYS[1], 'activeCount', -1) end " +
+		"    end " +
+		"  end " +
+		"  redis.call('ZREM', KEYS[6], ARGV[4]) " +
 		"end " +
 		"if redis.call('EXISTS', KEYS[1]) == 0 then " +
 		"  redis.call('HSET', KEYS[1], " +
@@ -276,18 +233,21 @@ public class QueueRedisRepository {
 	 */
 	public List<Long> enterQueue(UUID gameId, UUID userId, long maxCapacity) {
 		List<String> keys = List.of(
-			RedisKey.QUEUE_META.getKey(gameId),
-			RedisKey.QUEUE_SEQUENCE.getKey(gameId),
-			RedisKey.QUEUE_WAITING.getKey(gameId),
-			RedisKey.QUEUE_ENTRY.getKey(gameId, userId)
+			RedisKey.QUEUE_META.getKey(gameId),          // KEYS[1]
+			RedisKey.QUEUE_SEQUENCE.getKey(gameId),      // KEYS[2]
+			RedisKey.QUEUE_WAITING.getKey(gameId),       // KEYS[3]
+			RedisKey.QUEUE_ENTRY.getKey(gameId, userId), // KEYS[4]
+			RedisKey.QUEUE_ACTIVE_USERS.getKey(gameId),  // KEYS[5]
+			RedisKey.QUEUE_EXPIRATION_USERS.getKey()     // KEYS[6]
 		);
 		@SuppressWarnings("unchecked")
 		List<Long> result = stringRedisTemplate.execute(
 			RedisScript.of(ENTER_QUEUE_SCRIPT, List.class),
 			keys,
-			userId.toString(),
-			String.valueOf(maxCapacity),
-			Instant.now().toString()
+			userId.toString(),                           // ARGV[1]
+			String.valueOf(maxCapacity),                  // ARGV[2]
+			Instant.now().toString(),                     // ARGV[3]
+			expirationMember(gameId, userId)              // ARGV[4]
 		);
 		return result;
 	}
@@ -405,6 +365,44 @@ public class QueueRedisRepository {
 			expirationMember(gameId, userId)
 		);
 		return result;
+	}
+
+	// ── Lua: Game Cleanup (game 단위 전체 키 삭제) ──────────────────
+	// WARNING: 진행 중인 game에서 호출하면 활성 사용자 전원이 강제 퇴장됨.
+	// 반드시 game 종료 후 또는 dev 테스트 정리 용도로만 사용할 것.
+	// NOTE: standalone Redis 전제. Cluster 전환 시 글로벌 키(KEYS[5]) 분리 실행 필요.
+	// KEYS: [1]=SEQUENCE, [2]=META, [3]=WAITING, [4]=ACTIVE_USERS, [5]=EXPIRATION_USERS
+	// ARGV: [1]=gameId prefix (gameId:)
+	private static final String CLEANUP_GAME_SCRIPT =
+		// SMEMBERS로 해당 game의 active users만 가져와서 expiration에서 제거 (ZSCAN 전체 순회 방지)
+		// NOTE: SMEMBERS는 O(N)이므로 active users가 수만 건이면 blocking 발생.
+		// game 종료 시점에는 대부분 leave/expire 처리 후이므로 실제 대상은 수십~수백 수준.
+		// prod 스케일(수만) 시 application 레벨 SSCAN batch + pipeline ZREM으로 전환 필요.
+		"local users = redis.call('SMEMBERS', KEYS[4]) " +
+		"for _, u in ipairs(users) do " +
+		"  redis.call('ZREM', KEYS[5], ARGV[1] .. u) " +
+		"end " +
+		// EXPIRATION_USERS(KEYS[5])는 글로벌 공유 키 → DEL 아닌 개별 ZREM으로 해당 game 엔트리만 제거
+		"redis.call('DEL', KEYS[1], KEYS[2], KEYS[3], KEYS[4]) " +
+		"return 1";
+
+	/**
+	 * 해당 gameId의 모든 queue 관련 Redis 키를 일괄 삭제.
+	 * WARNING: 진행 중인 game에서 호출하면 활성 사용자 전원이 강제 퇴장됨.
+	 */
+	public void cleanupGame(UUID gameId) {
+		List<String> keys = List.of(
+			RedisKey.QUEUE_SEQUENCE.getKey(gameId),     // KEYS[1]
+			RedisKey.QUEUE_META.getKey(gameId),          // KEYS[2]
+			RedisKey.QUEUE_WAITING.getKey(gameId),       // KEYS[3]
+			RedisKey.QUEUE_ACTIVE_USERS.getKey(gameId),  // KEYS[4]
+			RedisKey.QUEUE_EXPIRATION_USERS.getKey()     // KEYS[5]
+		);
+		stringRedisTemplate.execute(
+			RedisScript.of(CLEANUP_GAME_SCRIPT, Long.class),
+			keys,
+			gameId + ":"                                  // ARGV[1]: gameId prefix for ZSCAN
+		);
 	}
 
 	private long longFromString(Object value) {

@@ -38,8 +38,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 		@NonNull HttpServletResponse response,
 		@NonNull FilterChain filterChain
 	) throws ServletException, IOException {
-
+		String turnstileToken = request.getHeader("X-Turnstile-Token");
 		String requestURI = request.getRequestURI();
+		log.info("Filter::turnstileToken::{}", turnstileToken);
+		log.info("Filter::requestURI::{}", requestURI);
 
 		boolean isPublic = Arrays.stream(PUBLIC_URLS)
 			.anyMatch(pattern -> matches(pattern, requestURI));

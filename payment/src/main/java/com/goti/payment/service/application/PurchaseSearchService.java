@@ -8,6 +8,8 @@ import java.util.stream.Stream;
 
 import com.goti.payment.dto.request.enums.PurchaseSearchType;
 
+import com.goti.payment.dto.response.SeatGradeInfoResponse;
+
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -98,7 +100,8 @@ public class PurchaseSearchService {
 				order.stadiumId(),
 				order.gameTitle(),
 				order.gameDate(),
-				order.seatInfos()
+				extractSeatInfos(order.seatGradeGroups()),
+				order.ticketIds()
 			))
 			.toList();
 	}
@@ -128,9 +131,29 @@ public class PurchaseSearchService {
 				null,
 				order.gameTitle(),
 				order.gameDate(),
-				order.seatInfos()
+				order.seatInfos(),
+				order.ticketIds()
 			))
 			.toList();
+	}
+
+	private List<String> extractSeatInfos(List<SeatGradeInfoResponse> seatGradeGroups) {
+		if (seatGradeGroups == null) {
+			return List.of();
+		}
+
+		return seatGradeGroups.stream()
+			.flatMap(group -> group.seatInfos().stream()
+				.map(seatInfo -> combineSeatGradeAndSeatInfo(group.seatGradeName(), seatInfo)))
+			.toList();
+	}
+
+	private String combineSeatGradeAndSeatInfo(String seatGradeName, String seatInfo) {
+		if (!StringUtils.hasText(seatGradeName)) {
+			return seatInfo;
+		}
+
+		return seatGradeName + " " + seatInfo;
 	}
 
 	private Page<PurchaseSearchResponse> toPage(List<PurchaseSearchResponse> combinedPurchases, Pageable pageable) {

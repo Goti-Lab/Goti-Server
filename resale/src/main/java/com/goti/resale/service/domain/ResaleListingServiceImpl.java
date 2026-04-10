@@ -2,6 +2,7 @@ package com.goti.resale.service.domain;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -15,6 +16,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import com.github.f4b6a3.tsid.TsidCreator;
 import com.goti.constants.messages.ErrorCode;
@@ -31,11 +33,13 @@ import com.goti.resale.dto.request.ResaleListingCancelRequest;
 import com.goti.resale.dto.request.ResaleListingCreateRequest;
 import com.goti.resale.dto.request.ResaleListingOrderCreateRequest;
 import com.goti.resale.dto.response.ResaleListingOrderCreateResponse;
+import com.goti.resale.dto.response.ResaleListingOrderResponse;
 import com.goti.resale.dto.response.ResaleListingResponse;
 import com.goti.resale.dto.response.ResaleListingsCountResponse;
 import com.goti.resale.dto.response.ResaleTicketResponse;
 import com.goti.resale.infra.TicketClient;
 import com.goti.resale.infra.dto.GameScheduleResponse;
+import com.goti.resale.infra.dto.SeatGradeInfoResponse;
 import com.goti.resale.repository.ResaleRestrictionRepository;
 import com.goti.resale.repository.history.ResalePriceHistoryRepository;
 import com.goti.resale.repository.listing.ResaleListingRepository;
@@ -211,7 +215,7 @@ public class ResaleListingServiceImpl implements ResaleListingService {
 
 	@Override
 	@Transactional(readOnly = true)
-	public Page<ResaleListingOrderEntity> getSalesHistory(
+	public Page<ResaleListingOrderResponse> getSalesHistory(
 		UUID sellerId,
 		List<ResaleListingOrderStatus> statuses,
 		Integer months,
@@ -225,7 +229,64 @@ public class ResaleListingServiceImpl implements ResaleListingService {
 		);
 		validatePeriodFilter(months, startDate, endDate);
 
-		return listingOrderRepository.getSalesHistory(sellerId, statuses, months, startDate, endDate, pageable);
+		Page<ResaleListingOrderEntity> orders = listingOrderRepository.getSalesHistory(sellerId, statuses, months,
+			startDate, endDate, pageable);
+
+		List<UUID> orderIds = orders.getContent().stream()
+			.map(ResaleListingOrderEntity::getId)
+			.toList();
+
+		Map<UUID, List<ResaleListingEntity>> listingsByOrder = listingRepository.findAllByListingOrderIdIn(orderIds)
+			.stream()
+			.collect(Collectors.groupingBy(l -> l.getListingOrder().getId()));
+
+		Map<UUID, GameScheduleResponse> gameCache = new HashMap<>();
+		Map<UUID, ResaleTicketResponse> ticketInfoCache = new HashMap<>();
+
+		return orders.map(order -> {
+			List<ResaleListingEntity> listings = listingsByOrder.getOrDefault(order.getId(), List.of());
+
+			if (listings == null || listings.isEmpty()) {
+				throw new CustomException(ErrorCode.LISTING_NOT_FOUND);
+			}
+
+			ResaleListingEntity rep = listings.get(0);
+
+			GameScheduleResponse game = gameCache.computeIfAbsent(rep.getGameId(),
+				ticketClient::getGameSchedule);
+
+			ResaleTicketResponse ticketInfo = ticketInfoCache.computeIfAbsent(rep.getTicketId(),
+				ticketId -> ticketClient.getTicketInfo(ticketId, sellerId));
+
+			Integer totalAmount = listings.stream()
+				.mapToInt(ResaleListingEntity::getListingPrice)
+				.sum();
+
+			List<String> formattedSeatInfos = extractSeatInfos(
+				ticketInfo.gradeName(),
+				listings.stream().map(ResaleListingEntity::getSeatInfo).toList()
+			);
+
+			List<UUID> ticketIds = listings.stream()
+				.map(ResaleListingEntity::getTicketId)
+				.toList();
+
+			return new ResaleListingOrderResponse(
+				order.getId(),
+				order.getOrderNumber(),
+				order.getOrderStatus(),
+				listings.size(),
+				totalAmount,
+				LocalDateTime.ofInstant(order.getCreatedAt(), ZoneId.of("Asia/Seoul")),
+				rep.getGameId(),
+				ticketInfo.stadiumId(),
+				game.getGameTitle(),
+				game.startAt(),
+				game.stadiumLocation(),
+				formattedSeatInfos,
+				ticketIds
+			);
+		});
 	}
 
 	@Override
@@ -396,5 +457,33 @@ public class ResaleListingServiceImpl implements ResaleListingService {
 		}
 
 		listingOrderRepository.saveAll(listingOrders);
+	}
+
+	private List<String> extractSeatInfos(List<SeatGradeInfoResponse> seatGradeGroups) {
+		if (seatGradeGroups == null) {
+			return List.of();
+		}
+
+		return seatGradeGroups.stream()
+			.flatMap(group -> extractSeatInfos(group.seatGradeName(), group.seatInfos()).stream())
+			.toList();
+	}
+
+	private List<String> extractSeatInfos(String gradeName, List<String> seatInfos) {
+		if (seatInfos == null) {
+			return List.of();
+		}
+
+		return seatInfos.stream()
+			.map(seatInfo -> combineSeatGradeAndSeatInfo(gradeName, seatInfo))
+			.toList();
+	}
+
+	private String combineSeatGradeAndSeatInfo(String seatGradeName, String seatInfo) {
+		if (!StringUtils.hasText(seatGradeName)) {
+			return seatInfo;
+		}
+
+		return String.format("%s %s", seatGradeName, seatInfo);
 	}
 }

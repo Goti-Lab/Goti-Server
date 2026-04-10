@@ -24,7 +24,7 @@ public record ResalePurchaseListResponse(
 	@Schema(description = "총 결제 금액", example = "42000")
 	Integer totalAmount,
 	@Schema(description = "주문 일시", example = "2026-03-16 10:15")
-	@JsonFormat(pattern = "yyyy-MM-dd HH:mm", timezone = "Asia/Seoul")
+	@JsonFormat(pattern = "yyyy-MM-dd HH:mm")
 	Instant orderedAt,
 	@Schema(description = "경기 ID", example = "62c73f2d-87ab-4f5c-9d66-97d4d7771111")
 	UUID gameId,
@@ -34,14 +34,17 @@ public record ResalePurchaseListResponse(
 	@JsonFormat(pattern = "yyyy-MM-dd HH:mm")
 	LocalDateTime gameDate,
 	@Schema(description = "좌석 정보 목록", example = "[\"1루 K8석(3)\", \"109구역 1열 8번\"]")
-	List<String> seatInfos
+	List<String> seatInfos,
+	@Schema(description = "티켓 ID 목록")
+	List<UUID> ticketIds
 ) {
 	public static ResalePurchaseListResponse of(
 		ResaleOrderEntity order,
 		UUID gameId,
 		String gameTitle,
 		LocalDateTime gameDate,
-		List<String> seatInfos
+		List<String> seatInfos,
+		List<UUID> ticketIds
 	) {
 		return new ResalePurchaseListResponse(
 			order.getId(),
@@ -53,7 +56,8 @@ public record ResalePurchaseListResponse(
 			gameId,
 			gameTitle,
 			gameDate,
-			seatInfos
+			seatInfos,
+			ticketIds
 		);
 	}
 }

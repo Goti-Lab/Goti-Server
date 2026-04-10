@@ -62,10 +62,9 @@ public class ResaleOrderApiClient extends BaseRestClient implements ResaleOrderC
 	) {
 		List<ResalePurchaseListItemResponse> response = getGotiResponse(
 			RESALE_ORDER_API + "/purchases",
-			null,
+			getHeaders(),
 			createPurchaseQueryParams(buyerId, months, startDate, endDate),
-			new ParameterizedTypeReference<>() {
-			}
+			new ParameterizedTypeReference<>() {}
 		);
 		return response != null ? response : List.of();
 	}

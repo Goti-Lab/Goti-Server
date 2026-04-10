@@ -85,10 +85,13 @@ public class ResaleListingProcessService {
 			startDate,
 			endDate,
 			paging.toPageable()
-		).map(ResaleListingOrderResponse::from);
+		);
 	}
 
 	private List<ResaleListingOrderStatus> mapToStatuses(ResaleOrderSearchStatus status) {
+		if (status == null) {
+			return null;
+		}
 		return switch (status) {
 			case ALL -> null;
 			case LISTING -> List.of(ResaleListingOrderStatus.LISTING, ResaleListingOrderStatus.PARTIAL);

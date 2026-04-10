@@ -14,11 +14,12 @@ public record ResalePurchaseListItemResponse(
 	Integer totalQuantity,
 	Integer totalAmount,
 	@JsonFormat(pattern = "yyyy-MM-dd HH:mm")
-	Instant orderedAt,
+	LocalDateTime orderedAt,
 	UUID gameId,
 	String gameTitle,
 	@JsonFormat(pattern = "yyyy-MM-dd HH:mm")
 	LocalDateTime gameDate,
-	List<String> seatInfos
+	List<String> seatInfos,
+	List<UUID> ticketIds
 ) {
 }

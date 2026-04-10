@@ -58,5 +58,8 @@ queue:
   max-capacity: ${QUEUE_MAX_CAPACITY:5000}
   entry-ttl: ${QUEUE_ENTRY_TTL:10m}
   admitted-ttl: ${QUEUE_ADMITTED_TTL:15m}
-  token-secret: ${QUEUE_TOKEN_SECRET:goti-2026-queue-token-secret-key-minimum-32-chars}
+  token-secret: ${QUEUE_TOKEN_SECRET}
   expiration-check-interval: ${QUEUE_EXPIRATION_CHECK_INTERVAL:30s}
+  # 내부 전용 cleanup API 활성화 (안정화 후 false로 전환)
+  cleanup-api:
+    enabled: ${QUEUE_CLEANUP_API_ENABLED:false}

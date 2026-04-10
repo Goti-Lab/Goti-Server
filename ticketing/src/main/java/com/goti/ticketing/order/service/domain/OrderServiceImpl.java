@@ -8,9 +8,15 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.github.f4b6a3.tsid.TsidCreator;
 import com.goti.constants.messages.ErrorCode;
 import com.goti.exception.CustomException;
 import com.goti.global.validation.Preconditions;
+import com.goti.ticketing.domain.entity.game.GameScheduleEntity;
+import com.goti.ticketing.domain.entity.order.OrderEntity;
 import com.goti.ticketing.domain.entity.order.OrderItemEntity;
 import com.goti.ticketing.domain.entity.ticket.TicketEntity;
 import com.goti.ticketing.infra.api.StadiumClient;
@@ -18,16 +24,9 @@ import com.goti.ticketing.infra.api.dto.response.StadiumLocationResponse;
 import com.goti.ticketing.order.dto.response.OrderListResponse;
 import com.goti.ticketing.order.dto.response.OrderPaymentInfoResponse;
 import com.goti.ticketing.order.dto.response.SeatGradeInfoResponse;
+import com.goti.ticketing.order.repository.OrderRepository;
 import com.goti.ticketing.session.service.application.ReservationSessionService;
 import com.goti.ticketing.ticket.service.domain.TicketService;
-
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import com.github.f4b6a3.tsid.TsidCreator;
-import com.goti.ticketing.domain.entity.game.GameScheduleEntity;
-import com.goti.ticketing.domain.entity.order.OrderEntity;
-import com.goti.ticketing.order.repository.OrderRepository;
 
 import lombok.RequiredArgsConstructor;
 
@@ -191,7 +190,7 @@ public class OrderServiceImpl implements OrderService {
 			.map(OrderItemEntity::getId)
 			.toList();
 
-		Map<UUID, TicketEntity> ticketsByOrderItemId = ticketService.getByOrderItemIds(orderItemIds);
+		Map<UUID, TicketEntity> ticketsByOrderItemId = ticketService.getByOrderItemIds(orderItemIds, order.getMemberId());
 		List<TicketEntity> tickets = orderItemIds.stream()
 			.map(ticketsByOrderItemId::get)
 			.toList();
@@ -206,13 +205,17 @@ public class OrderServiceImpl implements OrderService {
 			.entrySet().stream()
 			.map(entry -> new SeatGradeInfoResponse(entry.getKey(), entry.getValue()))
 			.toList();
+		List<UUID> ticketIds = tickets.stream()
+			.map(TicketEntity::getId)
+			.toList();
 
 		return OrderListResponse.of(
 			order,
 			representativeTicket.getGameTitle(),
 			representativeTicket.getGameDate(),
 			stadiumLocation,
-			seatGradeGroups
+			seatGradeGroups,
+			ticketIds
 		);
 	}
 

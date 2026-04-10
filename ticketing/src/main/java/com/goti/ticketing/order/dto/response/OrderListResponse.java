@@ -1,7 +1,7 @@
 package com.goti.ticketing.order.dto.response;
 
-import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.UUID;
 
@@ -24,8 +24,8 @@ public record OrderListResponse(
 	@Schema(description = "총 결제 금액", example = "42000")
 	Integer totalAmount,
 	@Schema(description = "주문 일시", example = "2026-03-16 10:15")
-	@JsonFormat(pattern = "yyyy-MM-dd HH:mm", timezone = "Asia/Seoul")
-	Instant orderedAt,
+	@JsonFormat(pattern = "yyyy-MM-dd HH:mm")
+	LocalDateTime orderedAt,
 	@Schema(description = "경기 ID", example = "62c73f2d-87ab-4f5c-9d66-97d4d7771111")
 	UUID gameId,
 	@Schema(description = "구장 ID", example = "8347997b-886f-4e6e-80e6-ff64f1e9e057")
@@ -38,14 +38,17 @@ public record OrderListResponse(
 	@Schema(description = "구장 지역", example = "대구")
 	String stadiumLocation,
 	@Schema(description = "등급별 좌석 정보 묶음")
-	List<SeatGradeInfoResponse> seatGradeGroups
+	List<SeatGradeInfoResponse> seatGradeGroups,
+	@Schema(description = "티켓 ID 목록")
+	List<UUID> ticketIds
 ) {
 	public static OrderListResponse of(
 		OrderEntity order,
 		String gameTitle,
 		LocalDateTime gameDate,
 		String stadiumLocation,
-		List<SeatGradeInfoResponse> seatGradeGroups
+		List<SeatGradeInfoResponse> seatGradeGroups,
+		List<UUID> ticketIds
 	) {
 		return new OrderListResponse(
 			order.getId(),
@@ -53,13 +56,14 @@ public record OrderListResponse(
 			order.getOrderStatus(),
 			order.getTotalQuantity(),
 			order.getTotalAmount(),
-			order.getCreatedAt(),
+			LocalDateTime.ofInstant(order.getCreatedAt(), ZoneId.of("Asia/Seoul")),
 			order.getGameSchedule().getId(),
 			order.getGameSchedule().getStadiumId(),
 			gameTitle,
 			gameDate,
 			stadiumLocation,
-			seatGradeGroups
+			seatGradeGroups,
+			ticketIds
 		);
 	}
 }

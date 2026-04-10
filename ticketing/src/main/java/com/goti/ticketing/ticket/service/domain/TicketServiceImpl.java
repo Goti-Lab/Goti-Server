@@ -2,9 +2,7 @@ package com.goti.ticketing.ticket.service.domain;
 
 import static java.util.stream.Collectors.*;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -12,13 +10,14 @@ import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.github.f4b6a3.tsid.TsidCreator;
 import com.goti.constants.messages.ErrorCode;
 import com.goti.exception.CustomException;
 import com.goti.global.validation.Preconditions;
 import com.goti.ticketing.constants.TicketStatus;
 import com.goti.ticketing.domain.entity.order.OrderItemEntity;
 import com.goti.ticketing.domain.entity.ticket.TicketEntity;
+import com.goti.ticketing.infra.api.StadiumClient;
+import com.goti.ticketing.infra.api.dto.response.StadiumLocationResponse;
 import com.goti.ticketing.order.repository.OrderItemRepository;
 import com.goti.ticketing.ticket.dto.response.ResaleTicketResponse;
 import com.goti.ticketing.ticket.dto.response.TicketPurchaseInfoResponse;
@@ -30,10 +29,9 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 public class TicketServiceImpl implements TicketService {
-	private static final DateTimeFormatter TICKET_NUMBER_FORMATTER = DateTimeFormatter.ofPattern("yyMMdd");
-
 	private final TicketRepository ticketRepository;
 	private final OrderItemRepository orderItemRepository;
+	private final StadiumClient stadiumClient;
 
 	@Override
 	@Transactional
@@ -71,8 +69,12 @@ public class TicketServiceImpl implements TicketService {
 
 	@Override
 	@Transactional(readOnly = true)
-	public Map<UUID, TicketEntity> getByOrderItemIds(List<UUID> orderItemIds) {
-		return ticketRepository.findAllByOrderItemIdIn(orderItemIds).stream()
+	public Map<UUID, TicketEntity> getByOrderItemIds(List<UUID> orderItemIds, UUID userId) {
+		return ticketRepository.findAllByOrderItemIdIn(
+				orderItemIds,
+				userId
+			)
+			.stream()
 			.collect(toMap(TicketEntity::getOrderItemId, ticket -> ticket));
 	}
 
@@ -132,11 +134,20 @@ public class TicketServiceImpl implements TicketService {
 		OrderItemEntity orderItem = orderItemRepository.findById(ticket.getOrderItemId())
 			.orElseThrow(() -> new CustomException(ErrorCode.ORDER_ITEM_NOT_FOUND));
 
+		List<StadiumLocationResponse> stadiumLocations = stadiumClient.getStadiumLocations(
+			List.of(orderItem.getSeat().getSeatSection().getStadiumId())
+		);
+
+		String location = stadiumLocations.isEmpty() ? null : stadiumLocations.getFirst().stadiumLocation();
+
 		return ResaleTicketResponse.from(
 			ticket,
+			orderItem.getSeat().getSeatSection().getStadiumId(),
+			location,
 			orderItem.getSeat().getId(),
 			orderItem.getSeat().getSeatSection().getId(),
-			orderItem.getSeat().getSeatSection().getSeatGrade().getId()
+			orderItem.getSeat().getSeatSection().getSeatGrade().getId(),
+			orderItem.getSeat().getSeatSection().getSeatGrade().getName()
 		);
 	}
 
@@ -164,12 +175,13 @@ public class TicketServiceImpl implements TicketService {
 		String buyerEmail,
 		String buyerPhone,
 		UUID transactionId,
-		Integer transactionPrice
+		Integer transactionPrice,
+		String ticketNumber
 	) {
 		oldTicket.invalidate();
 
 		TicketEntity newTicket = TicketEntity.create(
-			generateTicketNumber(),
+			ticketNumber,
 			oldTicket.getOrderItemId(),
 			transactionId,
 			oldTicket.getGameId(),
@@ -185,18 +197,5 @@ public class TicketServiceImpl implements TicketService {
 		);
 
 		return ticketRepository.save(newTicket);
-	}
-
-	private String generateTicketNumber() {
-		String ticketNumber = "TKT" +
-			LocalDate.now().format(TICKET_NUMBER_FORMATTER) +
-			getTsid(6);
-
-		return ticketNumber;
-	}
-
-	private String getTsid(int length) {
-		String tsid = TsidCreator.getTsid().toString();
-		return tsid.substring(tsid.length() - length);
 	}
 }

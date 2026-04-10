@@ -51,6 +51,8 @@ public class ResaleTransactionEntity extends ModificationTimestampEntity {
 	@Column(nullable = false)
 	private UUID sellerId;
 
+	private UUID buyerTicketId;
+
 	@Column(nullable = false)
 	private Integer transactionPrice;
 
@@ -91,6 +93,7 @@ public class ResaleTransactionEntity extends ModificationTimestampEntity {
 		this.resaleTicketNumber = resaleTicketNumber;
 		this.buyerId = buyerId;
 		this.sellerId = sellerId;
+		this.buyerTicketId = null;
 		this.transactionPrice = transactionPrice;
 		this.buyerFee = buyerFee;
 		this.sellerFee = sellerFee;
@@ -169,6 +172,11 @@ public class ResaleTransactionEntity extends ModificationTimestampEntity {
 		this.transactionStatus = ResaleTransactionStatus.COMPLETED;
 		this.confirmedAt = LocalDateTime.now();
 		this.escrowId = escrowId;
+	}
+
+	public void assignBuyerTicketId(UUID buyerTicketId) {
+		Preconditions.domainValidate(buyerTicketId != null, "구매자 티켓 ID는 비어 있을 수 없습니다.");
+		this.buyerTicketId = buyerTicketId;
 	}
 
 }

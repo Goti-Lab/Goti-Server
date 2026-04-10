@@ -10,7 +10,7 @@ public record StadiumLocationResponse(
 ) {
 	public static StadiumLocationResponse from(StadiumEntity stadium) {
 		return new StadiumLocationResponse(
-			stadium.getId(), stadium.getLocation()
+			stadium.getId(), stadium.getStadiumName()
 		);
 	}
 }
