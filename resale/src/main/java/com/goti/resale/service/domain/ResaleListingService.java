@@ -18,6 +18,7 @@ import com.goti.resale.dto.request.ResaleListingCancelRequest;
 import com.goti.resale.dto.request.ResaleListingOrderCreateRequest;
 import com.goti.resale.dto.response.ResaleListingOrderCreateResponse;
 import com.goti.resale.dto.response.ResaleListingResponse;
+import com.goti.resale.dto.response.ResaleListingOrderResponse;
 import com.goti.resale.dto.response.ResaleListingsCountResponse;
 import com.goti.resale.dto.response.ResaleTicketResponse;
 
@@ -39,7 +40,7 @@ public interface ResaleListingService {
 		UUID orderId
 	);
 
-	Page<ResaleListingOrderEntity> getSalesHistory(
+	Page<ResaleListingOrderResponse> getSalesHistory(
 		UUID sellerId,
 		List<ResaleListingOrderStatus> statuses,
 		Integer months,

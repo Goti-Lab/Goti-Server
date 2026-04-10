@@ -1,14 +1,15 @@
 package com.goti.resale.utils;
 
 import java.time.Duration;
-import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.UUID;
 
 import org.springframework.stereotype.Component;
 
 import com.goti.constants.messages.ErrorCode;
-import com.goti.resale.domain.entity.resale.ResaleRestrictionEntity;
 import com.goti.global.validation.Preconditions;
+import com.goti.resale.domain.entity.resale.ResaleRestrictionEntity;
 
 @Component
 public class ResaleRestrictionHandler {
@@ -76,9 +77,9 @@ public class ResaleRestrictionHandler {
 		);
 	}
 
-	public void validateReListingLimit(UUID transactionId, Instant createdAt) {
+	public void validateReListingLimit(UUID transactionId, LocalDateTime createdAt) {
 		if (transactionId != null && createdAt != null) {
-			long hoursPassed = Duration.between(createdAt, Instant.now()).toHours();
+			long hoursPassed = Duration.between(createdAt, LocalDateTime.now(ZoneId.of("Asia/Seoul"))).toHours();
 			Preconditions.validate(
 				hoursPassed >= RE_LISTING_MIN_HOURS,
 				ErrorCode.RE_LISTING_LIMIT_EXCEEDED, String.valueOf(RE_LISTING_MIN_HOURS)

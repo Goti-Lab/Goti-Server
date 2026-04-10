@@ -18,6 +18,18 @@ public record GameScheduleResponse(
 	@JsonFormat(pattern = "yyyy-MM-dd HH:mm")
 	LocalDateTime startAt,
 
+	@Schema(description = "홈 팀 표시명")
+	String homeTeamDisplayName,
+
+	@Schema(description = "원정 팀 표시명")
+	String awayTeamDisplayName,
+
+	@Schema(description = "구장 ID")
+	UUID stadiumId,
+
+	@Schema(description = "구장 위치")
+	String stadiumLocation,
+
 	@Schema(description = "예매 시작 일시")
 	@JsonFormat(pattern = "yyyy-MM-dd HH:mm")
 	LocalDateTime ticketingOpenedAt,
@@ -26,4 +38,7 @@ public record GameScheduleResponse(
 	@JsonFormat(pattern = "yyyy-MM-dd HH:mm")
 	LocalDateTime ticketingEndAt
 ) {
+	public String getGameTitle() {
+		return homeTeamDisplayName + " vs " + awayTeamDisplayName;
+	}
 }

@@ -16,6 +16,8 @@ import com.goti.global.validation.Preconditions;
 import com.goti.ticketing.constants.TicketStatus;
 import com.goti.ticketing.domain.entity.order.OrderItemEntity;
 import com.goti.ticketing.domain.entity.ticket.TicketEntity;
+import com.goti.ticketing.infra.api.StadiumClient;
+import com.goti.ticketing.infra.api.dto.response.StadiumLocationResponse;
 import com.goti.ticketing.order.repository.OrderItemRepository;
 import com.goti.ticketing.ticket.dto.response.ResaleTicketResponse;
 import com.goti.ticketing.ticket.dto.response.TicketPurchaseInfoResponse;
@@ -29,6 +31,7 @@ import lombok.RequiredArgsConstructor;
 public class TicketServiceImpl implements TicketService {
 	private final TicketRepository ticketRepository;
 	private final OrderItemRepository orderItemRepository;
+	private final StadiumClient stadiumClient;
 
 	@Override
 	@Transactional
@@ -131,11 +134,20 @@ public class TicketServiceImpl implements TicketService {
 		OrderItemEntity orderItem = orderItemRepository.findById(ticket.getOrderItemId())
 			.orElseThrow(() -> new CustomException(ErrorCode.ORDER_ITEM_NOT_FOUND));
 
+		List<StadiumLocationResponse> stadiumLocations = stadiumClient.getStadiumLocations(
+			List.of(orderItem.getSeat().getSeatSection().getStadiumId())
+		);
+
+		String location = stadiumLocations.isEmpty() ? null : stadiumLocations.getFirst().stadiumLocation();
+
 		return ResaleTicketResponse.from(
 			ticket,
+			orderItem.getSeat().getSeatSection().getStadiumId(),
+			location,
 			orderItem.getSeat().getId(),
 			orderItem.getSeat().getSeatSection().getId(),
-			orderItem.getSeat().getSeatSection().getSeatGrade().getId()
+			orderItem.getSeat().getSeatSection().getSeatGrade().getId(),
+			orderItem.getSeat().getSeatSection().getSeatGrade().getName()
 		);
 	}
 

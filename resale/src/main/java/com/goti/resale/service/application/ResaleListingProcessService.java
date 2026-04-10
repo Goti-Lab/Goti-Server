@@ -85,7 +85,7 @@ public class ResaleListingProcessService {
 			startDate,
 			endDate,
 			paging.toPageable()
-		).map(ResaleListingOrderResponse::from);
+		);
 	}
 
 	private List<ResaleListingOrderStatus> mapToStatuses(ResaleOrderSearchStatus status) {

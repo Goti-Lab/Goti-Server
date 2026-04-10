@@ -61,7 +61,6 @@ public class ResaleListingController {
 		@AuthenticationPrincipal(expression = "id") UUID sellerId,
 		@Valid @RequestBody ResaleListingOrderCreateRequest request
 	) {
-
 		ResaleListingOrderCreateResponse response = listingService.createListingOrder(sellerId, request);
 		return wrap(response);
 	}
