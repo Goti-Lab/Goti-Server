@@ -21,7 +21,6 @@ import com.goti.infra.api.base.BaseRestClient;
 import com.goti.resale.dto.response.ResaleTicketResponse;
 import com.goti.resale.infra.dto.GameScheduleResponse;
 import com.goti.resale.infra.dto.ResaleTicketPurchaseInfo;
-import com.goti.resale.infra.dto.TicketOwnershipTransferResponse;
 import com.goti.resale.infra.dto.TicketGameInfo;
 import com.goti.resale.infra.dto.TicketTransferRequest;
 
@@ -124,7 +123,7 @@ public class TicketApiClient extends BaseRestClient implements TicketClient {
 	}
 
 	@Override
-	public TicketOwnershipTransferResponse transferOwnership(
+	public void transferOwnership(
 		UUID ticketId,
 		UUID buyerId,
 		String buyerNickname,
@@ -149,19 +148,7 @@ public class TicketApiClient extends BaseRestClient implements TicketClient {
 			? createBearerHeader(authToken)
 			: getHeaders();
 
-		ApiSuccessResponse<TicketOwnershipTransferResponse> response = restClient.post()
-			.uri(uri)
-			.headers(header -> {
-				if (headers != null) {
-					headers.forEach(header::add);
-				}
-			})
-			.body(request)
-			.retrieve()
-			.body(new ParameterizedTypeReference<ApiSuccessResponse<TicketOwnershipTransferResponse>>() {
-			});
-
-		return response.getData();
+		postVoid(uri, headers, request);
 	}
 
 	private Map<String, String> getHeaders() {

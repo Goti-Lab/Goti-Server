@@ -100,8 +100,7 @@ public class PurchaseSearchService {
 				order.stadiumId(),
 				order.gameTitle(),
 				order.gameDate(),
-				extractSeatInfos(order.seatGradeGroups()),
-				order.ticketIds()
+				extractSeatInfos(order.seatGradeGroups())
 			))
 			.toList();
 	}
@@ -131,8 +130,7 @@ public class PurchaseSearchService {
 				null,
 				order.gameTitle(),
 				order.gameDate(),
-				order.seatInfos(),
-				order.ticketIds()
+				order.seatInfos()
 			))
 			.toList();
 	}
