@@ -1,6 +1,7 @@
 package com.goti.ticketing.order.dto.response;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.UUID;
 
@@ -52,7 +53,7 @@ public record OrderListResponse(
 			order.getOrderStatus(),
 			order.getTotalQuantity(),
 			order.getTotalAmount(),
-			LocalDateTime.ofInstant(order.getCreatedAt(), java.time.ZoneId.of("Asia/Seoul")),
+			LocalDateTime.ofInstant(order.getCreatedAt(), ZoneId.of("Asia/Seoul")),
 			order.getGameSchedule().getId(),
 			order.getGameSchedule().getStadiumId(),
 			gameTitle,

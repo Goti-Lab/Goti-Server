@@ -122,7 +122,8 @@ public class TicketApiController {
 			request.buyerEmail(),
 			request.buyerPhone(),
 			request.transactionId(),
-			request.transactionPrice()
+			request.transactionPrice(),
+			request.ticketNumber()
 		));
 	}
 }
