@@ -14,7 +14,7 @@ public record ResalePurchaseListItemResponse(
 	Integer totalQuantity,
 	Integer totalAmount,
 	@JsonFormat(pattern = "yyyy-MM-dd HH:mm")
-	Instant orderedAt,
+	LocalDateTime orderedAt,
 	UUID gameId,
 	String gameTitle,
 	@JsonFormat(pattern = "yyyy-MM-dd HH:mm")
