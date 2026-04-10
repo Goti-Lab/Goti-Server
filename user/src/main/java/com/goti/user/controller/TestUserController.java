@@ -2,7 +2,7 @@ package com.goti.user.controller;
 
 import static com.goti.global.api.ApiSuccessResponse.*;
 
-import org.springframework.context.annotation.Profile;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -23,8 +23,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
-@Profile("!prod")
-@Tag(name = "Test User", description = "테스트 유저 생성/로그인 API (non-prod only)")
+@ConditionalOnProperty(name = "goti.test-user.enabled", havingValue = "true", matchIfMissing = false)
+@Tag(name = "Test User", description = "테스트 유저 생성/로그인 API (goti.test-user.enabled=true)")
 @RestController
 @RequestMapping("/api/v1/test/users")
 @RequiredArgsConstructor
