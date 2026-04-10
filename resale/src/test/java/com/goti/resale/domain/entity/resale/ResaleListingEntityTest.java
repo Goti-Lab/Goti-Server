@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.UUID;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.NullSource;
@@ -32,6 +33,15 @@ class ResaleListingEntityTest {
 	private static final Integer VALID_LISTING_PRICE = 55000;
 
 	ResaleListingOrderEntity listingOrder;
+
+	@BeforeEach
+	void setUp() {
+		listingOrder = ResaleListingOrderEntity.create(
+			"ORD-12345678",
+			VALID_SELLER_ID,
+			VALID_GRADE_ID
+		);
+	}
 
 	@Test
 	void 리셀_생성_성공() {

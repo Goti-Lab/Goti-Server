@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.springframework.context.ApplicationEventPublisher;
@@ -84,22 +83,14 @@ public class ResaleOrderEventListener {
 			List<ResaleTransactionEntity> transactions = orderService.findTransactionByOrder(
 				event.resaleOrderId());
 
-			List<UUID> listingIds = transactions.stream()
-				.map(t -> t.getListing().getId())
-				.toList();
-
-			List<ResaleListingEntity> resaleListings = listingRepository.findAllById(listingIds);
-
-			Map<UUID, ResaleListingEntity> listingMap = resaleListings.stream()
-				.collect(Collectors.toMap(ResaleListingEntity::getId, Function.identity()));
-
+			List<ResaleListingEntity> resaleListings = new ArrayList<>();
 			List<ResalePriceHistoryEntity> priceHistories = new ArrayList<>();
 			Set<ResaleListingOrderEntity> listingOrders = new HashSet<>();
 
 			ResaleRestrictionEntity restriction = restrictionService.getOrCreateRestriction(event.buyerId());
 
 			for (ResaleTransactionEntity transaction : transactions) {
-				ResaleListingEntity resaleListing = listingMap.get(transaction.getListing().getId());
+				ResaleListingEntity resaleListing = transaction.getListing();
 
 				if (resaleListing == null) {
 					log.error(" Listing을 찾을 수 없음: {}", transaction.getListing().getId());
@@ -107,6 +98,7 @@ public class ResaleOrderEventListener {
 				}
 
 				resaleListing.soldOut(transaction.getTransactionPrice());
+				resaleListings.add(resaleListing);
 
 				listingOrders.add(resaleListing.getListingOrder());
 

@@ -24,6 +24,8 @@ class ResaleTransactionEntityTest {
 	private static final String VALID_RESALE_TICKET_NUMBER = "RST-20260319-123456";
 	private static final UUID VALID_BUYER_ID = UUID.randomUUID();
 	private static final UUID VALID_SELLER_ID = UUID.randomUUID();
+	private static final UUID VALID_GRADE_ID = UUID.randomUUID();
+
 	private static final Integer VALID_TRANSACTION_PRICE = 50000;
 	private static final Integer VALID_BUYER_FEE = 2500;
 	private static final Integer VALID_SELLER_FEE = 2000;
@@ -36,6 +38,12 @@ class ResaleTransactionEntityTest {
 
 	@BeforeEach
 	void setUp() {
+		listingOrder = ResaleListingOrderEntity.create(
+			"ORD-12345678",
+			VALID_SELLER_ID,
+			VALID_GRADE_ID
+		);
+
 		validListing = ResaleListingEntity.create(
 			listingOrder,
 			UUID.randomUUID(),
@@ -43,7 +51,7 @@ class ResaleTransactionEntityTest {
 			UUID.randomUUID(),
 			UUID.randomUUID(),
 			UUID.randomUUID(),
-			UUID.randomUUID(),
+			VALID_GRADE_ID,
 			"A구역 10열 5번",
 			50000,
 			50000

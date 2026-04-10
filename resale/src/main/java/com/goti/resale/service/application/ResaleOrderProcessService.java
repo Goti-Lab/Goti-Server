@@ -121,7 +121,7 @@ public class ResaleOrderProcessService {
 
 	private List<ResaleHoldEntity> validateAndGetHolds(UUID buyerId, List<UUID> holdIds) {
 		List<ResaleHoldEntity> holds = resaleHoldRepository
-			.findAllByIdInAndUserIdAndStatus(holdIds, buyerId, ResaleHoldStatus.HOLDING);
+			.findAllByUserAndStatus(holdIds, buyerId, ResaleHoldStatus.HOLDING);
 
 		Preconditions.validate(
 			holds.size() == holdIds.size(),

@@ -20,6 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 class ResaleHoldEntityTest {
 
 	private static final UUID VALID_SELLER_ID = UUID.randomUUID();
+	private static final UUID VALID_GRADE_ID = UUID.randomUUID();
 
 	ResaleListingEntity validListing;
 	UUID validBuyerId;
@@ -29,6 +30,12 @@ class ResaleHoldEntityTest {
 
 	@BeforeEach
 	void setUp() {
+		listingOrder = ResaleListingOrderEntity.create(
+			"ORD-12345678",
+			VALID_SELLER_ID,
+			VALID_GRADE_ID
+		);
+
 		validListing = ResaleListingEntity.create(
 			listingOrder,
 			UUID.randomUUID(),
@@ -36,7 +43,7 @@ class ResaleHoldEntityTest {
 			UUID.randomUUID(),
 			UUID.randomUUID(),
 			UUID.randomUUID(),
-			UUID.randomUUID(),
+			VALID_GRADE_ID,
 			"A구역 10열 5번",
 			50000,
 			50000
