@@ -16,6 +16,7 @@ import org.springframework.transaction.event.TransactionalEventListener;
 import com.goti.resale.domain.entity.resale.ResaleOrderEntity;
 import com.goti.resale.domain.entity.resale.ResaleTransactionEntity;
 import com.goti.resale.infra.TicketClient;
+import com.goti.resale.infra.dto.TicketOwnershipTransferResponse;
 import com.goti.resale.infra.dto.TicketOwnershipTransferEvent;
 import com.goti.resale.service.domain.ResaleOrderService;
 
@@ -76,7 +77,7 @@ public class TicketOwnershipTransferListener {
 	) {
 		String ticketNumberPrefix = createPrefix(order.getCreatedAt(), order.getOrderNumber());
 		try {
-			ticketClient.transferOwnership(
+			TicketOwnershipTransferResponse response = ticketClient.transferOwnership(
 				transaction.getListing().getTicketId(),
 				event.buyerId(),
 				order.getBuyerNickname(),
@@ -87,6 +88,7 @@ public class TicketOwnershipTransferListener {
 				generateTicketNumber(ticketNumberPrefix, sequence),
 				event.authToken()
 			);
+			transaction.assignBuyerTicketId(response.ticketId());
 			return true;
 		} catch (Exception e) {
 			log.error("티켓 소유권 이전 실패 - 티켓ID: {}", transaction.getListing().getTicketId(), e);
