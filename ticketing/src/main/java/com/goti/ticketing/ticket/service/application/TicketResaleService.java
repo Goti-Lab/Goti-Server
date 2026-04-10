@@ -96,7 +96,8 @@ public class TicketResaleService {
 		String buyerEmail,
 		String buyerPhone,
 		UUID transactionId,
-		Integer transactionPrice
+		Integer transactionPrice,
+		String ticketNumber
 	) {
 		TicketEntity oldTicket = ticketService.get(ticketId);
 
@@ -107,7 +108,8 @@ public class TicketResaleService {
 			buyerEmail,
 			buyerPhone,
 			transactionId,
-			transactionPrice
+			transactionPrice,
+			ticketNumber
 		);
 
 		String seatGradeName = orderItemRepository.findById(newTicket.getOrderItemId())

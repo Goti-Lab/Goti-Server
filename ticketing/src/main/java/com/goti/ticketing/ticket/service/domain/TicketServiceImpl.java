@@ -2,9 +2,7 @@ package com.goti.ticketing.ticket.service.domain;
 
 import static java.util.stream.Collectors.*;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -12,7 +10,6 @@ import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.github.f4b6a3.tsid.TsidCreator;
 import com.goti.constants.messages.ErrorCode;
 import com.goti.exception.CustomException;
 import com.goti.global.validation.Preconditions;
@@ -30,8 +27,6 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 public class TicketServiceImpl implements TicketService {
-	private static final DateTimeFormatter TICKET_NUMBER_FORMATTER = DateTimeFormatter.ofPattern("yyMMdd");
-
 	private final TicketRepository ticketRepository;
 	private final OrderItemRepository orderItemRepository;
 
@@ -168,12 +163,13 @@ public class TicketServiceImpl implements TicketService {
 		String buyerEmail,
 		String buyerPhone,
 		UUID transactionId,
-		Integer transactionPrice
+		Integer transactionPrice,
+		String ticketNumber
 	) {
 		oldTicket.invalidate();
 
 		TicketEntity newTicket = TicketEntity.create(
-			generateTicketNumber(),
+			ticketNumber,
 			oldTicket.getOrderItemId(),
 			transactionId,
 			oldTicket.getGameId(),
@@ -189,18 +185,5 @@ public class TicketServiceImpl implements TicketService {
 		);
 
 		return ticketRepository.save(newTicket);
-	}
-
-	private String generateTicketNumber() {
-		String ticketNumber = "TKT" +
-			LocalDate.now().format(TICKET_NUMBER_FORMATTER) +
-			getTsid(6);
-
-		return ticketNumber;
-	}
-
-	private String getTsid(int length) {
-		String tsid = TsidCreator.getTsid().toString();
-		return tsid.substring(tsid.length() - length);
 	}
 }

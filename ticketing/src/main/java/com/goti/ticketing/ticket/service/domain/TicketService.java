@@ -52,6 +52,7 @@ public interface TicketService {
 		String buyerEmail,
 		String buyerPhone,
 		UUID transactionId,
-		Integer transactionPrice
+		Integer transactionPrice,
+		String ticketNumber
 	);
 }

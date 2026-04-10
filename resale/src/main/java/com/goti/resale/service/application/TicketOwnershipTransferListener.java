@@ -1,6 +1,10 @@
 package com.goti.resale.service.application;
 
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
@@ -22,6 +26,10 @@ import lombok.extern.slf4j.Slf4j;
 @Component
 @RequiredArgsConstructor
 public class TicketOwnershipTransferListener {
+	private static final String TICKET_NUMBER_PREFIX = "RST-";
+	private static final DateTimeFormatter TICKET_NUMBER_DATE_FORMATTER = DateTimeFormatter.ofPattern("MMdd")
+		.withZone(ZoneId.of("Asia/Seoul"));
+	private static final int ORDER_SUFFIX_START_INDEX = 12;
 
 	private final ResaleOrderService orderService;
 	private final TicketClient ticketClient;
@@ -50,7 +58,7 @@ public class TicketOwnershipTransferListener {
 		int failCount = 0;
 
 		for (ResaleTransactionEntity transaction : transactions) {
-			if (transferOwnership(transaction, order, event)) {
+			if (transferOwnership(transaction, order, event, successCount + 1)) {
 				successCount++;
 			} else {
 				failCount++;
@@ -63,8 +71,10 @@ public class TicketOwnershipTransferListener {
 	private boolean transferOwnership(
 		ResaleTransactionEntity transaction,
 		ResaleOrderEntity order,
-		TicketOwnershipTransferEvent event
+		TicketOwnershipTransferEvent event,
+		int sequence
 	) {
+		String ticketNumberPrefix = createPrefix(order.getCreatedAt(), order.getOrderNumber());
 		try {
 			ticketClient.transferOwnership(
 				transaction.getListing().getTicketId(),
@@ -74,6 +84,7 @@ public class TicketOwnershipTransferListener {
 				order.getBuyerPhone(),
 				transaction.getId(),
 				transaction.getTransactionPrice(),
+				generateTicketNumber(ticketNumberPrefix, sequence),
 				event.authToken()
 			);
 			return true;
@@ -87,5 +98,24 @@ public class TicketOwnershipTransferListener {
 		boolean hasFailures() {
 			return failCount > 0;
 		}
+	}
+
+	private String createPrefix(Instant createdAt, String orderNumber) {
+		return String.join("",
+			TICKET_NUMBER_PREFIX,
+			TICKET_NUMBER_DATE_FORMATTER.format(createdAt),
+			extractSuffix(orderNumber)
+		);
+	}
+
+	private String extractSuffix(String orderNumber) {
+		return Optional.ofNullable(orderNumber)
+			.filter(s -> s.length() >= ORDER_SUFFIX_START_INDEX)
+			.map(s -> s.substring(ORDER_SUFFIX_START_INDEX))
+			.orElse("");
+	}
+
+	private String generateTicketNumber(String ticketNumberPrefix, int ticketSequence) {
+		return ticketNumberPrefix + "-" + String.format("%03d", ticketSequence);
 	}
 }

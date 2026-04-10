@@ -5,8 +5,8 @@ import java.util.List;
 import java.util.UUID;
 
 import com.goti.resale.dto.response.ResaleTicketResponse;
-import com.goti.resale.infra.dto.ResaleTicketPurchaseInfo;
 import com.goti.resale.infra.dto.GameScheduleResponse;
+import com.goti.resale.infra.dto.ResaleTicketPurchaseInfo;
 import com.goti.resale.infra.dto.TicketGameInfo;
 
 public interface TicketClient {
@@ -34,6 +34,7 @@ public interface TicketClient {
 		String buyerPhone,
 		UUID transactionId,
 		Integer transactionPrice,
+		String ticketNumber,
 		String authToken
 	);
 }
