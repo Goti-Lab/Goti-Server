@@ -2,6 +2,7 @@ package com.goti.ticketing.seat.service.domain;
 
 import com.goti.constants.messages.ErrorCode;
 import com.goti.exception.CustomException;
+import com.goti.ticketing.domain.entity.game.GameScheduleEntity;
 import com.goti.ticketing.domain.entity.seat.GameSeatSummaryEntity;
 import com.goti.ticketing.seat.repository.GameSeatSummaryRepository;
 
@@ -18,6 +19,14 @@ import java.util.UUID;
 public class GameSeatSummaryServiceImpl implements GameSeatSummaryService {
 
 	private final GameSeatSummaryRepository gameSeatSummaryRepository;
+
+	@Override
+	@Transactional
+	public GameSeatSummaryEntity create(GameScheduleEntity gameSchedule, int totalSeats) {
+		GameSeatSummaryEntity gameSeatSummary = GameSeatSummaryEntity.create(gameSchedule, totalSeats);
+		gameSeatSummaryRepository.save(gameSeatSummary);
+		return gameSeatSummary;
+	}
 
 	@Override
 	@Transactional(readOnly = true)
