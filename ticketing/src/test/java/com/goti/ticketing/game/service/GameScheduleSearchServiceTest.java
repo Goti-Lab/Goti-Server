@@ -18,6 +18,8 @@ import com.goti.ticketing.infra.api.dto.response.BaseballTeamDisplayNameResponse
 
 import com.goti.ticketing.infra.api.dto.response.StadiumLocationResponse;
 
+import com.goti.ticketing.infra.api.dto.response.StadiumTotalSeatsResponse;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -33,7 +35,9 @@ import java.util.List;
 import java.util.Map;
 
 import static org.assertj.core.api.AssertionsForInterfaceTypes.*;
-import static org.mockito.Mockito.*;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.anyList;
+import static org.mockito.BDDMockito.any;
 
 @SpringBootTest(classes = GotiTicketingApplication.class)
 @Transactional
@@ -67,16 +71,19 @@ public class GameScheduleSearchServiceTest {
 		saveKia();
 		saveStadium();
 
-		when(StadiumApiClient.getBaseballTeamDisplayNames(anyList()))
-			.thenReturn(List.of(
+		given(StadiumApiClient.getBaseballTeamDisplayNames(anyList()))
+			.willReturn(List.of(
 				new BaseballTeamDisplayNameResponse(kia.getId(), kia.getDisplayName()),
 				new BaseballTeamDisplayNameResponse(samsung.getId(), samsung.getDisplayName())
 			));
 
-		when(StadiumApiClient.getStadiumLocations(anyList()))
-			.thenReturn(List.of(
+		given(StadiumApiClient.getStadiumLocations(anyList()))
+			.willReturn(List.of(
 				new StadiumLocationResponse(stadium.getId(), stadium.getLocation())
 			));
+
+		given(StadiumApiClient.getStadiumTotalSeats(any()))
+			.willReturn(new StadiumTotalSeatsResponse(20500));
 
 		gameManagementService.register(
 			kia.getId(),

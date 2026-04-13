@@ -16,6 +16,8 @@ import com.goti.stadium.repository.StadiumRepository;
 
 import com.goti.ticketing.infra.api.StadiumApiClient;
 
+import com.goti.ticketing.infra.api.dto.response.StadiumTotalSeatsResponse;
+
 import lombok.extern.slf4j.Slf4j;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -34,6 +36,8 @@ import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.BDDMockito.*;
 
 @Slf4j
 @Transactional
@@ -67,6 +71,8 @@ public class GameManagementServiceTest {
 		saveHomeTeam();
 		saveAwayTeam();
 		saveStadium();
+		given(StadiumApiClient.getStadiumTotalSeats(any()))
+			.willReturn(new StadiumTotalSeatsResponse(20500));
 	}
 
 	@Test
