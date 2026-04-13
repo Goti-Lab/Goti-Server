@@ -78,7 +78,7 @@ public class StadiumApiClient extends BaseRestClient implements StadiumClient {
 
 	@Override
 	public StadiumTotalSeatsResponse getStadiumTotalSeats(UUID stadiumId) {
-		String uri = STADIUM_INTERNAL_API + PATH_SEPARATOR + stadiumId;
+		String uri = STADIUM_INTERNAL_API + PATH_SEPARATOR + stadiumId + PATH_SEPARATOR + "total-seats";
 		return get(uri, null, null, StadiumTotalSeatsResponse.class);
 	}
 

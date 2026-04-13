@@ -20,7 +20,7 @@ public class StadiumInternalController {
 
 	private final StadiumInternalService stadiumInternalService;
 
-	@GetMapping("/{stadiumId}")
+	@GetMapping("/{stadiumId}/total-seats")
 	public StadiumTotalSeatsResponse getTotalSeats(
 		@PathVariable UUID stadiumId
 	) {

@@ -75,6 +75,7 @@ public class GameRegistrationTest {
 
 	private static final String BASEBALL_GET_API_URI = "/api/v1/baseball-teams/";
 	private static final String STADIUM_GET_API_URI = "/api/v1/stadiums/";
+	private static final String STADIUM_INTERNAL_API_URI = "/internal/stadiums/";
 
 	@BeforeEach
 	void setup() {
@@ -82,23 +83,15 @@ public class GameRegistrationTest {
 		saveHomeTeam();
 		saveStadium();
 
-		stubFor(
-			get(
-				urlEqualTo(BASEBALL_GET_API_URI + homeTeam.getId())
-			).willReturn(aResponse().withStatus(200))
-		);
+		stubFor(get(urlEqualTo(BASEBALL_GET_API_URI + homeTeam.getId())).willReturn(aResponse().withStatus(200)));
+		stubFor(get(urlEqualTo(BASEBALL_GET_API_URI + awayTeam.getId())).willReturn(aResponse().withStatus(200)));
+		stubFor(get(urlEqualTo(STADIUM_GET_API_URI + stadium.getId())).willReturn(aResponse().withStatus(200)));
 
-		stubFor(
-			get(
-				urlEqualTo(BASEBALL_GET_API_URI + awayTeam.getId())
-			).willReturn(aResponse().withStatus(200))
-		);
-
-		stubFor(
-			get(
-				urlEqualTo(STADIUM_GET_API_URI + stadium.getId())
-			).willReturn(aResponse().withStatus(200))
-		);
+		stubFor(get(urlEqualTo(STADIUM_INTERNAL_API_URI + stadium.getId() + "/total-seats"))
+			.willReturn(aResponse()
+				.withStatus(200)
+				.withHeader("Content-Type", "application/json")
+				.withBody("{\"totalSeats\": 20500}")));
 	}
 
 
