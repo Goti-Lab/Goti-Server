@@ -36,7 +36,7 @@ public class SeatStatusServiceImpl implements SeatStatusService {
 			return Map.of();
 		}
 
-		return seatStatusRepository.findAllByGameAndSeatIds(gameId, seatIds)
+		return seatStatusRepository.findSeatStatuses(gameId, seatIds)
 			.stream()
 			.collect(Collectors.toMap(
 				seatStatus -> seatStatus.getSeat().getId(),
@@ -73,6 +73,12 @@ public class SeatStatusServiceImpl implements SeatStatusService {
 	}
 
 	@Override
+	@Transactional
+	public void expire(SeatStatusEntity seatStatus) {
+		seatStatus.release();
+	}
+
+	@Override
 	@Transactional(readOnly = true)
 	public long countAvailableSeats(GameScheduleEntity gameSchedule) {
 		return seatStatusRepository.countByGameAndStatus(gameSchedule, SeatStatus.AVAILABLE);
@@ -88,12 +94,4 @@ public class SeatStatusServiceImpl implements SeatStatusService {
 		seatStatus.cancelSale();
 	}
 
-	@Override
-	public void release(SeatStatusEntity seatStatus) {
-		Preconditions.domainValidate(
-			seatStatus != null,
-			"좌석 상태는 필수입니다."
-		);
-		seatStatus.release();
-	}
 }

@@ -15,9 +15,5 @@ public interface SeatHoldService {
 
 	Map<UUID, SeatHoldEntity> getByIds(List<UUID> holdIds);
 
-	void expire(
-		SeatStatusEntity seatStatus,
-		SeatHoldEntity seatHold,
-		LocalDateTime now
-	);
+	void expire(SeatHoldEntity seatHold, LocalDateTime now);
 }

@@ -6,6 +6,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
+import com.goti.ticketing.domain.entity.seat.SeatStatusEntity;
+
+import com.goti.ticketing.seat.handler.GameSeatUpdateHandler;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -58,6 +62,7 @@ public class OrderCancelService {
 	private final TicketPaymentApiClient ticketPaymentApiClient;
 	private final GameStatusRepository gameStatusRepository;
 	private final GameTicketManagementService gameTicketManagementService;
+	private final GameSeatUpdateHandler gameSeatUpdateHandler;
 
 	@Transactional
 	public OrderCancelResponse cancel(
@@ -126,11 +131,16 @@ public class OrderCancelService {
 
 			TicketEntity ticket = ticketMap.get(targetItem.getId());
 			ticketService.invalidate(ticket);
-			seatStatusService.cancelSale(
-				seatStatusService.get(order.getGameSchedule(), targetItem.getSeat())
+			SeatStatusEntity seatStatus = seatStatusService.get(
+				order.getGameSchedule(), targetItem.getSeat()
 			);
+			seatStatusService.cancelSale(seatStatus);
 			orderItemService.cancel(targetItem);
 		}
+		int updateSeatCount = targetItems.size();
+		gameSeatUpdateHandler.onSeatIncrease(
+			order.getGameSchedule().getId(), updateSeatCount
+		);
 
 		gameTicketManagementService.processRestoreAvailable(order.getGameSchedule());
 		updateOrderStatus(order, orderItems);

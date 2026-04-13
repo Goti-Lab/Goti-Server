@@ -6,6 +6,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
+import com.goti.ticketing.seat.handler.GameSeatUpdateHandler;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,6 +32,7 @@ public class ReservationSessionService {
 	private final RedisCache redisCache;
 	private final SeatHoldService seatHoldService;
 	private final SeatStatusService seatStatusService;
+	private final GameSeatUpdateHandler gameSeatUpdateHandler;
 
 	public ReservationSessionCache getOrCreate(
 		UUID memberId,
@@ -45,29 +48,27 @@ public class ReservationSessionService {
 			ErrorCode.BAD_REQUEST
 		);
 
-		if (forceNewSession) {
+		ReservationSessionCache reservationSession = findReservationSession(
+			memberId, gameId
+		).orElseThrow(
+			() -> new CustomException(ErrorCode.RESERVATION_SESSION_EXPIRED)
+		);
+
+		boolean isExpired = reservationSession.expiresAt().isBefore(LocalDateTime.now());
+
+		if (forceNewSession || isExpired) {
 			releaseHeldSeats(memberId, gameId);
 			delete(memberId, gameId);
+			if (isExpired)
+				throw new CustomException(ErrorCode.RESERVATION_SESSION_EXPIRED);
 			return create(memberId, gameId);
-		}
-
-		ReservationSessionCache reservationSession = findReservationSession(memberId, gameId)
-			.orElseThrow(() -> new CustomException(ErrorCode.RESERVATION_SESSION_EXPIRED));
-
-		if (reservationSession.expiresAt().isBefore(LocalDateTime.now())) {
-			releaseHeldSeats(memberId, gameId);
-			delete(memberId, gameId);
-			throw new CustomException(ErrorCode.RESERVATION_SESSION_EXPIRED);
 		}
 
 		return reservationSession;
 	}
 
 	@Transactional
-	public void validateActiveSession(
-		UUID memberId,
-		UUID gameId
-	) {
+	public void validateActiveSession(UUID memberId, UUID gameId) {
 		Preconditions.validate(
 			memberId != null,
 			ErrorCode.AUTH_INVALID
@@ -77,10 +78,15 @@ public class ReservationSessionService {
 			ErrorCode.BAD_REQUEST
 		);
 
-		ReservationSessionCache reservationSession = findReservationSession(memberId, gameId)
-			.orElseThrow(() -> new CustomException(ErrorCode.RESERVATION_SESSION_EXPIRED));
+		ReservationSessionCache reservationSession = findReservationSession(
+			memberId, gameId
+		).orElseThrow(
+			() -> new CustomException(ErrorCode.RESERVATION_SESSION_EXPIRED)
+		);
 
-		if (reservationSession.expiresAt().isBefore(LocalDateTime.now())) {
+		boolean isExpired = reservationSession.expiresAt().isBefore(LocalDateTime.now());
+
+		if (isExpired) {
 			releaseHeldSeats(memberId, gameId);
 			delete(memberId, gameId);
 			throw new CustomException(ErrorCode.RESERVATION_SESSION_EXPIRED);
@@ -128,9 +134,11 @@ public class ReservationSessionService {
 		Map<UUID, SeatStatusEntity> seatStatuses = seatStatusService.getByGameIdAndSeatIds(gameId, seatIds);
 
 		for (SeatHoldEntity seatHold : seatHolds) {
-			SeatStatusEntity seatStatus = seatStatuses.get(seatHold.getSeat().getId());
+			UUID seatId = seatHold.getSeat().getId();
+			SeatStatusEntity seatStatus = seatStatuses.get(seatId);
 			if (seatStatus != null) {
-				seatStatusService.release(seatStatus);
+				seatStatus.release();
+				gameSeatUpdateHandler.onSeatIncrease(gameId, 1);
 			}
 			seatHold.release();
 		}

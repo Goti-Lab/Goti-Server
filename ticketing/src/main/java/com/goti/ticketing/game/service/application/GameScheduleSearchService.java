@@ -11,6 +11,8 @@ import java.util.stream.Stream;
 
 import com.goti.ticketing.game.dto.response.repository.GameScheduleQueryModel;
 
+import com.goti.ticketing.seat.service.application.GameSeatSummaryQueryService;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,6 +32,7 @@ import lombok.RequiredArgsConstructor;
 public class GameScheduleSearchService {
 	private final GameScheduleRepository gameScheduleRepository;
 	private final StadiumApiClient stadiumApiClient;
+	private final GameSeatSummaryQueryService gameSeatSummaryQueryService;
 
 	@Transactional(readOnly = true)
 	public List<GameScheduleSearchResponse> searchSchedules(GameScheduleSearchCondition condition) {
@@ -53,7 +56,7 @@ public class GameScheduleSearchService {
 
 		Map<UUID, String> teamDisplayNameMap = getBaseballTeamDisplayNamesMap(teamIds);
 		Map<UUID, String> stadiumLocationMap = getStadiumLocationsMap(stadiumIds);
-		Map<UUID, Long> seatCountMap = gameScheduleRepository.findRemainingSeatCounts(gameIds);
+		Map<UUID, Integer> seatCountMap = gameSeatSummaryQueryService.getRemainingSeatCounts(gameIds);
 
 		return queryModels.stream().map(
 			queryModel -> GameScheduleSearchResponse.from(
@@ -61,7 +64,7 @@ public class GameScheduleSearchService {
 				teamDisplayNameMap.get(queryModel.homeTeamId()),
 				teamDisplayNameMap.get(queryModel.awayTeamId()),
 				stadiumLocationMap.get(queryModel.stadiumId()),
-				seatCountMap.getOrDefault(queryModel.gameId(), 0L)
+				seatCountMap.getOrDefault(queryModel.gameId(), 0).longValue()
 			)
 		).toList();
 	}
@@ -99,13 +102,13 @@ public class GameScheduleSearchService {
 		);
 
 		List<UUID> gameIds = List.of(gameId);
-		Map<UUID, Long> seatCountMap = gameScheduleRepository.findRemainingSeatCounts(gameIds);
+		Map<UUID, Integer> seatCountMap = gameSeatSummaryQueryService.getRemainingSeatCounts(gameIds);
 		return GameScheduleSearchResponse.from(
 			queryModel,
 			teamNames.get(queryModel.homeTeamId()),
 			teamNames.get(queryModel.awayTeamId()),
 			stadiumLocations.get(queryModel.stadiumId()),
-			seatCountMap.getOrDefault(queryModel.gameId(), 0L)
+			seatCountMap.getOrDefault(queryModel.gameId(), 0).longValue()
 		);
 	}
 }

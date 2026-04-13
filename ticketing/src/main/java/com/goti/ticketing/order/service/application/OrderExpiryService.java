@@ -61,7 +61,8 @@ public class OrderExpiryService {
 				ErrorCode.SEAT_STATUS_NOT_FOUND
 			);
 
-			seatHoldService.expire(seatStatus, seatHold, LocalDateTime.now());
+			seatHoldService.expire(seatHold, LocalDateTime.now());
+			seatStatusService.expire(seatStatus);
 			orderItemService.expire(orderItem);
 		}
 	}

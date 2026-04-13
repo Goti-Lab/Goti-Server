@@ -3,6 +3,8 @@ package com.goti.ticketing.seat.service.application;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+import com.goti.ticketing.seat.handler.GameSeatUpdateHandler;
+
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.stereotype.Service;
@@ -31,9 +33,15 @@ public class SeatHoldTransactionalService {
 	private final SeatStatusRepository seatStatusRepository;
 	private final SeatHoldRepository seatHoldRepository;
 	private final SeatHoldProperties seatHoldProperties;
+	private final GameSeatUpdateHandler gameSeatUpdateHandler;
 
 	@Transactional
-	public UUID hold(UUID gameId, UUID seatId, UUID userId, String queueTokenJti) {
+	public UUID hold(
+		UUID gameId,
+		UUID seatId,
+		UUID userId,
+		String queueTokenJti
+	) {
 		SeatStatusEntity seatStatus = seatStatusRepository.findByGameAndSeat(
 				gameScheduleRepository.getReferenceById(gameId),
 				seatRepository.getReferenceById(seatId)
@@ -45,9 +53,7 @@ public class SeatHoldTransactionalService {
 		}
 
 		seatStatus.hold();
-		seatStatusRepository.save(seatStatus);
-
-		// TODO: 좌석 점유 시 game_seat_inventories 카운트 반영
+		gameSeatUpdateHandler.onSeatDecrease(gameId, 1);
 		SeatHoldEntity seatHold = SeatHoldEntity.create(
 			seatStatus.getSeat(),
 			seatStatus.getGame(),
@@ -56,9 +62,10 @@ public class SeatHoldTransactionalService {
 			LocalDateTime.now().plus(seatHoldProperties.ttl())
 		);
 
-		UUID holdId = seatHoldRepository.save(seatHold).getId();
-		log.info("action=SEAT_HOLD gameId={} userId={} seatId={} holdId={}", gameId, userId, seatId, holdId);
-		return holdId;
+		seatHoldRepository.save(seatHold);
+
+		log.info("action=SEAT_HOLD gameId={} userId={} seatId={} holdId={}", gameId, userId, seatId, seatHold.getId());
+		return seatHold.getId();
 	}
 
 	private CustomException blocked(UUID gameId, UUID userId, UUID seatId, ErrorCode errorCode) {
@@ -72,7 +79,9 @@ public class SeatHoldTransactionalService {
 	@Transactional
 	public UUID release(UUID holdId, UUID userId) {
 		SeatHoldEntity seatHold = seatHoldRepository.findHoldWithSeatAndGame(holdId)
-			.orElseThrow(() -> new CustomException(ErrorCode.SEAT_HOLD_NOT_FOUND));
+			.orElseThrow(
+				() -> new CustomException(ErrorCode.SEAT_HOLD_NOT_FOUND)
+			);
 
 		Preconditions.validate(
 			seatHold.getUserId().equals(userId),
@@ -82,14 +91,14 @@ public class SeatHoldTransactionalService {
 		SeatStatusEntity seatStatus = seatStatusRepository.findByGameAndSeat(
 			seatHold.getGameSchedule(),
 			seatHold.getSeat()
-		).orElseThrow(() -> new CustomException(ErrorCode.SEAT_STATUS_NOT_FOUND));
+		).orElseThrow(
+			() -> new CustomException(ErrorCode.SEAT_STATUS_NOT_FOUND)
+		);
 
 		seatStatus.release();
 		seatHold.release();
-
-		// TODO: 좌석 해제 시 game_seat_inventories 카운트 반영
-		seatStatusRepository.save(seatStatus);
-		seatHoldRepository.save(seatHold);
+		UUID gameId = seatHold.getGameSchedule().getId();
+		gameSeatUpdateHandler.onSeatIncrease(gameId, 1);
 
 		return seatHold.getId();
 	}

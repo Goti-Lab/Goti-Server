@@ -6,6 +6,8 @@ import java.util.UUID;
 
 import com.goti.ticketing.domain.entity.seat.SeatStatusEntity;
 
+import com.goti.ticketing.seat.handler.GameSeatUpdateHandler;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -39,6 +41,7 @@ public class OrderPaymentConfirmService {
 	private final SeatHoldService seatHoldService;
 	private final TicketCreateService ticketCreateService;
 	private final GameTicketManagementService gameTicketManagementService;
+	private final GameSeatUpdateHandler gameSeatUpdateHandler;
 
 	@Transactional
 	public OrderPaymentConfirmResponse confirm(
@@ -55,8 +58,11 @@ public class OrderPaymentConfirmService {
 			pgTid
 		);
 
-		OrderEntity order = orderRepository.findByIdAndMemberId(orderId, userId)
-			.orElseThrow(() -> new CustomException(ErrorCode.ORDER_NOT_FOUND));
+		OrderEntity order = orderRepository.findByIdAndMemberId(
+			orderId, userId
+		).orElseThrow(
+			() -> new CustomException(ErrorCode.ORDER_NOT_FOUND)
+		);
 
 		Preconditions.validate(
 			order.getOrderStatus() == OrderStatus.PENDING,

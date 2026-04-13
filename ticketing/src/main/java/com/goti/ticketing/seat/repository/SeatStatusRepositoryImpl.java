@@ -18,7 +18,7 @@ public class SeatStatusRepositoryImpl implements SeatStatusRepositoryCustom {
 	private final JPAQueryFactory queryFactory;
 
 	@Override
-	public List<SeatStatusEntity> findAllByGameAndSeatIds(UUID gameId, List<UUID> seatIds) {
+	public List<SeatStatusEntity> findSeatStatuses(UUID gameId, List<UUID> seatIds) {
 		QSeatStatusEntity seatStatus = QSeatStatusEntity.seatStatusEntity;
 		QSeatEntity seat = QSeatEntity.seatEntity;
 
