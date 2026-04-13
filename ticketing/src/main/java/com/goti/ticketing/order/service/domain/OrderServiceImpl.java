@@ -114,7 +114,7 @@ public class OrderServiceImpl implements OrderService {
 		OrderEntity order = orderRepository.findByIdAndMemberId(orderId, memberId)
 			.orElseThrow(() -> new CustomException(ErrorCode.ORDER_NOT_FOUND));
 
-		reservationSessionService.validateActiveSession(memberId, order.getGameSchedule().getId());
+		// reservationSessionService.validateActiveSession(memberId, order.getGameSchedule().getId());
 		return OrderPaymentInfoResponse.from(order);
 	}
 
