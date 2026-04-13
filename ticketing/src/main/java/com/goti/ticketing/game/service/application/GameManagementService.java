@@ -13,6 +13,9 @@ import com.goti.ticketing.game.service.domain.GameTicketingStatusService;
 
 import com.goti.ticketing.infra.api.StadiumClient;
 
+import com.goti.ticketing.infra.api.dto.response.StadiumTotalSeatsResponse;
+import com.goti.ticketing.seat.service.domain.GameSeatSummaryService;
+
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.stereotype.Service;
@@ -29,6 +32,7 @@ public class GameManagementService {
 	private final GameStatusService gameStatusService;
 	private final GameTicketingStatusService gameTicketingStatusService;
 	private final StadiumClient stadiumClient;
+	private final GameSeatSummaryService gameSeatSummaryService;
 
 	@Transactional
 	public GameCreateResponse register(
@@ -54,6 +58,10 @@ public class GameManagementService {
 
 		gameSchedule.initGameStatus(gameStatus);
 		gameSchedule.initTicketingStatus(gameTicketingStatus);
+
+		StadiumTotalSeatsResponse totalSeatsResponse = stadiumClient.getStadiumTotalSeats(stadiumId);
+		int totalSeats = totalSeatsResponse.totalSeats();
+		gameSeatSummaryService.create(gameSchedule, totalSeats);
 
 		return GameCreateResponse.from(
 			gameSchedule.getId(),

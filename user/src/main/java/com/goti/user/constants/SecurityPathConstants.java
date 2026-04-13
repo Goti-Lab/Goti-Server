@@ -25,6 +25,7 @@ public final class SecurityPathConstants {
 		"/.well-known/**",
 		"/api/v1/resales/listings/count",
 		"/api/v1/payments/resales/unsettled",
+		"/internal/stadiums/**"
 	};
 
 	public static final String[] MEMBER_URLS = {
