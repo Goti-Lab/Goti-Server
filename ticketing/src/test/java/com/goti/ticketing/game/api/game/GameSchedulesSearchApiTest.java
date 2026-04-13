@@ -14,6 +14,8 @@ import com.goti.ticketing.infra.api.StadiumApiClient;
 import com.goti.ticketing.infra.api.dto.response.BaseballTeamDisplayNameResponse;
 import com.goti.ticketing.infra.api.dto.response.StadiumLocationResponse;
 
+import com.goti.ticketing.infra.api.dto.response.StadiumTotalSeatsResponse;
+
 import lombok.extern.slf4j.Slf4j;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -90,6 +92,9 @@ public class GameSchedulesSearchApiTest {
 			.willReturn(List.of(
 				new StadiumLocationResponse(stadium.getId(), "광주")
 			));
+
+		given(stadiumApiClient.getStadiumTotalSeats(any()))
+			.willReturn(new StadiumTotalSeatsResponse(20500));
 	}
 
 	@Test
