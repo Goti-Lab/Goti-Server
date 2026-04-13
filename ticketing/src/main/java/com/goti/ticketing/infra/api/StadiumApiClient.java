@@ -7,6 +7,8 @@ import com.goti.infra.api.base.BaseRestClient;
 import com.goti.ticketing.infra.api.dto.response.StadiumLocationResponse;
 import com.goti.ticketing.infra.api.dto.response.BaseballTeamDisplayNameResponse;
 
+import com.goti.ticketing.infra.api.dto.response.StadiumTotalSeatsResponse;
+
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
@@ -22,6 +24,7 @@ public class StadiumApiClient extends BaseRestClient implements StadiumClient {
 
 	private final static String BASEBALL_TEAM_GET_API = "/api/v1/baseball-teams";
 	private final static String STADIUM_GET_API = "/api/v1/stadiums";
+	private final static String STADIUM_INTERNAL_API = "/internal/stadiums";
 	private final static String PATH_SEPARATOR = "/";
 
 	public StadiumApiClient(RestClient.Builder builder, ApiEndpointProperties properties) {
@@ -72,4 +75,11 @@ public class StadiumApiClient extends BaseRestClient implements StadiumClient {
 		);
 		return response != null ? response : Collections.emptyList();
 	}
+
+	@Override
+	public StadiumTotalSeatsResponse getStadiumTotalSeats(UUID stadiumId) {
+		String uri = STADIUM_INTERNAL_API + PATH_SEPARATOR + stadiumId;
+		return get(uri, null, null, StadiumTotalSeatsResponse.class);
+	}
+
 }
