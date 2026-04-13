@@ -38,12 +38,6 @@ public class StadiumApiClient extends BaseRestClient implements StadiumClient {
 	}
 
 	@Override
-	public void validateStadium(UUID stadiumId) {
-		String uri = STADIUM_GET_API + PATH_SEPARATOR + stadiumId;
-		getVoid(uri, null, null);
-	}
-
-	@Override
 	public List<BaseballTeamDisplayNameResponse> getBaseballTeamDisplayNames(List<UUID> teamIds) {
 		Map<String, Object> queryParams = Map.of(
 			"teamIds", teamIds.stream()

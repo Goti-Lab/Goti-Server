@@ -34,7 +34,6 @@ public class GameManagementService {
 	private final StadiumClient stadiumClient;
 	private final GameSeatSummaryService gameSeatSummaryService;
 
-	@Transactional
 	public GameCreateResponse register(
 		UUID homeTeamId,
 		UUID awayTeamId,
@@ -42,25 +41,34 @@ public class GameManagementService {
 		LocalDateTime startAt,
 		LeagueType leagueType
 	) {
-
 		validateBaseballTeam(homeTeamId);
 		validateBaseballTeam(awayTeamId);
-		validateStadium(stadiumId);
 
+		StadiumTotalSeatsResponse totalSeatsResponse = stadiumClient.getStadiumTotalSeats(stadiumId);
+		int totalSeats = totalSeatsResponse.totalSeats();
+
+		return createGameSchedule(homeTeamId, awayTeamId, stadiumId, startAt, leagueType, totalSeats);
+	}
+
+	@Transactional
+	public GameCreateResponse createGameSchedule(
+		UUID homeTeamId,
+		UUID awayTeamId,
+		UUID stadiumId,
+		LocalDateTime startAt,
+		LeagueType leagueType,
+		int totalSeats
+	) {
 		GameScheduleEntity gameSchedule = gameScheduleService.create(
 			homeTeamId, awayTeamId, stadiumId, startAt, leagueType
 		);
 
 		GameStatusEntity gameStatus = gameStatusService.create(gameSchedule);
-
-		GameTicketingStatusEntity gameTicketingStatus =
-			gameTicketingStatusService.create(gameSchedule);
+		GameTicketingStatusEntity gameTicketingStatus = gameTicketingStatusService.create(gameSchedule);
 
 		gameSchedule.initGameStatus(gameStatus);
 		gameSchedule.initTicketingStatus(gameTicketingStatus);
 
-		StadiumTotalSeatsResponse totalSeatsResponse = stadiumClient.getStadiumTotalSeats(stadiumId);
-		int totalSeats = totalSeatsResponse.totalSeats();
 		gameSeatSummaryService.create(gameSchedule, totalSeats);
 
 		return GameCreateResponse.from(
@@ -79,9 +87,5 @@ public class GameManagementService {
 
 	private void validateBaseballTeam(UUID teamId) {
 		stadiumClient.validateBaseballTeam(teamId);
-	}
-
-	private void validateStadium(UUID stadiumId) {
-		stadiumClient.validateStadium(stadiumId);
 	}
 }

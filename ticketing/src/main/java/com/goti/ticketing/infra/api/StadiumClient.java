@@ -9,7 +9,6 @@ import java.util.UUID;
 
 public interface StadiumClient {
 	void validateBaseballTeam(UUID teamId);
-	void validateStadium(UUID stadiumId);
 	List<BaseballTeamDisplayNameResponse> getBaseballTeamDisplayNames(List<UUID> teamIds);
 	List<StadiumLocationResponse> getStadiumLocations(List<UUID> stadiumIds);
 	StadiumTotalSeatsResponse getStadiumTotalSeats(UUID stadiumId);
