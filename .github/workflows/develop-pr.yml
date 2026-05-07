@@ -74,7 +74,7 @@ jobs:
           GOOGLE_CLIENT: ${{ secrets.GOOGLE_CLIENT }}
           GOOGLE_SECRET: ${{ secrets.GOOGLE_SECRET }}
           GOOGLE_REDIRECT_URI: ${{ secrets.GOOGLE_REDIRECT_URI }}
-          SMS_API_DOMAIN: ${{ secrets.SMS_API_DOMAIN }}
+          SMS_API_DOMAIN: ${{ vars.SMS_API_DOMAIN }}
           SMS_API_KEY: ${{ secrets.SMS_API_KEY }}
           SMS_API_SECRET: ${{ secrets.SMS_API_SECRET }}
           SMS_API_SENDER: ${{ secrets.SMS_API_SENDER }}
@@ -103,7 +103,7 @@ jobs:
           GOOGLE_CLIENT: ${{ secrets.GOOGLE_CLIENT }}
           GOOGLE_SECRET: ${{ secrets.GOOGLE_SECRET }}
           GOOGLE_REDIRECT_URI: ${{ secrets.GOOGLE_REDIRECT_URI }}
-          SMS_API_DOMAIN: ${{ secrets.SMS_API_DOMAIN }}
+          SMS_API_DOMAIN: ${{ vars.SMS_API_DOMAIN}}
           SMS_API_KEY: ${{ secrets.SMS_API_KEY }}
           SMS_API_SECRET: ${{ secrets.SMS_API_SECRET }}
           SMS_API_SENDER: ${{ secrets.SMS_API_SENDER }}
