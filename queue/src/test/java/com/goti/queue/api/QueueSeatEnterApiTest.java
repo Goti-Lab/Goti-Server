@@ -34,14 +34,13 @@ import com.goti.queue.GotiQueueApplication;
 import com.goti.queue.constants.QueueMetaField;
 import com.goti.queue.constants.QueueStatus;
 import com.goti.queue.domain.model.QueueEntry;
-import com.goti.queue.support.PostgreSqlContainerSupport;
 import com.goti.security.SimpleUserDetails;
 
 @SpringBootTest(classes = GotiQueueApplication.class)
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 @DisplayName("대기열 최종 입장 통합 테스트 - POST /api/v1/queue/{gameId}/seat-enter")
-class QueueSeatEnterApiTest extends PostgreSqlContainerSupport {
+class QueueSeatEnterApiTest {
 
 	@Autowired
 	private MockMvc mockMvc;

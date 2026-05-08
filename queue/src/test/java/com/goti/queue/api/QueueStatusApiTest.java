@@ -27,14 +27,13 @@ import com.goti.constants.messages.ErrorCode;
 import com.goti.infra.constants.redis.RedisKey;
 import com.goti.queue.GotiQueueApplication;
 import com.goti.queue.constants.QueueMetaField;
-import com.goti.queue.support.PostgreSqlContainerSupport;
 import com.goti.security.SimpleUserDetails;
 
 @SpringBootTest(classes = GotiQueueApplication.class)
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 @DisplayName("대기열 상태 조회 통합 테스트 - GET /api/v1/queue/{gameId}/status")
-class QueueStatusApiTest extends PostgreSqlContainerSupport {
+class QueueStatusApiTest {
 
 	@Autowired
 	private MockMvc mockMvc;
