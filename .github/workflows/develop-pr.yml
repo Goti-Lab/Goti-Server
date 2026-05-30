@@ -1,4 +1,4 @@
-name: CI
+name: Develop PR
 
 on:
   pull_request:
@@ -10,11 +10,11 @@ on:
       - '.github/pull_request_template.md'
 
 concurrency:
-  group: ci-${{ github.head_ref }}
+  group: develop-pr-${{ github.head_ref }}
   cancel-in-progress: true
 
 jobs:
-  build-and-test:
+  test-and-build-msa:
     runs-on: ubuntu-latest
 
     services:
@@ -54,7 +54,7 @@ jobs:
 
       - uses: gradle/actions/setup-gradle@v4
 
-      - name: Build bootJar
+      - name: Run all tests
         env:
           DATASOURCE_URL: jdbc:postgresql://localhost:5432/${{ vars.DATABASE_NAME || 'goti_local' }}
           DATASOURCE_USERNAME: ${{ secrets.DATASOURCE_USERNAME }}
@@ -64,33 +64,7 @@ jobs:
           JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
           JWT_ACCESS_TIME: ${{ secrets.JWT_ACCESS_TIME }}
           JWT_REFRESH_TIME: ${{ secrets.JWT_REFRESH_TIME }}
-          KAKAO_CLIENT: ${{ secrets.KAKAO_CLIENT }}
-          KAKAO_SECRET: ${{ secrets.KAKAO_SECRET }}
-          KAKAO_REDIRECT_URI: ${{ secrets.KAKAO_REDIRECT_URI }}
-          NAVER_CLIENT: ${{ secrets.NAVER_CLIENT }}
-          NAVER_SECRET: ${{ secrets.NAVER_SECRET }}
-          NAVER_REDIRECT_URI: ${{ secrets.NAVER_REDIRECT_URI }}
-          GOOGLE_CLIENT: ${{ secrets.GOOGLE_CLIENT }}
-          GOOGLE_SECRET: ${{ secrets.GOOGLE_SECRET }}
-          GOOGLE_REDIRECT_URI: ${{ secrets.GOOGLE_REDIRECT_URI }}
-          SMS_API_DOMAIN: ${{ secrets.SMS_API_DOMAIN }}
-          SMS_API_KEY: ${{ secrets.SMS_API_KEY }}
-          SMS_API_SECRET: ${{ secrets.SMS_API_SECRET }}
-          SMS_API_SENDER: ${{ secrets.SMS_API_SENDER }}
-
-        run: ./gradlew :api:bootJar --no-daemon -x test
-
-      - name: Run tests for changed modules
-        env:
-          DATASOURCE_URL: jdbc:postgresql://localhost:5432/${{ vars.DATABASE_NAME || 'goti_local' }}
-          DATASOURCE_USERNAME: ${{ secrets.DATASOURCE_USERNAME }}
-          DATASOURCE_PASSWORD: ${{ secrets.DATASOURCE_PASSWORD }}
-          REDIS_HOST: localhost
-          REDIS_PORT: 6379
-          JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
-          JWT_ACCESS_TIME: ${{ secrets.JWT_ACCESS_TIME }}
-          JWT_REFRESH_TIME: ${{ secrets.JWT_REFRESH_TIME }}
-          JWT_REGISTRATION_TIME: ${{ secrets.JWT_SOCIAL_VERIFY_TIME }}
+          JWT_SOCIAL_VERIFY_TIME: ${{ secrets.JWT_SOCIAL_VERIFY_TIME }}
           KAKAO_CLIENT: ${{ secrets.KAKAO_CLIENT }}
           KAKAO_SECRET: ${{ secrets.KAKAO_SECRET }}
           KAKAO_REDIRECT_URI: ${{ secrets.KAKAO_REDIRECT_URI }}
@@ -104,77 +78,54 @@ jobs:
           SMS_API_KEY: ${{ secrets.SMS_API_KEY }}
           SMS_API_SECRET: ${{ secrets.SMS_API_SECRET }}
           SMS_API_SENDER: ${{ secrets.SMS_API_SENDER }}
-        run: |
-          MODULES="common integration user stadium ticketing payment resale api"
+          QUEUE_TOKEN_SECRET: ci-queue-token-secret-key-minimum-32-chars
+          CLOUDFLARE_TURNSTILE_SECRET: ci-turnstile-secret
 
-          CHANGED=$(git diff --name-only origin/develop...HEAD | grep -oP '^[^/]+' | sort -u)
+        run: ./gradlew test --no-daemon
 
-          TARGETS=""
-          for module in $MODULES; do
-            if echo "$CHANGED" | grep -qx "$module"; then
-              TARGETS="$TARGETS :${module}:test"
-            fi
-          done
-
-          if [ -z "$TARGETS" ]; then
-            echo "변경된 모듈 없음 — 테스트 스킵"
-          else
-            echo "테스트 대상:$TARGETS"
-            ./gradlew $TARGETS --no-daemon
-          fi
+      - name: Build all MSA bootJars
+        env:
+          DATASOURCE_URL: jdbc:postgresql://localhost:5432/${{ vars.DATABASE_NAME || 'goti_local' }}
+          DATASOURCE_USERNAME: ${{ secrets.DATASOURCE_USERNAME }}
+          DATASOURCE_PASSWORD: ${{ secrets.DATASOURCE_PASSWORD }}
+          REDIS_HOST: localhost
+          REDIS_PORT: 6379
+          JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
+          JWT_ACCESS_TIME: ${{ secrets.JWT_ACCESS_TIME }}
+          JWT_REFRESH_TIME: ${{ secrets.JWT_REFRESH_TIME }}
+          JWT_SOCIAL_VERIFY_TIME: ${{ secrets.JWT_SOCIAL_VERIFY_TIME }}
+          KAKAO_CLIENT: ${{ secrets.KAKAO_CLIENT }}
+          KAKAO_SECRET: ${{ secrets.KAKAO_SECRET }}
+          KAKAO_REDIRECT_URI: ${{ secrets.KAKAO_REDIRECT_URI }}
+          NAVER_CLIENT: ${{ secrets.NAVER_CLIENT }}
+          NAVER_SECRET: ${{ secrets.NAVER_SECRET }}
+          NAVER_REDIRECT_URI: ${{ secrets.NAVER_REDIRECT_URI }}
+          GOOGLE_CLIENT: ${{ secrets.GOOGLE_CLIENT }}
+          GOOGLE_SECRET: ${{ secrets.GOOGLE_SECRET }}
+          GOOGLE_REDIRECT_URI: ${{ secrets.GOOGLE_REDIRECT_URI }}
+          SMS_API_DOMAIN: ${{ vars.SMS_API_DOMAIN}}
+          SMS_API_KEY: ${{ secrets.SMS_API_KEY }}
+          SMS_API_SECRET: ${{ secrets.SMS_API_SECRET }}
+          SMS_API_SENDER: ${{ secrets.SMS_API_SENDER }}
+          QUEUE_TOKEN_SECRET: ci-queue-token-secret-key-minimum-32-chars
+          CLOUDFLARE_TURNSTILE_SECRET: ci-turnstile-secret
+        run: ./gradlew :user:bootJar :stadium:bootJar :ticketing:bootJar :payment:bootJar :resale:bootJar :queue:bootJar -Pmsa --no-daemon -x test
 
       - name: Upload test reports (build-and-test)
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: test-reports-build-and-test
+          name: test-reports-develop-pr
           path: '**/build/reports/tests/'
 
-  docker-build:
+  docker-build-msa:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
-      - name: Docker build verification (monolith)
-        run: DOCKER_BUILDKIT=1 docker build -t goti-server:ci-test .
-
-      - name: Detect changed MSA modules
-        id: detect
+      - name: Docker build verification (all MSA modules)
         run: |
-          MSA_MODULES="user stadium ticketing payment resale"
-          SHARED_MODULES="common integration core"
-
-          CHANGED=$(git diff --name-only origin/develop...HEAD | grep -oP '^[^/]+' | sort -u)
-          echo "변경된 디렉토리: $CHANGED"
-
-          BUILD_ALL=false
-          for shared in $SHARED_MODULES; do
-            if echo "$CHANGED" | grep -qx "$shared"; then
-              BUILD_ALL=true
-              echo "공유 모듈 $shared 변경 감지 — 전체 MSA 모듈 빌드 검증"
-              break
-            fi
-          done
-
-          if [ "$BUILD_ALL" = true ]; then
-            echo "modules=$MSA_MODULES" >> "$GITHUB_OUTPUT"
-          else
-            TARGETS=""
-            for module in $MSA_MODULES; do
-              if echo "$CHANGED" | grep -qx "$module"; then
-                TARGETS="$TARGETS $module"
-              fi
-            done
-            TARGETS=$(echo "$TARGETS" | xargs)
-            echo "modules=$TARGETS" >> "$GITHUB_OUTPUT"
-          fi
-
-      - name: Docker build verification (MSA modules)
-        if: steps.detect.outputs.modules != ''
-        run: |
-          MODULES="${{ steps.detect.outputs.modules }}"
+          MODULES="user stadium ticketing payment resale queue"
           echo "MSA 빌드 검증 대상: $MODULES"
 
           for MODULE in $MODULES; do
